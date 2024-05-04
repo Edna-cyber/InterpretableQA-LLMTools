@@ -10,7 +10,7 @@ from demos import prompt_policy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 
 from utilities import *
-from model import solver
+from model import solver #benchmark.chameleon.run_toolqa.
 
 from tools.code.python_interpreter import execute as python_interpreter
 from tools.code.sql_interpreter import execute as sql_interpreter

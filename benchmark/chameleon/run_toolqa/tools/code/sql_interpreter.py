@@ -1,4 +1,4 @@
-import mysql
+# import mysql
 import mysql.connector as msql
 
 def execute(sql_cmd):

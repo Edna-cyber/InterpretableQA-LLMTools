@@ -16,17 +16,17 @@ from tools.code.sql_interpreter import execute as sql_interpreter
 from tools.graph.graphtools import graph_toolkits
 from tools.math.calculator import calculator, WolframAlphaCalculator
 from tools.table.tabtools import table_toolkits
-from tools.text.agenda_retriever import query_llm_agenda
-from tools.text.scirex_retriever import query_llm_scirex
+# from tools.text.agenda_retriever import query_llm_agenda
+# from tools.text.scirex_retriever import query_llm_scirex
 from tools import finish
 import jsonlines
 
-db = table_toolkits()
+db = table_toolkits("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/")
 gt = graph_toolkits()
 ACTION_LIST = {
     'Calculate': WolframAlphaCalculator,
-    'RetrieveAgenda': query_llm_agenda,
-    'RetrieveScirex': query_llm_scirex,
+    #'RetrieveAgenda': query_llm_agenda,
+    #'RetrieveScirex': query_llm_scirex,
     'LoadDB': db.db_loader,
     'FilterDB': db.data_filter,
     'GetValue': db.get_value,
@@ -34,7 +34,7 @@ ACTION_LIST = {
     'NeighbourCheck': gt.check_neighbours,
     'NodeCheck': gt.check_nodes,
     'EdgeCheck': gt.check_edges,
-    'SQLInterpreter': sql_interpreter,
+    #'SQLInterpreter': sql_interpreter,
     'PythonInterpreter': python_interpreter,
     'Finish': finish
 }
@@ -59,7 +59,7 @@ class solver:
     def load_data(self):
         examples = ''
         pids = []
-        file_path = "/<YOUR_OWN_PATH>/ToolQA/data/questions/{}/QA-{}-{}.jsonl".format(self.args.hardness, self.args.dataset, self.args.hardness)
+        file_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/{}/QA-{}-{}.jsonl".format(self.args.hardness, self.args.dataset, self.args.hardness)
         with open(file_path, 'r') as f:
             contents = []
             for item in jsonlines.Reader(f):
@@ -84,11 +84,13 @@ class solver:
         return test_prompt, full_prompt
 
     def convert_to_executable(self, module):
+        print("module", module)
         action, arg = module.split('[')
         arg = arg.rstrip(']')
         arg = arg.split(', ')
         if '=' in arg[0]:
             arg = [i.split('=')[1] for i in arg]
+        print("arg", arg)
         return {'func_name': ACTION_LIST[action], 'args': arg}
 
     def update_modules(self, _modules):

@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import jsonlines
 import json
@@ -10,7 +11,10 @@ class table_toolkits():
         self.path = path
 
     def db_loader(self, target_db):
-        if target_db == 'flights':
+        if target_db == 'hupd':
+            file_path = "{}/data/external_corpus/hupd/hupd_2015-2016.csv".format(self.path)
+            self.data = pd.read_csv(file_path)
+        elif target_db == 'flights':
             file_path = "{}/data/external_corpus/flights/Combined_Flights_2022.csv".format(self.path)
             self.data = pd.read_csv(file_path)
         elif target_db == 'coffee':
