@@ -10,15 +10,15 @@ from demos import prompt_policy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 
 from utilities import *
-from model import solver #benchmark.chameleon.run_toolqa.
+from model import solver 
 
 from tools.code.python_interpreter import execute as python_interpreter
-from tools.code.sql_interpreter import execute as sql_interpreter
-from tools.graph.graphtools import graph_toolkits
-from tools.math.calculator import calculator, WolframAlphaCalculator
-from tools.table.tabtools import table_toolkits
-from tools.text.agenda_retriever import query_llm_agenda
-from tools.text.scirex_retriever import query_llm_scirex
+# from tools.code.sql_interpreter import execute as sql_interpreter
+# from tools.graph.graphtools import graph_toolkits
+# from tools.math.calculator import calculator, WolframAlphaCalculator
+# from tools.table.tabtools import table_toolkits
+# from tools.text.agenda_retriever import query_llm_agenda
+# from tools.text.scirex_retriever import query_llm_scirex
 from tools.finish import finish
 import jsonlines
 import datetime
@@ -26,25 +26,27 @@ import datetime
 current_datetime = datetime.datetime.now()
 datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-db = table_toolkits()
-gt = graph_toolkits()
+# db = table_toolkits()
+# gt = graph_toolkits()
 
 ACTION_LIST = {
-    'Calculate': WolframAlphaCalculator,
-    'RetrieveAgenda': query_llm_agenda,
-    'RetrieveScirex': query_llm_scirex,
-    'LoadDB': db.db_loader,
-    'FilterDB': db.data_filter,
-    'GetValue': db.get_value,
-    'LoadGraph': gt.load_graph,
-    'NeighbourCheck': gt.check_neighbours,
-    'NodeCheck': gt.check_nodes,
-    'EdgeCheck': gt.check_edges,
-    'SQLInterpreter': sql_interpreter,
+    # 'Calculate': WolframAlphaCalculator,
+    # 'RetrieveAgenda': query_llm_agenda,
+    # 'RetrieveScirex': query_llm_scirex,
+    # 'LoadDB': db.db_loader,
+    # 'FilterDB': db.data_filter,
+    # 'GetValue': db.get_value,
+    # 'LoadGraph': gt.load_graph,
+    # 'NeighbourCheck': gt.check_neighbours,
+    # 'NodeCheck': gt.check_nodes,
+    # 'EdgeCheck': gt.check_edges,
+    # 'SQLInterpreter': sql_interpreter,
     'PythonInterpreter': python_interpreter,
     'Finish': finish
 }
 
+openai.api_key = os.getenv("OPENAI_API_KEY")
+print(openai.api_key)
 
 def parse_action(string):
     pattern = r'^(\w+)\[(.+)\]$'
@@ -60,7 +62,6 @@ def parse_action(string):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_root', type=str, default='../data/toolqa')
     parser.add_argument('--output_root', type=str, default='../results')
     parser.add_argument('--model', type=str, default='chameleon', choices=['cot', 'pot', 'chameleon'])
     parser.add_argument('--label', type=str, default='chameleon_chatgpt')
@@ -140,7 +141,7 @@ if __name__ == "__main__":
                     {"role": "user", "content": full_prompt},
                 ]
                 # execute the module
-                action = get_chat_response(messages, "<YOUR_OPENAI_API_KEY>", "gpt-3.5-turbo", 0, 200)
+                action = get_chat_response(messages, openai.api_key, "gpt-3.5-turbo", 0, 200)
 
                 action_type = module
                 # return the position of "[" in action
@@ -170,9 +171,9 @@ if __name__ == "__main__":
         context = re.sub("\n", "", context)
         print(context)
         logs = logs + "\nGround-Truth Answer: "+str(solver.cache["example"]["answer"])
-        if not os.path.exists('/<YOUR_OWN_PATH>/ToolQA/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)):
-            os.makedirs('/<YOUR_OWN_PATH>/ToolQA/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version))
-            logs_dir = '/<YOUR_OWN_PATH>/ToolQA/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)
+        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)):
+            os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version))
+            logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)
         with open(os.path.join(logs_dir, pid+'.txt'), 'w') as f:
             f.write(logs)
 

@@ -98,7 +98,7 @@ class table_toolkits():
             return ', '.join(self.data[column].tolist())
 
 if __name__ == "__main__":
-    db = table_toolkits("<YOUR_OWN_PATH>")
+    db = table_toolkits("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/")
     print(db.db_loader('flights'))
     print(db.data_filter('IATA_Code_Marketing_Airline=AA, Flight_Number_Marketing_Airline=5647, Origin=BUF, Dest=PHL, FlightDate=2022-04-20'))
     print(db.get_value('DepTime'))

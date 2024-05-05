@@ -53,7 +53,7 @@ class solver:
             setattr(self, key, value)
         self.args = args
         # external arguments
-        self.api_key = "<YOUR_OPENAI_API_KEY>" #openai.api_key
+        self.api_key = openai.api_key
         self.examples, self.pids = self.load_data()
         
     def load_data(self):
