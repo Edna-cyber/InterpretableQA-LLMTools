@@ -24,16 +24,16 @@ import jsonlines
 db = table_toolkits("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/")
 gt = graph_toolkits()
 ACTION_LIST = {
-    'Calculate': WolframAlphaCalculator,
+    # 'Calculate': WolframAlphaCalculator,
     #'RetrieveAgenda': query_llm_agenda,
     #'RetrieveScirex': query_llm_scirex,
-    'LoadDB': db.db_loader,
-    'FilterDB': db.data_filter,
-    'GetValue': db.get_value,
-    'LoadGraph': gt.load_graph,
-    'NeighbourCheck': gt.check_neighbours,
-    'NodeCheck': gt.check_nodes,
-    'EdgeCheck': gt.check_edges,
+    # 'LoadDB': db.db_loader,
+    # 'FilterDB': db.data_filter,
+    # 'GetValue': db.get_value,
+    # 'LoadGraph': gt.load_graph,
+    # 'NeighbourCheck': gt.check_neighbours,
+    # 'NodeCheck': gt.check_nodes,
+    # 'EdgeCheck': gt.check_edges,
     #'SQLInterpreter': sql_interpreter,
     'PythonInterpreter': python_interpreter,
     'Finish': finish

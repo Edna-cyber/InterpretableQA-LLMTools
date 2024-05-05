@@ -63,20 +63,19 @@ def parse_action(string):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_root', type=str, default='../results')
-    parser.add_argument('--model', type=str, default='chameleon', choices=['cot', 'pot', 'chameleon'])
+    parser.add_argument('--model', type=str, default='chameleon')
     parser.add_argument('--label', type=str, default='chameleon_chatgpt')
-    parser.add_argument('--task_name', type=str, default='toolsclinic')
+    parser.add_argument('--task_name', type=str, default='patent') 
     parser.add_argument('--test_split', type=str, default='test1k', 
                         choices=['dev', 'dev1k', 'test', 'test1k'])
     parser.add_argument('--test_number', type=int, default=100)
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument("--dataset", type=str, default="flights")
+    parser.add_argument("--dataset", type=str, default="hupd")
     parser.add_argument("--hardness", type=str, default="easy")
     parser.add_argument("--version", type=str, default="v3")
-    
     parser.add_argument("--gpt", type=str, default="gpt3")
     # module prediction
-    parser.add_argument('--modules', nargs='+', default=None, help='default modules')
+    parser.add_argument('--modules', nargs='+', default=None, help='default modules') 
     parser.add_argument('--policy_engine', type=str, default="gpt-3.5-turbo", help='engine for module prediction')
     parser.add_argument('--policy_temperature', type=float, default=0., help='temperature for module prediction')
     parser.add_argument('--policy_max_tokens', type=int, default=128, help='max tokens for module prediction')
@@ -94,7 +93,7 @@ if __name__ == "__main__":
 
     # Build the solver
     solver = solver(args)
-    print(f"# Number of test examples: {len(solver.examples)}\n")
+    print(f"# Number of test examples: {len(solver.examples)}\n") #
 
     # Get the result file
     result_root = f"{args.output_root}/{args.task_name}"

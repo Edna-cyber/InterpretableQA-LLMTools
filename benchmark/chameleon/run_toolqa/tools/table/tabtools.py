@@ -14,22 +14,6 @@ class table_toolkits():
         if target_db == 'hupd':
             file_path = "{}/data/external_corpus/hupd/hupd_2015-2016.csv".format(self.path)
             self.data = pd.read_csv(file_path)
-        elif target_db == 'flights':
-            file_path = "{}/data/external_corpus/flights/Combined_Flights_2022.csv".format(self.path)
-            self.data = pd.read_csv(file_path)
-        elif target_db == 'coffee':
-            file_path = "{}/data/external_corpus/coffee/coffee_price.csv".format(self.path)
-            self.data = pd.read_csv(file_path)
-        elif target_db =='airbnb':
-            file_path = "{}/data/external_corpus/airbnb/Airbnb_Open_Data.csv".format(self.path)
-            self.data = pd.read_csv(file_path)
-        elif target_db == 'yelp':
-            data_file = open("{}/data/external_corpus/yelp/yelp_academic_dataset_business.json".format(self.path))
-            data = []
-            for line in data_file:
-                data.append(json.loads(line))
-            self.data = pd.DataFrame(data)
-            data_file.close()
         self.data = self.data.astype(str)
         column_names = ', '.join(self.data.columns.tolist())
         return "We have successfully loaded the {} database, including the following columns: {}.".format(target_db, column_names)
