@@ -22,7 +22,7 @@ from tools import finish
 import jsonlines
 
 db = table_toolkits("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/")
-gt = graph_toolkits()
+# gt = graph_toolkits()
 ACTION_LIST = {
     # 'Calculate': WolframAlphaCalculator,
     #'RetrieveAgenda': query_llm_agenda,
@@ -59,7 +59,7 @@ class solver:
     def load_data(self):
         examples = ''
         pids = []
-        file_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/{}/QA-{}-{}.jsonl".format(self.args.hardness, self.args.dataset, self.args.hardness)
+        file_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/{}/{}-{}.jsonl".format(self.args.hardness, self.args.dataset, self.args.hardness)
         with open(file_path, 'r') as f:
             contents = []
             for item in jsonlines.Reader(f):

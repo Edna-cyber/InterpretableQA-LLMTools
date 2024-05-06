@@ -65,7 +65,7 @@ def parse_args():
     parser.add_argument('--output_root', type=str, default='../results')
     parser.add_argument('--model', type=str, default='chameleon')
     parser.add_argument('--label', type=str, default='chameleon_chatgpt')
-    parser.add_argument('--task_name', type=str, default='patent') 
+    parser.add_argument('--task_name', type=str, default='hupd') 
     parser.add_argument('--test_split', type=str, default='test1k', 
                         choices=['dev', 'dev1k', 'test', 'test1k'])
     parser.add_argument('--test_number', type=int, default=100)
