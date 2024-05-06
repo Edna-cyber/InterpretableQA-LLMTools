@@ -70,10 +70,10 @@ class solver:
 
     def build_prompt_for_policy(self):
         # demo prompt
-        demo_prompt = prompt_policy.prompt_clean.strip()
+        demo_prompt = prompt_policy.prompt.strip() 
 
         # test prompt
-        question = self.cache["example"]["question"]
+        question = self.cache["example"]["question"] 
         # TODO: rewrite this to extract one example from the test set
 
         # simply for test the code

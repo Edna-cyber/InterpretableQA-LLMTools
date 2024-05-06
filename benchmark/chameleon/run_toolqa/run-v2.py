@@ -93,10 +93,10 @@ if __name__ == "__main__":
 
     # Build the solver
     solver = solver(args)
-    print(f"# Number of test examples: {len(solver.examples)}\n") #
+    print(f"# Number of test examples: {len(solver.examples)}\n") 
 
     # Get the result file
-    result_root = f"{args.output_root}/{args.task_name}"
+    result_root = f"{args.output_root}/{args.task_name}" 
     os.makedirs(result_root, exist_ok=True)
     cache_file = f"{result_root}/{args.label}_{args.test_split}_cache.json"
     cache_jsonl = f"{result_root}/{args.label}_{args.test_split}_cache.jsonl"
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         logs = ""
         for module in modules:
             try:
-                demo_prompt = prompt_policy.prompt.strip()
+                demo_prompt = prompt_policy.prompt.strip() 
                 question = solver.cache["example"]["question"]
                 if context != "":
                     test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFinish the currect {module} action with arguments:\n"
