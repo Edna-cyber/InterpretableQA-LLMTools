@@ -6,13 +6,23 @@ The modules are defined as follows:
 
 - Calculate[formula]: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB[DBName]: This module loads a database specified by the database name and returns the loaded database. It takes in a database name and returns the corresponding database. The DBName can be one of the following: flights/coffee/airbnb/yelp. Normally, we only consider using "LoadDB" when the question requires data from a specific structured dataset.
+- LoadDB[DBName, subsetNames]: This module loads a database specified by the database name and subset names, and returns the loaded database. It accepts a database name and subset names, returning the corresponding database. The DBName can be one of the following: hupd. Normally, we consider using 'LoadDB' only when the question requires data from a specific structured dataset.
+
+- PandasInterpreter[Python]: 
 
 - PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
 - Finish[answer]: This module returns the final answer and finishes the task. This module is the final module in the sequence that encapsulates the result of all previous modules.
 
 Below are some examples that map the problem to the modules.
+
+Question: What was the percentage of patents accepted in 2015?
+
+Modules: ["LoadDB[hupd, 2015-2015]", ]
+
+Question: What is the 100th Fibonacci number?
+
+Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(100)\n]", "Finish[354224848179261915075]"]
 
 Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
 
@@ -21,7 +31,6 @@ Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michae
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question.
 """
 
+# When calling dbloader, needs to parse in 2 arguments, the dataset, and a list of years
 
-# Example yet to be fixed:
-# Question: What is the 100th Fibonacci number?
-# Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nglobal_var['ans'] = solution(100)\n]", "Finish[354224848179261915075]"]
+# Needs an example with dbloader where the question doesn't involve specific years

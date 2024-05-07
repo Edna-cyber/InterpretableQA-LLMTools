@@ -14,8 +14,6 @@ from demos import prompt_policy
 from tools.code.python_interpreter import execute as python_interpreter
 from tools.math.calculator import calculator, WolframAlphaCalculator
 from tools.table.tabtools import table_toolkits
-# from tools.text.agenda_retriever import query_llm_agenda
-# from tools.text.scirex_retriever import query_llm_scirex
 from tools import finish
 import jsonlines
 
@@ -47,7 +45,7 @@ class solver:
     def load_data(self):
         examples = ''
         pids = []
-        file_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/{}/{}-{}.jsonl".format(self.args.hardness, self.args.dataset, self.args.hardness)
+        file_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/{}/{}-{}.jsonl".format(self.args.hardness, self.args.dataset, self.args.hardness) #<YOUR_OWN_PATH>
         with open(file_path, 'r') as f:
             contents = []
             for item in jsonlines.Reader(f):
