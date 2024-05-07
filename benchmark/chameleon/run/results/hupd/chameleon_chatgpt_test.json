@@ -1,0 +1,23 @@
+{
+  "acc": 0.0,
+  "correct": 0,
+  "wrong": 0,
+  "count": 3,
+  "args": {
+    "output_root": "../results",
+    "model": "chameleon",
+    "label": "chameleon_chatgpt",
+    "task_name": "hupd",
+    "test_split": "test",
+    "test_number": 1,
+    "seed": 0,
+    "dataset": "hupd",
+    "hardness": "easy",
+    "version": "v3",
+    "gpt": "gpt3",
+    "modules": null,
+    "policy_engine": "gpt-3.5-turbo",
+    "policy_temperature": 1.0,
+    "policy_max_tokens": 128
+  }
+}

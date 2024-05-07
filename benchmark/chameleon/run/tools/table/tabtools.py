@@ -26,7 +26,7 @@ class table_toolkits():
             if self.data[col].isna().any():
                 contains_na.append(col)
         contains_na_names = ', '.join(contains_na)
-        return "We have successfully loaded the {} database, including the following columns: {}. \n \
+        return "We have successfully loaded the {} database, including the following columns: {}.\n\
         Among these columns, the following columns have NA values: {}.".format(target_db, column_names, contains_na_names)
     
     def pandas_interpreter(self, pandas_code): 

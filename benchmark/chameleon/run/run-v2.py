@@ -132,7 +132,7 @@ if __name__ == "__main__":
                 # return the position of "[" in action
                 left_bracket = action.find("[")
                 right_bracket = action.find("]")
-                print(left_bracket, right_bracket)
+                # print(left_bracket, right_bracket)
                 argument = action[int(left_bracket+1):int(right_bracket)]
                 if context == "":
                     context = module+"["+argument+"]"

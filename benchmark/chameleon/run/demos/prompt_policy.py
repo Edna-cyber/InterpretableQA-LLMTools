@@ -8,7 +8,7 @@ The modules are defined as follows:
 
 - LoadDB[DBName, subsetNames]: This module loads a database specified by the database name and subset names, and returns the loaded database. It accepts a database name and subset names, returning the corresponding database. The DBName can be one of the following: hupd. Normally, we consider using 'LoadDB' only when the question requires data from a specific structured dataset.
 
-- PandasInterpreter[Python]: 
+- PandasInterpreter[Python]: This module interprets Pandas code written in Python and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
 
 - PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
@@ -16,9 +16,9 @@ The modules are defined as follows:
 
 Below are some examples that map the problem to the modules.
 
-Question: What was the percentage of patents accepted in 2015?
+Question: What was the percentage of patents accepted in 2017?
 
-Modules: ["LoadDB[hupd, 2015-2015]", ]
+Modules: ["LoadDB[hupd, 2017-2017]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
 Question: What is the 100th Fibonacci number?
 
@@ -30,7 +30,5 @@ Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michae
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question.
 """
-
-# When calling dbloader, needs to parse in 2 arguments, the dataset, and a list of years
 
 # Needs an example with dbloader where the question doesn't involve specific years
