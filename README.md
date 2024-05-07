@@ -2,6 +2,7 @@
 
 Adapted repo structure from ToolQA https://github.com/night-chen/ToolQA
 
+- [ ] Run ```pip install -r requirements.txt``` (make sure openai version is 0.28.0 or earlier)
 - [ ] Download data
 - [ ] Run preprocessing/data_loading.ipynb
 - [ ] Run python scripts in dataset_generation/easy_questions dataset_generation/medium_questions dataset_generation/hard_questions
