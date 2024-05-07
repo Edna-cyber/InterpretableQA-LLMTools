@@ -6,13 +6,12 @@ import re
 
 class table_toolkits():
     # init
-    def __init__(self, path):
+    def __init__(self):
         self.data = None
-        self.path = path
 
     def db_loader(self, target_db):
         if target_db == 'hupd':
-            file_path = "{}/data/external_corpus/hupd/hupd_2015-2016.csv".format(self.path) # up for change
+            file_path = "{}/data/external_corpus/hupd/hupd_2015.csv".format(self.path) # up for change
             self.data = pd.read_csv(file_path)
         self.data = self.data.astype(str)
         column_names = ', '.join(self.data.columns.tolist())

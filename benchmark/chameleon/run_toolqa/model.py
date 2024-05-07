@@ -19,7 +19,7 @@ from tools.table.tabtools import table_toolkits
 from tools import finish
 import jsonlines
 
-db = table_toolkits("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/")
+db = table_toolkits() 
 ACTION_LIST = {
     'Calculate': WolframAlphaCalculator,
     'LoadDB': db.db_loader, 

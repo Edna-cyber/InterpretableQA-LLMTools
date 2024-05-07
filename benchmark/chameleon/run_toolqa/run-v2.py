@@ -22,7 +22,7 @@ import datetime
 current_datetime = datetime.datetime.now()
 datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-# db = table_toolkits()
+db = table_toolkits()
 
 ACTION_LIST = {
     'Calculate': WolframAlphaCalculator,
