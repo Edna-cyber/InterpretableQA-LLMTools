@@ -120,7 +120,7 @@ if __name__ == "__main__":
         modules = solver.predict_modules()
         modules = modules[1:-1]
         modules = modules.split(", ")
-        modules = [module[1:-1] for module in modules]
+        modules = [module[1:-1] for module in modules] #
         # [2] Execute the modules 
         if count < 10:
             print(f"# [Modules]\n{modules}\n")
@@ -140,21 +140,26 @@ if __name__ == "__main__":
                     {"role": "user", "content": full_prompt},
                 ]
                 # execute the module
+                print("before") ###
                 action = get_chat_response(messages, openai.api_key, "gpt-3.5-turbo", 0, 200)
+                print("here") ###
 
                 action_type = module
                 # return the position of "[" in action
                 left_bracket = action.find("[")
                 right_bracket = action.find("]")
                 print(left_bracket, right_bracket)
+                print("position")
                 argument = action[int(left_bracket+1):int(right_bracket)]
                 if context == "":
                     context = module+"["+argument+"]"
                 else:
                     context = context+"-->"+module+"["+argument+"]"
                 argument = argument.replace("'", "").replace('"', '')
+                print("action type") ###
                 print(action_type, argument)
                 output = ACTION_LIST[action_type](argument)
+                print("output") ###
                 print(output)
                 # input()
                 logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
@@ -177,14 +182,14 @@ if __name__ == "__main__":
             f.write(logs)
 
         acc = correct / count * 100
-        with open(cache_file, "a") as f:
+        with open(cache_file, 'w') as f:
             try:
                 f.write(json.dumps(solver.cache, indent=2, separators=(',', ': ')) + "\n")
             except Exception as e:
                 print(e)
                 print(solver.cache)
         
-        with open(cache_jsonl, "a") as f:
+        with open(cache_jsonl, 'w') as f:
             try:
                 json.dump(solver.cache, f)
                 f.write('\n')
