@@ -13,12 +13,8 @@ from utilities import *
 from model import solver 
 
 from tools.code.python_interpreter import execute as python_interpreter
-# from tools.code.sql_interpreter import execute as sql_interpreter
-# from tools.graph.graphtools import graph_toolkits
-# from tools.math.calculator import calculator, WolframAlphaCalculator
-# from tools.table.tabtools import table_toolkits
-# from tools.text.agenda_retriever import query_llm_agenda
-# from tools.text.scirex_retriever import query_llm_scirex
+from tools.math.calculator import calculator, WolframAlphaCalculator
+from tools.table.tabtools import table_toolkits
 from tools.finish import finish
 import jsonlines
 import datetime
@@ -27,20 +23,10 @@ current_datetime = datetime.datetime.now()
 datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
 # db = table_toolkits()
-# gt = graph_toolkits()
 
 ACTION_LIST = {
-    # 'Calculate': WolframAlphaCalculator,
-    # 'RetrieveAgenda': query_llm_agenda,
-    # 'RetrieveScirex': query_llm_scirex,
-    # 'LoadDB': db.db_loader,
-    # 'FilterDB': db.data_filter,
-    # 'GetValue': db.get_value,
-    # 'LoadGraph': gt.load_graph,
-    # 'NeighbourCheck': gt.check_neighbours,
-    # 'NodeCheck': gt.check_nodes,
-    # 'EdgeCheck': gt.check_edges,
-    # 'SQLInterpreter': sql_interpreter,
+    'Calculate': WolframAlphaCalculator,
+    'LoadDB': db.db_loader, 
     'PythonInterpreter': python_interpreter,
     'Finish': finish
 }
