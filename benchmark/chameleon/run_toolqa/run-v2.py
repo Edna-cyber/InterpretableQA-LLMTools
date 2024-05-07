@@ -27,6 +27,7 @@ db = table_toolkits()
 ACTION_LIST = {
     'Calculate': WolframAlphaCalculator,
     'LoadDB': db.db_loader, 
+    'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
     'Finish': finish
 }

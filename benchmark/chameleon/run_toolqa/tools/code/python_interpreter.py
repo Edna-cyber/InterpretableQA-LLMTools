@@ -4,7 +4,6 @@ def execute(python_code):
     """
     global_var = {"ans": 0}
     exec(python_code, global_var)
-    # print(str(global_var))
     return str(global_var['ans'])
 
 if __name__ == "__main__":
