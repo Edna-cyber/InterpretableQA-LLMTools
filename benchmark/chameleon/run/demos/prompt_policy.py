@@ -18,7 +18,7 @@ Below are some examples that map the problem to the modules.
 
 Question: What was the percentage of patents accepted in 2017?
 
-Modules: ["LoadDB[hupd, 2017-2017]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
+Modules: ["LoadDB[hupd; 2017-2017]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
 Question: What is the 100th Fibonacci number?
 
@@ -31,4 +31,5 @@ Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michae
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question.
 """
 
+# If got more than 1 argument, need to separate with ;
 # Needs an example with dbloader where the question doesn't involve specific years
