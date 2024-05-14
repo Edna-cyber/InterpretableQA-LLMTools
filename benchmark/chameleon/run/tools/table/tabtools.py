@@ -39,7 +39,7 @@ class table_toolkits():
             cache_dir = "/usr/project/xtmp/rz95/.cache/huggingface",
             data_files="https://huggingface.co/datasets/HUPD/hupd/blob/main/hupd_metadata_2022-02-22.feather", 
             icpr_label=None,
-            force_extract=True,
+            force_extract=False, # True
             train_filing_start_date=train_start, 
             train_filing_end_date=train_end, 
             val_filing_start_date=val_start,
@@ -85,8 +85,8 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    print(db.db_loader('hupd', '2017-2017'))
-    #db.auto_db_loader('hupd')
+    # print(db.db_loader('hupd', '2017-2017'))
+    db.auto_db_loader('hupd', train_start='2016-12-30', val_end='2017-01-02')
     db.target_filter("decision", "not NA")
     pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    print(db.pandas_interpreter(pandas_code, "None"))
+    print(db.pandas_interpreter(pandas_code, "train"))
