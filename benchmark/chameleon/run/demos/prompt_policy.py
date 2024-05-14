@@ -12,7 +12,7 @@ The modules are defined as follows:
 
 - TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing the rows that don't satisfy the filter condition. It accepts a target column and a filter condition, and the default filter condition is "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." We always use "TargetFilter" after loading the database with either "LoadDB" or "AutoLoadDB".
 
-- PandasInterpreter[Python]: This module interprets Pandas code written in Python and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
+- PandasInterpreter[Python, split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. It takes in Python code and a dataframe specified by split, and returns the result of the code execution. Choices for split are "all", "train", or "validation". Normally, we only consider using "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
 
 - PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
@@ -22,7 +22,7 @@ Below are some examples that map the problem to the modules.
 
 Question: What was the percentage of patents accepted in 2017?
 
-Modules: ["LoadDB[hupd; 2017-2017]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; None]", "Finish[9.388567293777134]"]
+Modules: ["LoadDB[hupd; 2017-2017]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
 
 Question: What is the 100th Fibonacci number?
 

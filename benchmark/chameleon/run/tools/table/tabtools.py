@@ -71,7 +71,7 @@ class table_toolkits():
             self.dataset_dict['train'] = filter_dataset(self.dataset_dict['train'])
             self.dataset_dict['validation'] = filter_dataset(self.dataset_dict['validation'])
     
-    # split can be "None" for self.data, "train", "validation"
+    # split can be "all" for self.data, "train", "validation"
     def pandas_interpreter(self, pandas_code, split): 
         """
         Executes the provided Pandas code and updates the 'ans' in global_var from the loaded dataframe.
