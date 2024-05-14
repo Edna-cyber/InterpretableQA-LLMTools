@@ -24,7 +24,7 @@ def calculator(query: str):
             return round(operators[operator](calculator(left), calculator(right)),2)
 
 def WolframAlphaCalculator(input_query: str):
-    wolfram_alpha_appid = "YOUR_WOLFRAMALPHA_APPID"
+    wolfram_alpha_appid = "4VPQ6Q-LP727W3PK9"
     wolfram_client = wolframalpha.Client(wolfram_alpha_appid)
     res = wolfram_client.query(input_query)
     assumption = next(res.pods).text
