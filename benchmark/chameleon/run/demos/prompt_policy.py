@@ -6,7 +6,11 @@ The modules are defined as follows:
 
 - Calculate[formula]: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB[DBName, subsetNames]: This module loads a database specified by the database name and subset names, and returns the loaded database. It accepts a database name and subset names, returning the corresponding database. The DBName can be one of the following: hupd. Normally, we consider using 'LoadDB' only when the question requires data from a specific structured dataset.
+- LoadDB[DBName; subsetNames]: This module loads a database specified by the database name and subset names, and returns the loaded database. It accepts a database name and subset names, returning the corresponding database. The DBName can be one of the following: hupd. Normally, we consider using "LoadDB" only when the question requires data from a specific structured dataset.
+
+- AutoLoadDB[DBName; trainStartDate; trainEndDate; validationStartDate; validationEndDate]: This module loads a database specified by the database name and date ranges for training and validation. It directly loads the database from Hugging Face and separates it into training and validation subsets based on the provided date ranges. Normally, we only consider using "AutoLoadDB" when the question specifies the training and validation sets or needs to be solved through a machine learning algorithm. 
+
+- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing the rows that don't satisfy the filter condition. It accepts a target column and a filter condition, and the default filter condition is "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." We always use "TargetFilter" after loading the database with either "LoadDB" or "AutoLoadDB".
 
 - PandasInterpreter[Python]: This module interprets Pandas code written in Python and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
 
@@ -18,7 +22,7 @@ Below are some examples that map the problem to the modules.
 
 Question: What was the percentage of patents accepted in 2017?
 
-Modules: ["LoadDB[hupd; 2017-2017]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
+Modules: ["LoadDB[hupd; 2017-2017]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; None]", "Finish[9.388567293777134]"]
 
 Question: What is the 100th Fibonacci number?
 
