@@ -164,7 +164,7 @@ Modules2: ["AutoLoadDB[hupd; 2017-01-01; 2017-12-31; 2017-01-01; 2017-12-31]", "
 
 Best Module: ["LoadDB[hupd; 2017-2017]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
 
-Thought: Modules1 uses LoadDB, while Modules2 uses AutoLoadDB. All the other modules in both Modules1 and Modules2 are the same. Using LoadDB has an interpretability score of {8.5}, therefore using LoadDB once has an interpretability score of {8.5} / (1 ** (1/3)) = 8.5. Using AutoLoadDB has an interpretability score of {8}, therefore using AutoLoadDB once has an interpretability score of {8} / (1 ** (1/3)) = 8. Therefore, Modules1 has a higher interpretability score than Modules2. As a result, Modules1 is selected.
+Thought: Modules1 uses LoadDB, while Modules2 uses AutoLoadDB. All the other modules in both Modules1 and Modules2 are the same. Using LoadDB has an interpretability score of {8.5}, therefore using LoadDB once has an interpretability score of {8.5} / (1 ** (1/10)) = 8.5. Using AutoLoadDB has an interpretability score of {8}, therefore using AutoLoadDB once has an interpretability score of {8} / (1 ** (1/10)) = 8. Therefore, Modules1 has a higher interpretability score than Modules2. As a result, Modules1 is selected.
 
 Question: What is the 20th Fibonacci number?
 
@@ -173,7 +173,7 @@ Modules2: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # C
 
 Best Module: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
 
-Thought: Modules1 uses Calculate for 20 times, while Modules2 uses PythonInterpreter once. All the other modules in both Modules1 and Modules2 are the same. Using Calculate has an interpretability score of {9}, therefore using Calculate for 20 times has an interpretability score of {9} / (20 ** (1/3)) = 3.32. Using PythonInterpreter that has 12 lines of code with no package import has an interpretability score of {[7]/[1]=[7]}, therefore using PythonInterpreter once has an interpretability score of {7} / (1 ** (1/3)) = 7. Therefore, Modules2 has a higher interpretability score than Modules2. As a result, Modules2 is selected.
+Thought: Modules1 uses Calculate for 20 times, while Modules2 uses PythonInterpreter once. All the other modules in both Modules1 and Modules2 are the same. Using Calculate has an interpretability score of {9}, therefore using Calculate for 20 times has an interpretability score of {9} / (20 ** (1/10)) = 6.67. Using PythonInterpreter that has 12 lines of code with no package import has an interpretability score of {[7]/[1]=[7]}, therefore using PythonInterpreter once has an interpretability score of {7} / (1 ** (1/10)) = 7. Therefore, Modules2 has a higher interpretability score than Modules2. As a result, Modules2 is selected.
 
 Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
 
