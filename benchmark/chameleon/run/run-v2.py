@@ -158,7 +158,7 @@ if __name__ == "__main__":
                 break
         # remove all the "\n" in the context
         context = re.sub("\n", "", context)
-        print(context)
+        # print("context", context)
         logs = logs + "\nGround-Truth Answer: "+str(solver.cache["example"]["answer"])
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)): #<YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)) #<YOUR_OWN_PATH>
