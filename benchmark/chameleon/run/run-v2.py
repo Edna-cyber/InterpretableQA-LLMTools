@@ -129,8 +129,8 @@ if __name__ == "__main__":
                 ]
                 # execute the module
                 action = get_chat_response(messages, openai.api_key, "gpt-3.5-turbo", 0, 200)
-                # print("action", action)
-                # print("module", module)
+                print("action", action) ###
+                print("module", module) ###
                 left_bracket = action.find("[")
                 right_bracket = action.find("]")
                 action_type = action[:int(left_bracket)]
@@ -139,13 +139,14 @@ if __name__ == "__main__":
                     context = module+"["+argument+"]"
                 else:
                     context = context+"-->"+module+"["+argument+"]"
+                print("context", context) ###
                 argument = argument.replace("'", "").replace('"', '')
                 argument_lst = argument.split(";")
-                # print("action_type", action_type)
-                # print("argument", argument)
-                # print("argument_lst", argument_lst)
+                print("action_type", action_type) ###
+                print("argument", argument) ###
+                print("argument_lst", argument_lst) ###
                 output = ACTION_LIST[action_type](*argument_lst)
-                # print("output", output)
+                print("output", output) ###
                 # input()
                 logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
                 if count < 10:

@@ -154,7 +154,7 @@ Best Module: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Mi
 Thought: Modules is selected because it's the only solution. 
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. You only need to output Best Module. 
-""" ###
+""" 
 
 prompt_example_compare_formula = """
 Question: What was the percentage of patents accepted in 2017?
@@ -183,9 +183,9 @@ Best Module: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Mi
 
 Thought: Modules is selected because it's the only solution. 
 
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. You only need to output Best Module. 
-""" ###
+Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. 
+""" 
 
-prompt = prompt_header_clean+prompt_example_clean
+prompt = prompt_header_formula+prompt_example_compare_formula
 
 # verify the thought chain, if correct, add You only need to output Best Module. into prompt. 
