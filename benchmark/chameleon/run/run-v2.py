@@ -105,9 +105,20 @@ if __name__ == "__main__":
 
         # [1] Predict the modules
         modules = solver.predict_modules()
+        modules = '["LoadDB[hupd; 2017-2017]"]'
         modules = modules[1:-1]
-        modules = modules.split(", ")
-        modules = [module[1:-1] for module in modules] 
+        modules_lst = modules.split('", "')
+        modules = []
+        if len(modules_lst)>1: 
+            for i in range(len(modules_lst)):
+                if i==0:
+                    modules.append(modules_lst[i][1:])
+                elif i==len(modules_lst)-1:
+                    modules.append(modules_lst[i][:-1])
+                else:
+                    modules.append(modules_lst[i])
+        else:
+            modules = [module[1:-1] for module in modules_lst]
         
         # [2] Execute the modules 
         if count < 10:
