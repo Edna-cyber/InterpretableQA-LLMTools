@@ -123,12 +123,13 @@ if __name__ == "__main__":
                     test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFinish the currect {module} action with arguments:\n"
                 else:
                     test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments:\n"
+                print("test_prompt", test_prompt)
                 full_prompt = demo_prompt + "\n\n" + test_prompt
                 messages=[
                     {"role": "user", "content": full_prompt},
                 ]
                 # execute the module
-                action = get_chat_response(messages, openai.api_key, "gpt-3.5-turbo", 0, 200)
+                action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
                 print("action", action) ###
                 print("module", module) ###
                 left_bracket = action.find("[")
