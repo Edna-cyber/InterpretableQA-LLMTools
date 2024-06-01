@@ -105,7 +105,6 @@ if __name__ == "__main__":
 
         # [1] Predict the modules
         modules = solver.predict_modules()
-        modules = '["LoadDB[hupd; 2017-2017]"]'
         modules = modules[1:-1]
         modules_lst = modules.split('", "')
         modules = []
