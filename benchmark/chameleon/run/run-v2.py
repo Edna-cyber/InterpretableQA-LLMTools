@@ -35,18 +35,6 @@ ACTION_LIST = {
 openai.api_key = os.getenv("OPENAI_API_KEY")
 print(openai.api_key)
 
-def parse_action(string):
-    pattern = r'^(\w+)\[(.+)\]$'
-    match = re.match(pattern, string)
-    
-    if match:
-        action_type = match.group(1)
-        argument = match.group(2)
-        return action_type, argument
-    
-    else:
-        return None
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_root', type=str, default='../results')
@@ -132,20 +120,22 @@ if __name__ == "__main__":
                 if context != "":
                     test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFinish the currect {module} action with arguments:\n"
                 else:
-                    test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments:\n"
-                print("test_prompt", test_prompt)
+                    test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
                 full_prompt = demo_prompt + "\n\n" + test_prompt
                 messages=[
                     {"role": "user", "content": full_prompt},
                 ]
                 # execute the module
                 action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
+                # action = action.strip('[]"\' ') # need a parse action for different formats ####need to change
                 print("action", action) ###
                 print("module", module) ###
-                left_bracket = action.find("[")
-                right_bracket = action.find("]")
-                action_type = action[:int(left_bracket)]
-                argument = action[int(left_bracket+1):int(right_bracket)]
+                left_bracket = module.find("[")
+                right_bracket = module.rfind("]")
+                action_type = module[:left_bracket]
+                argument = module[left_bracket+1:right_bracket]
+                print("action_type", action_type) ###
+                print("argument", argument) ###
                 if context == "":
                     context = module+"["+argument+"]"
                 else:
@@ -153,8 +143,7 @@ if __name__ == "__main__":
                 print("context", context) ###
                 argument = argument.replace("'", "").replace('"', '')
                 argument_lst = argument.split(";")
-                print("action_type", action_type) ###
-                print("argument", argument) ###
+                argument_lst = [x.strip() for x in argument_lst]
                 print("argument_lst", argument_lst) ###
                 output = ACTION_LIST[action_type](*argument_lst)
                 print("output", output) ###
