@@ -5,7 +5,8 @@ import json
 import re
 # Hugging Face datasets
 from datasets import load_dataset, DatasetDict
-
+from sklearn.model_selection import train_test_split
+from datasets import Dataset, DatasetDict
 
 class table_toolkits():
     # init
@@ -14,37 +15,27 @@ class table_toolkits():
         self.dataset_dict = None
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/" #<YOUR_OWN_PATH>
 
-    def db_loader(self, target_db, duration):
-        if target_db == 'hupd':
-            df = []
-            hyphen_ind = duration.index("-")
-            start_year = int(duration[:hyphen_ind])
-            end_year = int(duration[hyphen_ind+1:])
-            for sub in range(start_year, end_year+1):
-                file_path = "{}/data/external_corpus/hupd/hupd_{}.csv".format(self.path, sub)
-                df.append(pd.read_csv(file_path))
-            self.data = pd.concat(df, ignore_index=True)
-        column_names = ', '.join(self.data.columns.tolist())
-        contains_na = []
-        for col in self.data.columns:
-            if self.data[col].isna().any():
-                contains_na.append(col)
-        contains_na_names = ', '.join(contains_na)
-        return "We have successfully loaded the {} database, including the following columns: {}. Among these columns, the following columns have NA values: {}.".format(target_db, column_names, contains_na_names)
-    
-    def auto_db_loader(self, target_db, train_start='2015-01-01', train_end='2016-12-31', val_start='2017-01-01', val_end='2017-12-31'):
-        if target_db == 'hupd':
-            self.dataset_dict = load_dataset('HUPD/hupd',
-            name='all',
-            cache_dir = "/usr/project/xtmp/rz95/.cache/huggingface",
-            data_files="https://huggingface.co/datasets/HUPD/hupd/blob/main/hupd_metadata_2022-02-22.feather", 
-            icpr_label=None,
-            force_extract=False, # True
-            train_filing_start_date=train_start, 
-            train_filing_end_date=train_end, 
-            val_filing_start_date=val_start,
-            val_filing_end_date=val_end,
-            )
+    def db_loader(self, target_db, duration, split=False): # change examples and description in prompt policy # todo: for forecasting tasks, different loading
+        df = []
+        hyphen_ind = duration.index("-")
+        start_year = int(duration[:hyphen_ind])
+        end_year = int(duration[hyphen_ind+1:])
+        for sub in range(start_year, end_year+1):
+            file_path = "{}/data/external_corpus/{}/{}_{}.csv".format(self.path, target_db, target_db, sub)
+            df.append(pd.read_csv(file_path))
+        df = pd.concat(df, ignore_index=True)
+        if not split:
+            self.data = df
+            column_names = ', '.join(self.data.columns.tolist())
+            self.dataset_dict = None
+            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names)
+        else:
+            train_df, validation_df = train_test_split(df, test_size=0.4, random_state=42)
+            train_dataset = Dataset.from_pandas(train_df)
+            validation_dataset = Dataset.from_pandas(validation_df)
+            self.dataset_dict = DatasetDict({"train": train_dataset, "validation": validation_dataset})
+            self.data = None
+            return "We have successfully loaded the {} dataset dict that has the following structure: {}.".format(target_db, self.dataset_dict)
     
     # remove rows where the target column is NA or unwanted value
     # condition can be e.g. "not NA", "keep ACCEPT,REJECT", "remove 0,1" etc.
