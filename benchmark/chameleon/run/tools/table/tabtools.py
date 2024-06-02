@@ -1,12 +1,49 @@
 import os
+import random
+import numpy as np
+import collections
+from tqdm import tqdm
 import pandas as pd
 import jsonlines
 import json
 import re
+
+import torch
+from torch.utils.data import DataLoader
+
 # Hugging Face datasets
 from datasets import load_dataset, DatasetDict
 from sklearn.model_selection import train_test_split
 from datasets import Dataset, DatasetDict
+
+# Good old Transformer models
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
+from transformers import BertForSequenceClassification, BertTokenizer, BertConfig
+from transformers import DistilBertForSequenceClassification, DistilBertTokenizer, DistilBertConfig
+from transformers import RobertaForSequenceClassification, RobertaTokenizer, RobertaConfig
+from transformers import GPT2ForSequenceClassification, GPT2Tokenizer, GPT2Config
+from transformers import LongformerForSequenceClassification, LongformerTokenizer, LongformerConfig
+from transformers import PreTrainedTokenizerFast
+
+# Import the sklearn Multinomial Naive Bayes
+from sklearn.naive_bayes import BernoulliNB, MultinomialNB
+
+# Simple LSTM, CNN, and Logistic regression models
+from models import BasicCNNModel, BigCNNModel, LogisticRegression
+
+# Tokenizer-releated dependencies
+from tokenizers import Tokenizer
+from tokenizers.models import WordLevel
+from tokenizers import normalizers
+from tokenizers.normalizers import Lowercase, NFD, StripAccents
+from tokenizers.pre_tokenizers import Whitespace
+from tokenizers.trainers import WordLevelTrainer
+
+# For scheduling 
+from transformers import get_linear_schedule_with_warmup
+
+# Confusion matrix
+from sklearn.metrics import confusion_matrix
 
 class table_toolkits():
     # init
