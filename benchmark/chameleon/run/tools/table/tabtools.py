@@ -117,9 +117,19 @@ class table_toolkits():
         exec(pandas_code, global_var)
         return str(global_var['ans'])
     
-    def classifier(self, num_classes, validation, tokenizer_path, model_path, vocab_size, model_name, tokenizer_save_path, save_path, batch_size, val_every, n_filters, filter_sizes, dropout):
+    def classifier(self, num_classes, validation, tokenizer_path, model_path, vocab_size, model_name, tokenizer_save_path, save_path, batch_size, val_every, n_filters, filter_sizes, dropout, epoch_n, section, filename, lr, eps, pos_class_weight, naive_bayes_version, embed_dim, max_length, alpha_smooth_val, np_filename, use_scheduler, cpc_label, ipc_label, train_from_scratch):
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
+        
+        # Subject area code label
+        cat_label = ''
+        if cpc_label:
+            cat_label = f'CPC_{cpc_label}'
+        elif ipc_label:
+            cat_label = f'IPC_{ipc_label}'
+        else:
+            cat_label = 'All_IPCs'
         
         # Create a BoW (Bag-of-Words) representation
         def text2bow(input, vocab_size):
@@ -472,7 +482,103 @@ class table_toolkits():
             # Save the log probabilities if np_filename is specified
             if np_filename:
                 np.save(f'{np_filename}.npy', np.array(model.feature_log_prob_))
+        
+            if validation and model_path is not None and tokenizer_path is None:
+                tokenizer_path = model_path + '_tokenizer'
 
+            filename = filename
+            if filename is None:
+                if model_name == 'naive_bayes':
+                    filename = f'./results/{model_name}/{naive_bayes_version}/{cat_label}_{section}.txt'
+                else:
+                    filename = f'./results/{model_name}/{cat_label}_{section}_embdim{embed_dim}_maxlength{max_length}.txt'
+            write_file = open(filename, "w")
+            
+            if model_name == 'naive_bayes':
+                    batch_size = 1
+            
+            for name in ['train', 'validation']:
+                dataset_dict[name] = dataset_dict[name].map(map_decision_to_string)
+                # Remove the pending and CONT-patent applications
+                dataset_dict[name] = dataset_dict[name].filter(lambda e: e['output'] <= 1)
+        
+            # Create a model and an appropriate tokenizer
+            tokenizer, dataset_dict, model, vocab_size = create_model_and_tokenizer(
+                train_from_scratch = train_from_scratch, 
+                model_name = model_name, 
+                dataset = dataset_dict,
+                section = section,
+                vocab_size = vocab_size,
+                embed_dim = embed_dim,
+                n_classes = CLASSES,
+                max_length=max_length
+                )
+            
+            print(f'*** CPC Label: {cat_label}') 
+            print(f'*** Section: {section}')
+            print(f'*** Vocabulary: {vocab_size}')
+
+            if write_file:
+                write_file.write(f'*** CPC Label: {cat_label}\n')
+                write_file.write(f'*** Section: {section}\n')
+                write_file.write(f'*** Vocabulary: {vocab_size}\n')
+
+            # GPU specifications 
+            if model_name != 'naive_bayes':
+                model.to(device)
+
+            # Load the dataset
+            data_loaders = create_dataset(
+                dataset_dict = dataset_dict, 
+                tokenizer = tokenizer, 
+                section = section
+                )
+            del dataset_dict
+
+            if not validation:
+                # Print the statistics
+                train_label_stats = dataset_statistics(data_loaders[0], tokenizer)
+                print(f'*** Training set label statistics: {train_label_stats}')
+                val_label_stats = dataset_statistics(data_loaders[1], tokenizer)
+                print(f'*** Validation set label statistics: {val_label_stats}')
+                if write_file:
+                    write_file.write(f'*** Training set label statistics: {train_label_stats}\n')
+                    write_file.write(f'*** Validation set label statistics: {val_label_stats}\n\n')
+            
+
+            if model_name == 'naive_bayes': 
+                tokenizer.save("multilabel_ipc_nb_abstract.json") ## GET RID OF THIS
+                print('Here we are!')
+                train_naive_bayes(data_loaders, tokenizer, vocab_size, naive_bayes_version, alpha_smooth_val, write_file, np_filename)
+            else:
+                # Optimizer
+                if model_name in ['logistic_regression', 'cnn', 'big_cnn', 'lstm']:
+                    optim = torch.optim.Adam(params=model.parameters())
+                else:
+                    optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
+                    total_steps = len(data_loaders[0]) * epoch_n if not validation else 0
+                # Scheduler
+                scheduler = get_linear_schedule_with_warmup(optim, num_warmup_steps = 0, num_training_steps = total_steps) if use_scheduler else None
+                # Class weights
+                if pos_class_weight > 0. and pos_class_weight < 1.:
+                    class_weights = torch.tensor([pos_class_weight, 1. - pos_class_weight]).to(device)
+                else:
+                    class_weights = None
+                # Loss function 
+                criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
+                
+                if write_file:
+                    write_file.write(f'\nModel:\n {model}\nOptimizer: {optim}\n')
+                
+                # Train and validate
+                train(data_loaders, epoch_n, model, optim, scheduler, criterion, device, write_file)
+
+                # Save the model
+                if save_path:
+                    tokenizer.save_pretrained(save_path + '_tokenizer')
+
+            if write_file:
+                write_file.close()
     
 
 if __name__ == "__main__":
