@@ -29,6 +29,7 @@ ACTION_LIST = {
     'LoadDB': db.db_loader, 
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
+    'Classifier': db.classifier,
     'Finish': finish
 }
 
@@ -118,35 +119,40 @@ if __name__ == "__main__":
                 demo_prompt = prompt_policy.prompt.strip() 
                 question = solver.cache["example"]["question"]
                 if context != "":
-                    test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFinish the currect {module} action with arguments:\n"
+                    test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
                 else:
                     test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
                 full_prompt = demo_prompt + "\n\n" + test_prompt
                 messages=[
                     {"role": "user", "content": full_prompt},
                 ]
+                # print("test_prompt", test_prompt) 
                 # execute the module
                 action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
-                # action = action.strip('[]"\' ') # need a parse action for different formats ####need to change
-                print("action", action) ###
-                print("module", module) ###
-                left_bracket = module.find("[")
-                right_bracket = module.rfind("]")
-                action_type = module[:left_bracket]
-                argument = module[left_bracket+1:right_bracket]
-                print("action_type", action_type) ###
-                print("argument", argument) ###
+                # print("action", action) 
+                # print("module", module)
+                if action[0]=="[" and action[-1]=="]":
+                    current = action[2:action.find(",")-1] # first element in list string, and then remove double quotes
+                else:
+                    current = action
+                # print("current", current)
+                left_bracket = current.find("[") 
+                right_bracket = current.rfind("]") 
+                action_type = current[:left_bracket] 
+                argument = current[left_bracket+1:right_bracket] 
+                # print("action_type", action_type) 
+                # print("argument", argument) 
                 if context == "":
                     context = module+"["+argument+"]"
                 else:
                     context = context+"-->"+module+"["+argument+"]"
-                print("context", context) ###
+                # print("context", context) 
                 argument = argument.replace("'", "").replace('"', '')
                 argument_lst = argument.split(";")
                 argument_lst = [x.strip() for x in argument_lst]
-                print("argument_lst", argument_lst) ###
+                # print("argument_lst", argument_lst) 
                 output = ACTION_LIST[action_type](*argument_lst)
-                print("output", output) ###
+                # print("output", output) 
                 # input()
                 logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
                 if count < 10:
