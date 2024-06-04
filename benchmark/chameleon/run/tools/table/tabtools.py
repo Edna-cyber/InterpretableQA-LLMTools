@@ -117,7 +117,7 @@ class table_toolkits():
         exec(pandas_code, global_var)
         return str(global_var['ans'])
     
-    def classifier(self, model_name, predictor_section, target, num_classes=2, validation=False, tokenizer_path=None, model_path=None, vocab_size=10000, tokenizer_save_path="models/dbert_G06F_train2015to17blah_tokenizer", save_path="models/dbert_G06F_train2015to17blah", batch_size=64, val_every=500, n_filters=25, filter_sizes=[[3,4,5], [5,6,7], [7,9,11]], dropout=0.25, epoch_n=5, filename="dbert_train_G06F_2015to17blah.txt", lr=2e-5, eps=1e-8, pos_class_weight=0, naive_bayes_version='Bernoulli', embed_dim=200, max_length=256, alpha_smooth_val=1.0, np_filename=None, use_scheduler=False, cpc_label=None, ipc_label="G06F", train_from_scratch=False):
+    def classifier(self, model_name, section, target, num_classes=2, validation=False, tokenizer_path=None, model_path=None, vocab_size=10000, tokenizer_save_path="models/dbert_G06F_train2015to17blah_tokenizer", save_path="models/dbert_G06F_train2015to17blah", batch_size=64, val_every=500, n_filters=25, filter_sizes=[[3,4,5], [5,6,7], [7,9,11]], dropout=0.25, epoch_n=5, filename="dbert_train_G06F_2015to17blah.txt", lr=2e-5, eps=1e-8, pos_class_weight=0, naive_bayes_version='Bernoulli', embed_dim=200, max_length=256, alpha_smooth_val=1.0, np_filename=None, use_scheduler=False, cpc_label=None, ipc_label="G06F", train_from_scratch=False):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
@@ -143,7 +143,7 @@ class table_toolkits():
             return np.array(arr)
 
         # Create model and tokenizer
-        def create_model_and_tokenizer(train_from_scratch=False, model_name='bert-base-uncased', dataset=None, section=predictor_section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512):
+        def create_model_and_tokenizer(train_from_scratch=False, model_name='bert-base-uncased', dataset=None, section=section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512):
             special_tokens = ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"]
 
             if validation:
@@ -264,14 +264,14 @@ class table_toolkits():
             return {'output': decision_to_str[example[target]]}
 
         # Create dataset
-        def create_dataset(dataset_dict, tokenizer, section=predictor_section):
+        def create_dataset(dataset_dict, tokenizer, section=section):
             data_loaders = []
             for name in ['train', 'validation']:
                 # Skip the training set if we are doing only inference
                 if validation and name=='train':
                     data_loaders.append(None)
                 else:
-                    dataset = dataset_dict[name]
+                    dataset = self.dataset_dict[name]
                     print('*** Tokenizing...')
                     # Tokenize the input
                     dataset = dataset.map(
@@ -498,15 +498,15 @@ class table_toolkits():
                     batch_size = 1
             
             for name in ['train', 'validation']:
-                dataset_dict[name] = dataset_dict[name].map(map_decision_to_string)
+                self.dataset_dict[name] = self.dataset_dict[name].map(map_decision_to_string)
                 # Remove the pending and CONT-patent applications
-                dataset_dict[name] = dataset_dict[name].filter(lambda e: e['output'] <= 1)
+                self.dataset_dict[name] = self.dataset_dict[name].filter(lambda e: e['output'] <= 1)
         
             # Create a model and an appropriate tokenizer
-            tokenizer, dataset_dict, model, vocab_size = create_model_and_tokenizer(
+            tokenizer, self.dataset_dict, model, vocab_size = create_model_and_tokenizer(
                 train_from_scratch = train_from_scratch, 
                 model_name = model_name, 
-                dataset = dataset_dict,
+                dataset = self.dataset_dict,
                 section = section,
                 vocab_size = vocab_size,
                 embed_dim = embed_dim,
@@ -529,11 +529,12 @@ class table_toolkits():
 
             # Load the dataset
             data_loaders = create_dataset(
-                dataset_dict = dataset_dict, 
+                dataset_dict = self.dataset_dict, 
                 tokenizer = tokenizer, 
                 section = section
                 )
             del dataset_dict
+            del self.dataset_dict
 
             if not validation:
                 # Print the statistics
@@ -584,7 +585,11 @@ class table_toolkits():
 if __name__ == "__main__":
     db = table_toolkits()
     # print(db.db_loader('hupd', '2017-2017'))
-    db.auto_db_loader('hupd', train_start='2016-12-30', val_end='2017-01-02')
-    db.target_filter("decision", "not NA")
-    pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    print(db.pandas_interpreter(pandas_code, "train"))
+    db.db_loader('hupd', '2015-2017', True)
+    db.classifier('logistic_regression', 'abstract', 'decision')
+    
+    # db.db_loader('hupd', '2016-2016', True)
+    # db.target_filter("decision", "not NA")
+    # pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
+    # print(db.pandas_interpreter(pandas_code, "train"))
+    
