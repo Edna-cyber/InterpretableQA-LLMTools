@@ -6,17 +6,15 @@ The modules are defined as follows:
 
 - Calculate[formula]: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB[DBName; subsetNames; split]: This module loads a database specified by the database name, subset names, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be one of the following: hupd. The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary that comprises training and validation datasets. Normally, we consider using "LoadDB" only when the question requires data from a specific structured database.
+- LoadDB[DBName; subsetNames; split]: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing the rows that don't satisfy the filter condition. It accepts a target column and a filter condition, and the default filter condition is "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." We always use "TargetFilter" after loading the database with either "LoadDB" or "AutoLoadDB".
+- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python; split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. It takes in Python code and a dataframe specified by split, and returns the result of the code execution. Choices for split are "all", "train", or "validation". Normally, we only consider using "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
+- PandasInterpreter[Python; split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. Choices for split are "all," "train," or "validation." Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
 
-- PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PythonInterpreter" when the question requires complex computations or custom data manipulation.
+- PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
-- LogisticRegression[Python]: This module applies a logistic regression model using Python code and returns the result. It takes in Python code to define and fit a logistic regression model on a specified dataset, returning the model's predictions. Normally, we only consider using "LogisticRegression" when the question involves binary classification tasks.
-
-- DistilbertBaseUncased[Python]:  This module applies the DistilBERT base uncased model using Python code and returns the result. It takes in Python code to load, fine-tune, and evaluate the DistilBERT base uncased model on a specified dataset, returning the model's predictions. Normally, we consider using "DistilbertBaseUncased" when the question involves natural language processing tasks such as text classification, sentiment analysis, or named entity recognition.
+- Classifier[modelName; predictorSection; target]: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
 
 - Finish[answer]: This module returns the final answer and finishes the task. This module is the final module in the sequence that encapsulates the result of all previous modules.
 
@@ -32,17 +30,15 @@ The modules are defined as follows, ordered by their interpretability from highe
 
 - Calculate[formula]: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB[DBName; subsetNames; split]: This module loads a database specified by the database name, subset names, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be one of the following: hupd. The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary that comprises training and validation datasets. Normally, we consider using "LoadDB" only when the question requires data from a specific structured database.
+- LoadDB[DBName; subsetNames; split]: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing the rows that don't satisfy the filter condition. It accepts a target column and a filter condition, and the default filter condition is "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." We always use "TargetFilter" after loading the database with either "LoadDB" or "AutoLoadDB".
+- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python, split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. It takes in Python code and a dataframe specified by split, and returns the result of the code execution. Choices for split are "all", "train", or "validation". Normally, we only consider using "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
+- PandasInterpreter[Python; split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. Choices for split are "all," "train," or "validation." Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
 
-- PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PythonInterpreter" when the question requires complex computations or custom data manipulation.
+- PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
-- LogisticRegression[Python]: This module applies a logistic regression model using Python code and returns the result. It takes in Python code to define and fit a logistic regression model on a specified dataset, returning the model's predictions. Normally, we only consider using "LogisticRegression" when the question involves binary classification tasks.
-
-- DistilbertBaseUncased[Python]:  This module applies the DistilBERT base uncased model using Python code and returns the result. It takes in Python code to load, fine-tune, and evaluate the DistilBERT base uncased model on a specified dataset, returning the model's predictions. Normally, we consider using "DistilbertBaseUncased" when the question involves natural language processing tasks such as text classification, sentiment analysis, or named entity recognition.
+- Classifier[modelName; predictorSection; target]: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
 
 Below are some examples that map the problem to the modules. When addressing a question, modules positioned higher on this list are preferred over those that are lower.
 """
@@ -50,25 +46,23 @@ Below are some examples that map the problem to the modules. When addressing a q
 prompt_header_formula = """
 You need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question.
 
-The modules are defined as follows, with the formulas used to calculate their interpretability scores defined in {}:
+The modules are defined as follows, with the formulas used to calculate their interpretability costs defined in {}:
 
-- Calculate[formula] {9}: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
+- Calculate[formula]: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB[DBName; subsetNames; split] {8.5}: This module loads a database specified by the database name, subset names, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be one of the following: hupd. The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary that comprises training and validation datasets. Normally, we consider using "LoadDB" only when the question requires data from a specific structured database.
+- LoadDB[DBName; subsetNames; split]: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- TargetFilter[targetColumn; filterCondition] {if filterCondition is "not NA", then 7.5; otherwise, 7.}: This module modifies a database in place by removing the rows that don't satisfy the filter condition. It accepts a target column and a filter condition, and the default filter condition is "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." We always use "TargetFilter" after loading the database with either "LoadDB" or "AutoLoadDB".
+- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python; split] {if the number of lines of Python code is less than 5, 7; If the number of lines of Python code is between 5 and 10, 6.5; if the number of lines of Python code is greater than 10, 6.}: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. It takes in Python code and a dataframe specified by split, and returns the result of the code execution. Choices for split are "all", "train", or "validation". Normally, we only consider using "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
+- PandasInterpreter[Python; split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. Choices for split are "all," "train," or "validation." Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
 
-- PythonInterpreter[Python] {[if the number of lines of Python code is less than 20, 7; if the number of lines of Python code is between 20 and 50, 6.5; if the number of lines of Python code is greater than 50, 6.] divide by [if the number of imported packages is less than 5, 1; if the number of imported packages is between 5 and 10, 1.5; if the number of imported packages is greater than 10, 2]}: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only consider using "PythonInterpreter" when the question requires complex computations or custom data manipulation.
+- PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
-- LogisticRegression[Python] {6}: This module applies a logistic regression model using Python code and returns the result. It takes in Python code to define and fit a logistic regression model on a specified dataset, returning the model's predictions. Normally, we only consider using "LogisticRegression" when the question involves binary classification tasks.
+- Classifier[modelName; predictorSection; target]: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
 
-- DistilbertBaseUncased[Python] {3}:  This module applies the DistilBERT base uncased model using Python code and returns the result. It takes in Python code to load, fine-tune, and evaluate the DistilBERT base uncased model on a specified dataset, returning the model's predictions. Normally, we consider using "DistilbertBaseUncased" when the question involves natural language processing tasks such as text classification, sentiment analysis, or named entity recognition.
+- Finish[answer]: This module returns the final answer and finishes the task. This module is the final module in the sequence that encapsulates the result of all previous modules.
 
-- Finish[answer] {10}: This module returns the final answer and finishes the task. This module is the final module in the sequence that encapsulates the result of all previous modules.
-
-Below are some examples that map the problem to the modules. When addressing a question, modules that achieve higher interpretability scores are preferred over those that achieve lower scores.
+Below are some examples that map the problem to the modules. When addressing a question, modules that have lower interpretability cost are preferred over those that have higher costs.
 """
 
 # If got more than 1 argument, need to separate with ;
@@ -86,6 +80,10 @@ Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Ca
 Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
 
 Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?\n golf_balls_initial = 58\n golf_balls_lost_tuesday = 23\n golf_balls_lost_wednesday = 2\n golf_balls_left = golf_balls_initial - golf_balls_lost_tuesday - golf_balls_lost_wednesday\n result = golf_balls_left\n return result]", "Finish[33]"]
+
+Question: Predict the patent decision using data from 2015 to 2017. 
+
+Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]\
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules like the examples above and nothing else.
 """
@@ -270,6 +268,6 @@ Thought: Modules is selected because it's the only solution.
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """ 
 
-prompt = prompt_header_clean+prompt_example_clean
+prompt = prompt_header_formula+prompt_example_compare_formula_full
 
 # verify the thought chain, if correct, add You only need to output Best Module. into prompt. 

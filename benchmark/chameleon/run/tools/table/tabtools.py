@@ -117,7 +117,7 @@ class table_toolkits():
         exec(pandas_code, global_var)
         return str(global_var['ans'])
     
-    def classifier(self, num_classes, validation, tokenizer_path, model_path, vocab_size, model_name, tokenizer_save_path, save_path, batch_size, val_every, n_filters, filter_sizes, dropout, epoch_n, section, filename, lr, eps, pos_class_weight, naive_bayes_version, embed_dim, max_length, alpha_smooth_val, np_filename, use_scheduler, cpc_label, ipc_label, train_from_scratch):
+    def classifier(self, model_name, predictor_section, target, num_classes=2, validation=False, tokenizer_path=None, model_path=None, vocab_size=10000, tokenizer_save_path="models/dbert_G06F_train2015to17blah_tokenizer", save_path="models/dbert_G06F_train2015to17blah", batch_size=64, val_every=500, n_filters=25, filter_sizes=[[3,4,5], [5,6,7], [7,9,11]], dropout=0.25, epoch_n=5, filename="dbert_train_G06F_2015to17blah.txt", lr=2e-5, eps=1e-8, pos_class_weight=0, naive_bayes_version='Bernoulli', embed_dim=200, max_length=256, alpha_smooth_val=1.0, np_filename=None, use_scheduler=False, cpc_label=None, ipc_label="G06F", train_from_scratch=False):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
@@ -143,7 +143,7 @@ class table_toolkits():
             return np.array(arr)
 
         # Create model and tokenizer
-        def create_model_and_tokenizer(train_from_scratch=False, model_name='bert-base-uncased', dataset=None, section='abstract', vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512):
+        def create_model_and_tokenizer(train_from_scratch=False, model_name='bert-base-uncased', dataset=None, section=predictor_section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512):
             special_tokens = ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"]
 
             if validation:
@@ -261,10 +261,10 @@ class table_toolkits():
 
         # Map decision2string
         def map_decision_to_string(example):
-            return {'output': decision_to_str[example['decision']]}
+            return {'output': decision_to_str[example[target]]}
 
         # Create dataset
-        def create_dataset(dataset_dict, tokenizer, section='abstract'):
+        def create_dataset(dataset_dict, tokenizer, section=predictor_section):
             data_loaders = []
             for name in ['train', 'validation']:
                 # Skip the training set if we are doing only inference
