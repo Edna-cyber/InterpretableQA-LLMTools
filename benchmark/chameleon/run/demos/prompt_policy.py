@@ -10,7 +10,7 @@ The modules are defined as follows:
 
 - TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python; split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. Choices for split are "all," "train," or "validation." Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
+- PandasInterpreter[Python]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
 - PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
@@ -34,7 +34,7 @@ The modules are defined as follows, ordered by their interpretability from highe
 
 - TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python; split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. Choices for split are "all," "train," or "validation." Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
+- PandasInterpreter[Python]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
 - PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
@@ -54,7 +54,7 @@ The modules are defined as follows, with the formulas used to calculate their in
 
 - TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python; split]: This module interprets Pandas code written in Python, executes it on a dataframe specified by split, and returns the result. Choices for split are "all," "train," or "validation." Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataset.
+- PandasInterpreter[Python]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
 - PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
@@ -71,7 +71,7 @@ Below are some examples that map the problem to the modules. When addressing a q
 prompt_example_clean = """
 Question: What was the percentage of patents accepted in 2017?
 
-Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
+Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
 Question: What is the 20th Fibonacci number?
 
@@ -91,12 +91,11 @@ Now, you need to act as a policy model, that given a question and a modular set,
 prompt_example_compare = """
 Question: What was the percentage of patents accepted in 2017?
 
-Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
-Modules2: ["LoadDB[hupd; 2017-2017; True]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; train]", "Finish[9.388567293777134]"]
+Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
+Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Thought: Modules1 is selected because Modules1 and Modules2 are equally interpretable; we select the earlier Modules1.
+Thought: Modules1 is selected because it's the only solution. 
 
 Question: What is the 20th Fibonacci number?
 
@@ -109,11 +108,11 @@ Thought: Modules2 is selected because it's more interpretable.
 
 Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
 
-Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?\n golf_balls_initial = 58\n golf_balls_lost_tuesday = 23\n golf_balls_lost_wednesday = 2\n golf_balls_left = golf_balls_initial - golf_balls_lost_tuesday - golf_balls_lost_wednesday\n result = golf_balls_left\n return result]", "Finish[33]"]
+Modules1: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?\n golf_balls_initial = 58\n golf_balls_lost_tuesday = 23\n golf_balls_lost_wednesday = 2\n golf_balls_left = golf_balls_initial - golf_balls_lost_tuesday - golf_balls_lost_wednesday\n result = golf_balls_left\n return result]", "Finish[33]"]
 
 Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?\n golf_balls_initial = 58\n golf_balls_lost_tuesday = 23\n golf_balls_lost_wednesday = 2\n golf_balls_left = golf_balls_initial - golf_balls_lost_tuesday - golf_balls_lost_wednesday\n result = golf_balls_left\n return result]", "Finish[33]"]
 
-Thought: Modules is selected because it's the only solution. 
+Thought: Modules1 is selected because it's the only solution. 
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like the examples above and nothing else.
 """
@@ -121,12 +120,11 @@ Now, you need to act as a policy model, that given a question and a modular set,
 prompt_example_compare_full = """
 Question: What was the percentage of patents accepted in 2017?
 
-Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
-Modules2: ["LoadDB[hupd; 2017-2017; True]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; train]", "Finish[9.388567293777134]"]
+Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
 Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
 
-Thought: Modules1 is selected because Modules1 and Modules2 are equally interpretable; we select the earlier Modules1.
+Thought: Modules1 is selected because it's the only solution. 
 
 Question: What is the 20th Fibonacci number?
 
@@ -151,12 +149,11 @@ Now, you need to act as a policy model, that given a question and a modular set,
 prompt_example_compare_rank = """
 Question: What was the percentage of patents accepted in 2017?
 
-Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
-Modules2: ["LoadDB[hupd; 2017-2017; True]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; train]", "Finish[9.388567293777134]"]
+Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
+Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Thought: Modules1 and Modules2 use the same set of modules. Consequently, Modules1 and Modules2 are equally interpretable; we select the earlier Modules1.
+Thought: Modules1 is selected because it's the only solution. 
 
 Question: What is the 20th Fibonacci number?
 
@@ -181,12 +178,11 @@ Now, you need to act as a policy model, that given a question and a modular set,
 prompt_example_compare_rank_full = """
 Question: What was the percentage of patents accepted in 2017?
 
-Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
-Modules2: ["LoadDB[hupd; 2017-2017; True]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; train]", "Finish[9.388567293777134]"]
+Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
+Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Thought: Modules1 and Modules2 use the same set of modules. Consequently, Modules1 and Modules2 are equally interpretable; we select the earlier Modules1.
+Thought: Modules1 is selected because it's the only solution. 
 
 Question: What is the 20th Fibonacci number?
 
@@ -211,12 +207,11 @@ Now, you need to act as a policy model, that given a question and a modular set,
 prompt_example_compare_formula = """
 Question: What was the percentage of patents accepted in 2017?
 
-Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
-Modules2: ["LoadDB[hupd; 2017-2017; True]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; train]", "Finish[9.388567293777134]"]
+Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
+Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Thought: Modules1 and Modules2 use the same set of modules. Therefore, Modules1 and Modules2 have the same interpretability score. We decide to select the earlier Modules1.
+Thought: Modules1 is selected because it's the only solution. 
 
 Question: What is the 20th Fibonacci number?
 
@@ -241,12 +236,11 @@ Now, you need to act as a policy model, that given a question and a modular set,
 prompt_example_compare_formula_full = """
 Question: What was the percentage of patents accepted in 2017?
 
-Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
-Modules2: ["LoadDB[hupd; 2017-2017; True]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; train]", "Finish[9.388567293777134]"]
+Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted; all]", "Finish[9.388567293777134]"]
+Best Modules: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
 
-Thought: Modules1 and Modules2 use the same set of modules. Therefore, Modules1 and Modules2 have the same interpretability score. We decide to select the earlier Modules1.
+Thought: Modules1 is selected because it's the only solution. 
 
 Question: What is the 20th Fibonacci number?
 
@@ -268,6 +262,6 @@ Thought: Modules is selected because it's the only solution.
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """ 
 
-prompt = prompt_header_formula+prompt_example_compare_formula_full
+prompt = prompt_header_clean+prompt_example_clean
 
 # verify the thought chain, if correct, add You only need to output Best Module. into prompt. 
