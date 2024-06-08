@@ -114,14 +114,24 @@ if __name__ == "__main__":
         
         context = ""
         logs = ""
-        for module in modules:
+        i = 0
+        while i<len(modules):
             try:
+                attempts = 0
                 demo_prompt = prompt_policy.prompt.strip() 
                 question = solver.cache["example"]["question"]
                 if context != "":
+                    if output.startswith("Error:"):
+                        if attempts==0:
+                            i -= 1
+                            attempts += 1
+                    module = modules[i]
                     test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
                 else:
+                    module = modules[i]
                     test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
+                print("i", i)
+                print("module", module)
                 full_prompt = demo_prompt + "\n\n" + test_prompt
                 messages=[
                     {"role": "user", "content": full_prompt},
@@ -129,8 +139,7 @@ if __name__ == "__main__":
                 # print("test_prompt", test_prompt) 
                 # execute the module
                 action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
-                # print("action", action) 
-                # print("module", module)
+                print("action", action) 
                 if action[0]=="[" and action[-1]=="]":
                     current = action[2:action.find(",")-1] # first element in list string, and then remove double quotes
                 else:
@@ -153,6 +162,7 @@ if __name__ == "__main__":
                 # print("argument_lst", argument_lst) 
                 output = ACTION_LIST[action_type](*argument_lst)
                 # print("output", output) 
+                i += 1
                 # input()
                 logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
                 if count < 10:

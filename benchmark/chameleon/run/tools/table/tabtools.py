@@ -117,9 +117,10 @@ class table_toolkits():
             try: 
                 exec(pandas_code, global_var)
                 return str(global_var['ans'])
-            except NameError:
-                print("here!!!")
-                
+            except NameError as e:
+                return "Error: "+str(e)+"\nThe dataframe contains the following columns: "+', '.join(self.data.columns.tolist())
+            # other exceptions
+            
     def classifier(self, model_name, section, target, num_classes=2, validation=False, tokenizer_path=None, model_path=None, vocab_size=10000, tokenizer_save_path="models/dbert_G06F_train2015to17blah_tokenizer", save_path="models/dbert_G06F_train2015to17blah", batch_size=64, val_every=500, n_filters=25, filter_sizes=[[3,4,5], [5,6,7], [7,9,11]], dropout=0.25, epoch_n=5, filename="dbert_train_G06F_2015to17blah.txt", lr=2e-5, eps=1e-8, pos_class_weight=0, naive_bayes_version='Bernoulli', embed_dim=200, max_length=256, alpha_smooth_val=1.0, np_filename=None, use_scheduler=False, cpc_label=None, ipc_label="G06F", train_from_scratch=False):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         CLASSES = num_classes
