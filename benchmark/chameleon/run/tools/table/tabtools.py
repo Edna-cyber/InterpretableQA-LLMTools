@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from tools.table.models import BasicCNNModel, BigCNNModel, LogisticRegression
+from models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -56,7 +56,7 @@ class table_toolkits():
     def __init__(self):
         self.data = None
         self.dataset_dict = None
-        self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/" #<YOUR_OWN_PATH>
+        self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
 
     def db_loader(self, target_db, duration, split="False"): # change examples and description in prompt policy # todo: for forecasting tasks, different loading
         df = []
@@ -69,9 +69,10 @@ class table_toolkits():
         df = pd.concat(df, ignore_index=True)
         if split=="False":
             self.data = df
-            column_names = ', '.join(self.data.columns.tolist())
+            column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
+            column_names_str = ', '.join(column_names)
             self.dataset_dict = None
-            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names)
+            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)
         else:
             train_df, validation_df = train_test_split(df, test_size=0.4, random_state=42)
             train_dataset = Dataset.from_pandas(train_df)
@@ -109,7 +110,6 @@ class table_toolkits():
         """
         Executes the provided Pandas code and updates the 'ans' in global_var from the loaded dataframe.
         """
-        print(self.data)
         if self.data is None:
             return "Error: Dataframe does not exist."
         else:
@@ -117,8 +117,10 @@ class table_toolkits():
             try: 
                 exec(pandas_code, global_var)
                 return str(global_var['ans'])
-            except NameError as e:
-                return "Error: "+str(e)+"\nThe dataframe contains the following columns: "+', '.join(self.data.columns.tolist())
+            except KeyError as e:
+                column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
+                column_names_str = ', '.join(column_names)
+                return "Error: "+str(e)+"\nThe dataframe contains the following columns: "+column_names_str+"."
             # other exceptions
             
     def classifier(self, model_name, section, target, num_classes=2, validation=False, tokenizer_path=None, model_path=None, vocab_size=10000, tokenizer_save_path="models/dbert_G06F_train2015to17blah_tokenizer", save_path="models/dbert_G06F_train2015to17blah", batch_size=64, val_every=500, n_filters=25, filter_sizes=[[3,4,5], [5,6,7], [7,9,11]], dropout=0.25, epoch_n=5, filename="dbert_train_G06F_2015to17blah.txt", lr=2e-5, eps=1e-8, pos_class_weight=0, naive_bayes_version='Bernoulli', embed_dim=200, max_length=256, alpha_smooth_val=1.0, np_filename=None, use_scheduler=False, cpc_label=None, ipc_label="G06F", train_from_scratch=False):
@@ -595,12 +597,12 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    # print(db.db_loader('hupd', '2017-2017'))
-    print(db.db_loader('hupd', '2015-2017', True))
-    db.classifier('logistic_regression', 'abstract', 'decision')
+    # print(db.db_loader('hupd', '2015-2017', True))
+    # db.classifier('logistic_regression', 'abstract', 'decision')
     
-    # db.db_loader('hupd', '2016-2016', True)
+    db.db_loader('hupd', '2016-2016', 'False')
     # db.target_filter("decision", "not NA")
-    # pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    # print(db.pandas_interpreter(pandas_code, "train"))
+    pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
+    pandas_code = "import pandas as pd\nprint(df)"
+    print(db.pandas_interpreter(pandas_code))
     

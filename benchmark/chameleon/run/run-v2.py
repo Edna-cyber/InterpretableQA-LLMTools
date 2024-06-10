@@ -139,7 +139,7 @@ if __name__ == "__main__":
                 # print("test_prompt", test_prompt) 
                 # execute the module
                 action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
-                print("action", action) 
+                # print("action", action) 
                 if action[0]=="[" and action[-1]=="]":
                     current = action[2:action.find(",")-1] # first element in list string, and then remove double quotes
                 else:
@@ -156,12 +156,11 @@ if __name__ == "__main__":
                 else:
                     context = context+"-->"+module+"["+argument+"]"
                 # print("context", context) 
-                argument = argument.replace("'", "").replace('"', '')
                 argument_lst = argument.split(";")
                 argument_lst = [x.strip() for x in argument_lst]
-                # print("argument_lst", argument_lst) 
+                print("argument_lst", argument_lst) 
                 output = ACTION_LIST[action_type](*argument_lst)
-                # print("output", output) 
+                print("output", output) 
                 i += 1
                 # input()
                 logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
