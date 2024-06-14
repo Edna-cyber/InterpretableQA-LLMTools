@@ -302,8 +302,6 @@ class table_toolkits():
             else:
                 print(model)
             return tokenizer, dataset, model, vocab_size
-    
-        print("CHECK 2") ###
 
         # For filtering out CONT-apps and pending apps
         decision_to_str = {
@@ -452,9 +450,6 @@ class table_toolkits():
                                     tokenizer.save_pretrained(save_path + '_tokenizer')
                                 else:
                                     torch.save(model.state_dict(), save_path)
-            
-            print("CHECK 4") ###
-            print("tokenizer", tokenizer)
 
             # Training is complete!
             print(f'\n ~ The End ~')
