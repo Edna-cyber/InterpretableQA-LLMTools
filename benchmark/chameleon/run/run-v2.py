@@ -130,8 +130,8 @@ if __name__ == "__main__":
                 else:
                     module = modules[i]
                     test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
-                print("i", i)
-                print("module", module)
+                # print("i", i)
+                # print("module", module)
                 full_prompt = demo_prompt + "\n\n" + test_prompt
                 messages=[
                     {"role": "user", "content": full_prompt},
@@ -158,7 +158,7 @@ if __name__ == "__main__":
                 # print("context", context) 
                 argument_lst = argument.split(";")
                 argument_lst = [x.strip() for x in argument_lst]
-                print("argument_lst", argument_lst) 
+                # print("argument_lst", argument_lst) 
                 output = ACTION_LIST[action_type](*argument_lst)
                 print("output", output) 
                 i += 1

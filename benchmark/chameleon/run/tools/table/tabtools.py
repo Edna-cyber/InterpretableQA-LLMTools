@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
+from tools.table.models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -65,7 +65,20 @@ class table_toolkits():
         end_year = int(duration[hyphen_ind+1:])
         for sub in range(start_year, end_year+1):
             file_path = "{}/data/external_corpus/{}/{}_{}.csv".format(self.path, target_db, target_db, sub)
-            df.append(pd.read_csv(file_path))
+            df_raw = pd.read_csv(file_path)
+            if target_db=="hupd":
+                df_raw['patent_number'] = df_raw['patent_number'].fillna(0)
+                df_raw['patent_number'] = df_raw['patent_number'].replace({'None':0, 'nan':0})
+                df_raw['patent_number'] = df_raw['patent_number'].astype(int)
+                df_raw['examiner_id'] = df_raw['examiner_id'].fillna(0)
+                df_raw['examiner_id'] = df_raw['examiner_id'].replace({'':0})
+                df_raw['examiner_id'] = df_raw['examiner_id'].astype(float).astype(int)
+                
+                df_raw['filing_date'] = pd.to_datetime(df_raw['filing_date'])
+                df_raw['patent_issue_date'] = pd.to_datetime(df_raw['patent_issue_date'])
+                df_raw['date_published'] = pd.to_datetime(df_raw['date_published'])
+            print(df_raw.dtypes) ###
+            df.append(df_raw)
         df = pd.concat(df, ignore_index=True)
         if split=="False":
             self.data = df
