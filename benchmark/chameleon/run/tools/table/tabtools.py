@@ -143,7 +143,7 @@ class table_toolkits():
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
         
-        validation = False
+        val = False
         tokenizer_path = None
         model_path = None
         vocab_size = 10000
@@ -172,9 +172,9 @@ class table_toolkits():
         else:
             label = ipc_label
             
-        tokenizer_save_path = os.path.join("models/", model_name, "_", label, "_", self.duration, "_tokenizer")
-        save_path = os.path.join("models/", model_name, "_", label, "_", self.duration)
-        filename = os.path.join(model_name, "_", label, "_", self.duration, ".txt")
+        tokenizer_save_path = "models/"+model_name+"_"+label+"_"+self.duration+"_tokenizer"
+        save_path = "models/"+model_name+"_"+label+"_"+self.duration
+        filename = model_name+"_"+label+"_"+self.duration+".txt"
                 
         # Subject area code label
         cat_label = ''
@@ -197,10 +197,10 @@ class table_toolkits():
             return np.array(arr)
 
         # Create model and tokenizer
-        def create_model_and_tokenizer(train_from_scratch=False, validation=False, model_name='bert-base-uncased', dataset=None, section=section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512):
+        def create_model_and_tokenizer(train_from_scratch=False, val=False, model_name='bert-base-uncased', dataset=None, section=section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512):
             special_tokens = ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"]
 
-            if validation:
+            if val:
                 if model_name == 'distilbert-base-uncased':
                     tokenizer = DistilBertTokenizer.from_pretrained(tokenizer_path) 
                     model = DistilBertForSequenceClassification.from_pretrained(model_path)
@@ -320,11 +320,12 @@ class table_toolkits():
             return {'output': decision_to_str[example[target]]}
         
         # Create dataset
-        def create_dataset(dataset_dict, tokenizer, section=section):
+        def create_dataset(tokenizer, section=section):
+            print(self.dataset_dict) ###
             data_loaders = []
             for name in ['train', 'validation']:
                 # Skip the training set if we are doing only inference
-                if validation and name=='train':
+                if val and name=='train':
                     data_loaders.append(None)
                 else:
                     dataset = self.dataset_dict[name]
@@ -542,7 +543,7 @@ class table_toolkits():
             if np_filename:
                 np.save(f'{np_filename}.npy', np.array(model.feature_log_prob_))
         
-        if validation and model_path is not None and tokenizer_path is None:
+        if val and model_path is not None and tokenizer_path is None:
             tokenizer_path = model_path + '_tokenizer'
 
         filename = filename
@@ -588,11 +589,10 @@ class table_toolkits():
 
         # Load the dataset
         data_loaders = create_dataset(
-            dataset_dict = self.dataset_dict, 
             tokenizer = tokenizer, 
             section = section
             )
-        del dataset_dict
+        print(data_loaders) ###
         del self.dataset_dict
 
         if not validation:
