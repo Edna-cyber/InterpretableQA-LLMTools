@@ -171,10 +171,6 @@ class table_toolkits():
             label = cpc_label
         else:
             label = ipc_label
-            
-        tokenizer_save_path = os.path.join("models/", model_name, "_", label, "_", self.duration, "_", tokenizer)
-        save_path = os.path.join("models/", model_name, "_", label, "_", self.duration)
-        filename = os.path.join(model_name, "_", label, "_", self.duration, ".txt")
                 
         # Subject area code label
         cat_label = ''
@@ -197,113 +193,113 @@ class table_toolkits():
             return np.array(arr)
 
         # Create model and tokenizer
-        def create_model_and_tokenizer(train_from_scratch=False, validation=False, model_name='bert-base-uncased', dataset=None, section=section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512):
-            special_tokens = ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"]
+        special_tokens = ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"]
 
-            if validation:
-                if model_name == 'distilbert-base-uncased':
-                    tokenizer = DistilBertTokenizer.from_pretrained(tokenizer_path) 
-                    model = DistilBertForSequenceClassification.from_pretrained(model_path)
-                    # This step is actually important.
+        if validation:
+            if model_name == 'distilbert-base-uncased':
+                tokenizer = DistilBertTokenizer.from_pretrained(tokenizer_path) 
+                model = DistilBertForSequenceClassification.from_pretrained(model_path)
+                # This step is actually important.
+                tokenizer.max_length = max_length
+                tokenizer.model_max_length = max_length
+            else:
+                raise NotImplementedError
+        else:
+            # Train from scratch
+            if train_from_scratch:
+                if model_name == 'bert-base-uncased':
+                    config = BertConfig(num_labels=CLASSES, output_hidden_states=False) 
+                    tokenizer = BertTokenizer.from_pretrained(model_name, do_lower_case=True)
+                    model = BertForSequenceClassification(config=config)
+                elif model_name == 'distilbert-base-uncased':
+                    config = DistilBertConfig(num_labels=CLASSES, output_hidden_states=False) 
+                    tokenizer = DistilBertTokenizer.from_pretrained(model_name, do_lower_case=True)
+                    model = DistilBertForSequenceClassification(config=config)
+                elif model_name == 'roberta-base':
+                    config = RobertaConfig(num_labels=CLASSES, output_hidden_states=False) 
+                    tokenizer = RobertaTokenizer.from_pretrained(model_name, do_lower_case=True)
+                    model = RobertaForSequenceClassification(config=config)
+                elif model_name == 'gpt2':
+                    config = GPT2Config(num_labels=CLASSES, output_hidden_states=False) 
+                    tokenizer = GPT2Tokenizer.from_pretrained(model_name, do_lower_case=True)
+                    model = GPT2ForSequenceClassification(config=config)
+                elif model_name == 'allenai/longformer-base-4096':
+                    config = LongformerConfig(num_labels=CLASSES, output_hidden_states=False) 
+                    tokenizer = LongformerTokenizer.from_pretrained(model_name, do_lower_case=True)
+                    model = LongformerForSequenceClassification(config=config)
+                else:
+                    raise NotImplementedError()
+
+            # Finetune
+            else:
+                if model_name in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2', 'allenai/longformer-base-4096']:
+                    config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
+                    tokenizer = AutoTokenizer.from_pretrained(model_name)
+                    if model_name == 'gpt2':
+                        tokenizer.pad_token = tokenizer.eos_token
                     tokenizer.max_length = max_length
                     tokenizer.model_max_length = max_length
-                else:
-                    raise NotImplementedError
-            else:
-                # Train from scratch
-                if train_from_scratch:
-                    if model_name == 'bert-base-uncased':
-                        config = BertConfig(num_labels=CLASSES, output_hidden_states=False) 
-                        tokenizer = BertTokenizer.from_pretrained(model_name, do_lower_case=True)
-                        model = BertForSequenceClassification(config=config)
-                    elif model_name == 'distilbert-base-uncased':
-                        config = DistilBertConfig(num_labels=CLASSES, output_hidden_states=False) 
-                        tokenizer = DistilBertTokenizer.from_pretrained(model_name, do_lower_case=True)
-                        model = DistilBertForSequenceClassification(config=config)
-                    elif model_name == 'roberta-base':
-                        config = RobertaConfig(num_labels=CLASSES, output_hidden_states=False) 
-                        tokenizer = RobertaTokenizer.from_pretrained(model_name, do_lower_case=True)
-                        model = RobertaForSequenceClassification(config=config)
-                    elif model_name == 'gpt2':
-                        config = GPT2Config(num_labels=CLASSES, output_hidden_states=False) 
-                        tokenizer = GPT2Tokenizer.from_pretrained(model_name, do_lower_case=True)
-                        model = GPT2ForSequenceClassification(config=config)
-                    elif model_name == 'allenai/longformer-base-4096':
-                        config = LongformerConfig(num_labels=CLASSES, output_hidden_states=False) 
-                        tokenizer = LongformerTokenizer.from_pretrained(model_name, do_lower_case=True)
-                        model = LongformerForSequenceClassification(config=config)
-                    else:
-                        raise NotImplementedError()
+                    model = AutoModelForSequenceClassification.from_config(config=config)
+                elif model_name in ['lstm', 'cnn', 'big_cnn', 'naive_bayes', 'logistic_regression']:
+                    # Word-level tokenizer
+                    tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))
+                    # Normalizers
+                    tokenizer.normalizer = normalizers.Sequence([NFD(), Lowercase(), StripAccents()])
+                    # World-level trainer
+                    trainer = WordLevelTrainer(vocab_size=vocab_size, min_frequency=3, show_progress=True, 
+                        special_tokens=special_tokens)
+                    # Whitespace (pre-tokenizer)
+                    tokenizer.pre_tokenizer = Whitespace()
+                    # Train from iterator
+                    tokenizer.train_from_iterator(self.dataset_dict['train'][section], trainer=trainer)                
+                    # Update the vocab size
+                    vocab_size = tokenizer.get_vocab_size()
+                    # [PAD] idx
+                    pad_idx = tokenizer.encode('[PAD]').ids[0]
 
-                # Finetune
-                else:
-                    if model_name in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2', 'allenai/longformer-base-4096']:
-                        config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
-                        tokenizer = AutoTokenizer.from_pretrained(model_name)
-                        if model_name == 'gpt2':
-                            tokenizer.pad_token = tokenizer.eos_token
-                        tokenizer.max_length = max_length
+                    # Currently the call method for WordLevelTokenizer is not working.
+                    # Using this temporary method until the tokenizers library is updated.
+                    # Not a fan of this method, but this is the best we have right now (sad face).
+                    # Based on https://github.com/huggingface/transformers/issues/7234#issuecomment-720092292
+                    tokenizer.enable_padding(pad_type_id=pad_idx)
+                    tokenizer.pad_token = '[PAD]'
+                    vocab_size = vocab_size
+
+                    if model_name != 'naive_bayes': # CHANGE 'naive_bayes' (shannon)
                         tokenizer.model_max_length = max_length
-                        model = AutoModelForSequenceClassification.from_config(config=config)
-                    elif model_name in ['lstm', 'cnn', 'big_cnn', 'naive_bayes', 'logistic_regression']:
-                        # Word-level tokenizer
-                        tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))
-                        # Normalizers
-                        tokenizer.normalizer = normalizers.Sequence([NFD(), Lowercase(), StripAccents()])
-                        # World-level trainer
-                        trainer = WordLevelTrainer(vocab_size=vocab_size, min_frequency=3, show_progress=True, 
-                            special_tokens=special_tokens)
-                        # Whitespace (pre-tokenizer)
-                        tokenizer.pre_tokenizer = Whitespace()
-                        # Train from iterator
-                        tokenizer.train_from_iterator(dataset['train'][section], trainer=trainer)                
-                        # Update the vocab size
-                        vocab_size = tokenizer.get_vocab_size()
-                        # [PAD] idx
-                        pad_idx = tokenizer.encode('[PAD]').ids[0]
+                        tokenizer.max_length = max_length
+                    tokenizer.save("temp_tokenizer.json") 
+                    if tokenizer_save_path:
+                        print('*** Saving the tokenizer...')
+                        tokenizer.save(f"{tokenizer_save_path}")
+                    tokenizer = PreTrainedTokenizerFast(tokenizer_file="temp_tokenizer.json")
 
-                        # Currently the call method for WordLevelTokenizer is not working.
-                        # Using this temporary method until the tokenizers library is updated.
-                        # Not a fan of this method, but this is the best we have right now (sad face).
-                        # Based on https://github.com/huggingface/transformers/issues/7234#issuecomment-720092292
-                        tokenizer.enable_padding(pad_type_id=pad_idx)
+                    if model_name != 'naive_bayes': # CHANGE 'naive_bayes'
+                        tokenizer.model_max_length = max_length
+                        tokenizer.max_length = max_length
+                        tokenizer.add_special_tokens({'pad_token': '[PAD]'})
                         tokenizer.pad_token = '[PAD]'
-                        vocab_size = vocab_size
+                        tokenizer.add_special_tokens({'sep_token': '[SEP]'})
+                        tokenizer.sep_token = '[SEP]'
 
-                        if model_name != 'naive_bayes': # CHANGE 'naive_bayes' (shannon)
-                            tokenizer.model_max_length = max_length
-                            tokenizer.max_length = max_length
-                        tokenizer.save("temp_tokenizer.json") 
-                        if tokenizer_save_path:
-                            print('*** Saving the tokenizer...')
-                            tokenizer.save(f"{tokenizer_save_path}")
-                        tokenizer = PreTrainedTokenizerFast(tokenizer_file="temp_tokenizer.json")
+                    model = None
+                    if model_name == 'logistic_regression':
+                        model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=num_classes, pad_idx=pad_idx)
+                    elif model_name == 'cnn':
+                        model = BasicCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=num_classes, n_filters=n_filters, filter_sizes=filter_sizes[0], dropout=dropout)
+                    elif model_name == 'big_cnn':
+                        model = BigCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=num_classes, n_filters=n_filters, filter_sizes=filter_sizes, dropout=dropout)
+                else:
+                    raise NotImplementedError()
+                
+        if model in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2', 'allenai/longformer-base-4096']:
+            print(f'Model name: {model_name} \nModel params: {model.num_parameters()}')
+        else:
+            print(model)
 
-                        if model_name != 'naive_bayes': # CHANGE 'naive_bayes'
-                            tokenizer.model_max_length = max_length
-                            tokenizer.max_length = max_length
-                            tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-                            tokenizer.pad_token = '[PAD]'
-                            tokenizer.add_special_tokens({'sep_token': '[SEP]'})
-                            tokenizer.sep_token = '[SEP]'
-
-                        model = None
-                        if model_name == 'logistic_regression':
-                            model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=n_classes, pad_idx=pad_idx)
-                        elif model_name == 'cnn':
-                            model = BasicCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=n_classes, n_filters=n_filters, filter_sizes=filter_sizes[0], dropout=dropout)
-                        elif model_name == 'big_cnn':
-                            model = BigCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=n_classes, n_filters=n_filters, filter_sizes=filter_sizes, dropout=dropout)
-                    else:
-                        raise NotImplementedError()
-                    
-            if model in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2', 'allenai/longformer-base-4096']:
-                print(f'Model name: {model_name} \nModel params: {model.num_parameters()}')
-            else:
-                print(model)
-            return tokenizer, dataset, model, vocab_size
-    
-        print("CHECK 2") ###
+        tokenizer_save_path = os.path.join("models/", model_name, "_", label, "_", self.duration, "_", tokenizer)
+        save_path = os.path.join("models/", model_name, "_", label, "_", self.duration)
+        filename = os.path.join(model_name, "_", label, "_", self.duration, ".txt")
 
         # For filtering out CONT-apps and pending apps
         decision_to_str = {
@@ -560,18 +556,6 @@ class table_toolkits():
             self.dataset_dict[name] = self.dataset_dict[name].map(map_decision_to_string)
             # Remove the pending and CONT-patent applications
             self.dataset_dict[name] = self.dataset_dict[name].filter(lambda e: e['output'] <= 1)
-    
-        # Create a model and an appropriate tokenizer
-        tokenizer, self.dataset_dict, model, vocab_size = create_model_and_tokenizer(
-            train_from_scratch = train_from_scratch, 
-            model_name = model_name, 
-            dataset = self.dataset_dict,
-            section = section,
-            vocab_size = vocab_size,
-            embed_dim = embed_dim,
-            n_classes = CLASSES,
-            max_length=max_length
-            )
         
         print(f'*** CPC Label: {cat_label}') 
         print(f'*** Section: {section}')
