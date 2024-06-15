@@ -172,9 +172,9 @@ class table_toolkits():
         else:
             label = ipc_label
             
-        tokenizer_save_path = "models/"+model_name+"_"+label+"_"+self.duration+"_tokenizer"
-        save_path = "models/"+model_name+"_"+label+"_"+self.duration
-        filename = model_name+"_"+label+"_"+self.duration+".txt"
+        tokenizer_save_path = "models/"+model_name+"_"+label+"_"+self.duration+"_tokenizer" ### might need to change for different tasks
+        save_path = "models/"+model_name+"_"+label+"_"+self.duration ### might need to change for different tasks
+        filename = model_name+"_"+label+"_"+self.duration+".txt" ### might need to change for different tasks
                 
         # Subject area code label
         cat_label = ''

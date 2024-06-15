@@ -37,7 +37,9 @@ corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corp
 df_2015 = to_dataframe(os.path.join(data_dir, "2015"))
 df_2016 = to_dataframe(os.path.join(data_dir, "2016"))
 df_2017 = to_dataframe(os.path.join(data_dir, "2017"))
+df_2018 = to_dataframe(os.path.join(data_dir, "2018"))
 
 df_2015.to_csv(os.path.join(corpus_dir, dataset_name, "hupd_2015.csv"), index=False) 
 df_2016.to_csv(os.path.join(corpus_dir, dataset_name, "hupd_2016.csv"), index=False) 
 df_2017.to_csv(os.path.join(corpus_dir, dataset_name, "hupd_2017.csv"), index=False)
+df_2018.to_csv(os.path.join(corpus_dir, dataset_name, "hupd_2018.csv"), index=False)
