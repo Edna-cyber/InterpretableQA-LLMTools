@@ -319,7 +319,6 @@ class table_toolkits():
         
         # Create dataset
         def create_dataset(tokenizer, section=section):
-            print(self.dataset_dict) ###
             data_loaders = []
             for name in ['train', 'validation']:
                 # Skip the training set if we are doing only inference

@@ -10,9 +10,9 @@ The modules are defined as follows:
 
 - TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+- PandasInterpreter[pythonCode]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
+- PythonInterpreter[pythonCode]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
 - Classifier[modelName; predictorSection; target]: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
 
@@ -34,9 +34,9 @@ The modules are defined as follows, ordered by their interpretability from highe
 
 - TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+- PandasInterpreter[pythonCode]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
+- PythonInterpreter[pythonCode]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
 - Classifier[modelName; predictorSection; target]: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
 
@@ -46,19 +46,19 @@ Below are some examples that map the problem to the modules. When addressing a q
 prompt_header_formula = """
 You need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question.
 
-The modules are defined as follows, with the formulas used to calculate their interpretability costs defined in {}. Within these {}, each [] contains a variable whose value is determined by the specific if condition it meets.
+The modules are defined as follows, with the formulas used to calculate their interpretability costs defined in {}. Within these {}, each () contains a variable whose value is determined by the specific if condition it meets.
 
 - Calculate[formula] {2}: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
 - LoadDB[DBName; subsetNames; split] {3}: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- TargetFilter[targetColumn; filterCondition] {[if filterCondition is "not NA", then 4; otherwise, 5.]}: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
+- TargetFilter[targetColumn; filterCondition] {(if filterCondition is "not NA", then 4; otherwise, 5.)}: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python] {[if the number of lines of Python code is less than 20, 5; if the number of lines of Python code is between 20 and 100, 7; if the number of lines of Python code is greater than 100, 10.] * [if the number of imported packages is less than 5, 1; if the number of imported packages is between 5 and 10, 2; if the number of imported packages is greater than 10, 3]}: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+- PandasInterpreter[pythonCode] {(if the number of lines of pythonCode is less than 20, 5; if the number of lines of pythonCode is between 20 and 100, 7; if the number of lines of pythonCode is greater than 100, 10.) * (if the number of imported packages in pythonCode is less than 5, 1; if the number of imported packages in pythonCode is between 5 and 10, 2; if the number of imported packages in pythonCode is greater than 10, 3)}: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- PythonInterpreter[Python] {[if the number of lines of Python code is less than 20, 5; if the number of lines of Python code is between 20 and 100, 7; if the number of lines of Python code is greater than 100, 10.] * [if the number of imported packages is less than 5, 1; if the number of imported packages is between 5 and 10, 2; if the number of imported packages is greater than 10, 3]}: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
+- PythonInterpreter[pythonCode] {(if the number of lines of pythonCode is less than 20, 5; if the number of lines of pythonCode is between 20 and 100, 7; if the number of lines of pythonCode is greater than 100, 10.) * (if the number of imported packages in pythonCode is less than 5, 1; if the number of imported packages in pythonCode is between 5 and 10, 2; if the number of imported packages in pythonCode is greater than 10, 3)}: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
-- Classifier[modelName; predictorSection; target] {[if modelName is "logistic_regression", 7; if modelName is "distilbert-base-uncased", 10]}: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
+- Classifier[modelName; predictorSection; target] {(if modelName is "logistic_regression", 7; if modelName is "distilbert-base-uncased", 10)}: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
 
 - Finish[answer] {1}: This module returns the final answer and finishes the task. This module is the final module in the sequence that encapsulates the result of all previous modules.
 
@@ -164,7 +164,7 @@ Thought: Modules1 is selected because it's more interpretable.
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """
 
-prompt_example_compare_rank = """
+prompt_example_rank = """
 Question: What was the percentage of patents accepted in 2017?
 
 Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
@@ -193,7 +193,7 @@ Thought: Modules1 is selected because it's the only solution.
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like those from the examples above and nothing else.
 """
 
-prompt_example_compare_rank_full = """
+prompt_example_rank_full = """
 Question: What was the percentage of patents accepted in 2017?
 
 Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
@@ -222,7 +222,7 @@ Thought: Modules1 is selected because it's the only solution.
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """ 
 
-prompt_example_compare_formula = """
+prompt_example_formula = """
 Question: What was the percentage of patents accepted in 2017?
 
 Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
@@ -238,7 +238,9 @@ Modules2: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # C
 
 Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
 
-Thought: Modules1 uses Calculate for 20 times, while Modules2 uses PythonInterpreter once. All the other modules in both Modules1 and Modules2 are the same. Using Calculate has an interpretability score of {9}, therefore using Calculate for 20 times has an interpretability score of {9} / (20 ** (1/10)) = 6.67. Using PythonInterpreter that has 12 lines of code with no package import has an interpretability score of {[7]/[1]=[7]}, therefore using PythonInterpreter once has an interpretability score of {7} / (1 ** (1/10)) = 7. Therefore, Modules2 has a higher interpretability score than Modules2. As a result, Modules2 is selected.
+Thought: Total interpretability cost of Modules1 is calculated as follows: "Calculate[0+0]" {2}, "Calculate[0+1]" {2}, "Calculate[0+1]" {2}, "Calculate[1+1]" {2}, "Calculate[1+2]" {2}, "Calculate[2+3]" {2}, "Calculate[3+5]" {2}, "Calculate[5+8]" {2}, "Calculate[8+13]" {2}, "Calculate[13+21]" {2}, "Calculate[21+34]" {2}, "Calculate[34+55]" {2}, "Calculate[55+89]" {2}, "Calculate[89+144]" {2}, "Calculate[144+233]" {2}, "Calculate[233+377]" {2}, "Calculate[377+610]" {2}, "Calculate[610+987]" {2}, "Calculate[987+1597]" {2}, "Calculate[1597+2584]" {2}, "Finish[4181]" {1}. Summing these costs: 2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+1=41.
+Total interpretability cost of Modules2 is calculated as follows: "PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]" {5 (the number of lines of pythonCode is less than 20) * 1 (the number of imported packages in pythonCode is less than 5) = 5}, "Finish[4181]" {1}. Summing these costs: 5+1=6.
+Therefore, Modules2 is selected because it has a lower total interpretability cost of 6 compared to 41 for Modules1.
 
 Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
 
@@ -247,11 +249,22 @@ Modules1: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Micha
 Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?\n golf_balls_initial = 58\n golf_balls_lost_tuesday = 23\n golf_balls_lost_wednesday = 2\n golf_balls_left = golf_balls_initial - golf_balls_lost_tuesday - golf_balls_lost_wednesday\n result = golf_balls_left\n return result]", "Finish[33]"]
 
 Thought: Modules1 is selected because it's the only solution. 
+
+Question: Predict whether the patent application described in the following abstract will be accepted: <TO DO: FILL IN AN EXAMPLE>?
+
+Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
+Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
+
+Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
+
+Thought: Total interpretability cost of Modules1 is calculated as follows: "LoadDB[hupd; 2015-2017; True]" {3}, "Classifier[logistic_regression; abstract; decision]" {7 (modelName is "logistic_regression")}. Summing these costs: 3+7=10.
+Total interpretability cost of Modules2 is calculated as follows: "LoadDB[hupd; 2015-2017; True]" {3}, "Classifier[distilbert-base-uncased; abstract; decision]" {10 (modelName is "logistic_regression")}. Summing these costs: 3+10=13.
+Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2.
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like those from the examples above and nothing else.
 """ 
 
-prompt_example_compare_formula_full = """
+prompt_example_formula_full = """
 Question: What was the percentage of patents accepted in 2017?
 
 Modules1: ["LoadDB[hupd; 2017-2017; False]", "TargetFilter[decision; not NA]", "PandasInterpreter[import pandas as pd\naccepted_patents = df[df['decision'] == 1].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted]", "Finish[9.388567293777134]"]
@@ -267,7 +280,9 @@ Modules2: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # C
 
 Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
 
-Thought: Modules1 uses Calculate for 20 times, while Modules2 uses PythonInterpreter once. All the other modules in both Modules1 and Modules2 are the same. Using Calculate has an interpretability score of {9}, therefore using Calculate for 20 times has an interpretability score of {9} / (20 ** (1/10)) = 6.67. Using PythonInterpreter that has 12 lines of code with no package import has an interpretability score of {[7]/[1]=[7]}, therefore using PythonInterpreter once has an interpretability score of {7} / (1 ** (1/10)) = 7. Therefore, Modules2 has a higher interpretability score than Modules2. As a result, Modules2 is selected.
+Thought: Total interpretability cost of Modules1 is calculated as follows: "Calculate[0+0]" {2}, "Calculate[0+1]" {2}, "Calculate[0+1]" {2}, "Calculate[1+1]" {2}, "Calculate[1+2]" {2}, "Calculate[2+3]" {2}, "Calculate[3+5]" {2}, "Calculate[5+8]" {2}, "Calculate[8+13]" {2}, "Calculate[13+21]" {2}, "Calculate[21+34]" {2}, "Calculate[34+55]" {2}, "Calculate[55+89]" {2}, "Calculate[89+144]" {2}, "Calculate[144+233]" {2}, "Calculate[233+377]" {2}, "Calculate[377+610]" {2}, "Calculate[610+987]" {2}, "Calculate[987+1597]" {2}, "Calculate[1597+2584]" {2}, "Finish[4181]" {1}. Summing these costs: 2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+1=41.
+Total interpretability cost of Modules2 is calculated as follows: "PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]" {5 (the number of lines of pythonCode is less than 20) * 1 (the number of imported packages in pythonCode is less than 5) = 5}, "Finish[4181]" {1}. Summing these costs: 5+1=6.
+Therefore, Modules2 is selected because it has a lower total interpretability cost of 6 compared to 41 for Modules1.
 
 Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
 
@@ -276,6 +291,17 @@ Modules1: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Micha
 Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?\n golf_balls_initial = 58\n golf_balls_lost_tuesday = 23\n golf_balls_lost_wednesday = 2\n golf_balls_left = golf_balls_initial - golf_balls_lost_tuesday - golf_balls_lost_wednesday\n result = golf_balls_left\n return result]", "Finish[33]"]
 
 Thought: Modules1 is selected because it's the only solution. 
+
+Question: Predict whether the patent application described in the following abstract will be accepted: <TO DO: FILL IN AN EXAMPLE>?
+
+Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
+Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
+
+Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
+
+Thought: Total interpretability cost of Modules1 is calculated as follows: "LoadDB[hupd; 2015-2017; True]" {3}, "Classifier[logistic_regression; abstract; decision]" {7 (modelName is "logistic_regression")}. Summing these costs: 3+7=10.
+Total interpretability cost of Modules2 is calculated as follows: "LoadDB[hupd; 2015-2017; True]" {3}, "Classifier[distilbert-base-uncased; abstract; decision]" {10 (modelName is "logistic_regression")}. Summing these costs: 3+10=13.
+Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2.
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """ 
