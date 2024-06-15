@@ -46,23 +46,23 @@ Below are some examples that map the problem to the modules. When addressing a q
 prompt_header_formula = """
 You need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question.
 
-The modules are defined as follows, with the formulas used to calculate their interpretability costs defined in {}:
+The modules are defined as follows, with the formulas used to calculate their interpretability costs defined in {}. Within these {}, each [] contains a variable whose value is determined by the specific if condition it meets.
 
-- Calculate[formula]: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
+- Calculate[formula] {2}: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB[DBName; subsetNames; split]: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
+- LoadDB[DBName; subsetNames; split] {3}: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
+- TargetFilter[targetColumn; filterCondition] {[if filterCondition is "not NA", then 4; otherwise, 5.]}: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
-- PandasInterpreter[Python]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+- PandasInterpreter[Python] {[if the number of lines of Python code is less than 20, 5; if the number of lines of Python code is between 20 and 100, 7; if the number of lines of Python code is greater than 100, 10.] * [if the number of imported packages is less than 5, 1; if the number of imported packages is between 5 and 10, 2; if the number of imported packages is greater than 10, 3]}: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- PythonInterpreter[Python]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
+- PythonInterpreter[Python] {[if the number of lines of Python code is less than 20, 5; if the number of lines of Python code is between 20 and 100, 7; if the number of lines of Python code is greater than 100, 10.] * [if the number of imported packages is less than 5, 1; if the number of imported packages is between 5 and 10, 2; if the number of imported packages is greater than 10, 3]}: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
 
-- Classifier[modelName; predictorSection; target]: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
+- Classifier[modelName; predictorSection; target] {[if modelName is "logistic_regression", 7; if modelName is "distilbert-base-uncased", 10]}: This module runs a specified classifier model on the given predictorSection to predict the target. The modelName can be "logistic_regression" or "distilbert-base-uncased". Typically, we use the "Classifier" module for binary or multi-class classification tasks.
 
-- Finish[answer]: This module returns the final answer and finishes the task. This module is the final module in the sequence that encapsulates the result of all previous modules.
+- Finish[answer] {1}: This module returns the final answer and finishes the task. This module is the final module in the sequence that encapsulates the result of all previous modules.
 
-Below are some examples that map the problem to the modules. When addressing a question, modules that have lower interpretability cost are preferred over those that have higher costs.
+Below are some examples that map problems to modules. When addressing a question, first calculate the interpretability cost for each module. The interpretability cost of a set of modules is the sum of the costs of each module in that set. Choose the set of modules with the lowest total interpretability cost, as modules with lower costs are preferred over those with higher costs.
 """
 
 # If got more than 1 argument, need to separate with ;
@@ -81,7 +81,7 @@ Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wedne
 
 Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution():\n # Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?\n golf_balls_initial = 58\n golf_balls_lost_tuesday = 23\n golf_balls_lost_wednesday = 2\n golf_balls_left = golf_balls_initial - golf_balls_lost_tuesday - golf_balls_lost_wednesday\n result = golf_balls_left\n return result]", "Finish[33]"]
 
-Question: What's the predicted patent decision given this abstract: <TO DO: FILL IN AN EXAMPLE>?
+Question: Predict whether the patent application described in the following abstract will be accepted: <TO DO: FILL IN AN EXAMPLE>?
 
 Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
 
