@@ -115,12 +115,10 @@ if __name__ == "__main__":
         context = ""
         logs = ""
         i = 0
-        iteration = 0
         while i<len(modules):
             try:
                 attempts = 0
                 demo_prompt = prompt_policy.prompt.strip() 
-                iteration += 1
                 question = solver.cache["example"]["question"]
                 if context != "":
                     if output.startswith("Error:"):
@@ -134,8 +132,9 @@ if __name__ == "__main__":
                     test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
                 # print("i", i)
                 # print("module", module)
-                if iteration!=0:
-                    demo_prompt = demo_prompt.replace("Please provide the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.", "Please provide only the sequence of Best Modules like those from the examples above and nothing else.")
+                # need to replace the prompt after predicting the modules
+                demo_prompt = re.sub(r'Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt)
+                demo_prompt = re.sub(r'Please provide only the sequence of Best Modules like those from the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt)
                 full_prompt = demo_prompt + "\n\n" + test_prompt
                 messages=[
                     {"role": "user", "content": full_prompt},
@@ -143,7 +142,7 @@ if __name__ == "__main__":
                 # print("test_prompt", test_prompt) 
                 # execute the module
                 action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
-                print("action", action) 
+                # print("action", action) 
                 if action[0]=="[" and action[-1]=="]":
                     current = action[2:action.find(",")-1] # first element in list string, and then remove double quotes
                 else:
