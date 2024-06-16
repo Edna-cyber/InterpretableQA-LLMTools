@@ -306,6 +306,6 @@ Therefore, Modules1 is selected because it has a lower total interpretability co
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """ 
 
-prompt = prompt_header_clean+prompt_example_clean
+prompt = prompt_header_formula+prompt_example_formula_full
 
 # verify the thought chain, if correct, add You only need to output Best Module. into prompt. 

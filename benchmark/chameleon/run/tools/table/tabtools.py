@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
+from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer

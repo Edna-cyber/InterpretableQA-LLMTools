@@ -102,9 +102,11 @@ class solver:
         # execute the module
         modules = get_chat_response(messages, self.api_key, self.policy_engine, self.policy_temperature, self.policy_max_tokens)
         print(f'GPT RESPONSE: \n{modules}\n')
-
+        if "Best Modules:" in modules:
+            start_ind = modules.find("Best Modules: ")+len("Best Modules: ")
+            end_ind = modules.find("Thought:")
+            modules = modules[start_ind:end_ind]
         # modules = self.update_modules(modules)
-
         # update the cache
         self.cache["modules:input"] = test_prompt
         self.cache["modules:output"] = modules
