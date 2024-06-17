@@ -33,7 +33,7 @@ def top_accepted_category(num, category, year):
     else:
         cat = "main_cpc_label"
     col = cat.replace("label", "code")
-    df[col] = df[cat].apply(lambda x:x[:3])
+    df[col] = df[cat].apply(lambda x:x[:3] if isinstance(x, str) else x)
     grouped = df.groupby(col).size().reset_index(name="counts")
     df_accepted = df[df["decision"]=="ACCEPTED"]
     del df

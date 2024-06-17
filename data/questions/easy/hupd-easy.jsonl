@@ -1,3 +1,30 @@
-{"qid": "easy-hupd-0000", "question": "What was the average time between the filing and issuance of patents from 2017 to 2017?", "answer": 343.4315992292871}
-{"qid": "easy-hupd-0001", "question": "What was the average time between the filing and issuance of patents from 2015 to 2017?", "answer": 575.5098376783079}
-{"qid": "easy-hupd-0002", "question": "What was the average time between the filing and issuance of patents from 2017 to 2017?", "answer": 343.4315992292871}
+{"qid": "easy-hupd-0001", "question": "How does the number of patent applications in 2017 compare to 2016?", "answer": 0.8195700518902891}
+{"qid": "easy-hupd-0002", "question": "Which applications took the longest time to be published after filing in 2015?", "answer": [9933012]}
+{"qid": "easy-hupd-0003", "question": "Which applications took the longest time to be published after filing in 2018?", "answer": [10028796]}
+{"qid": "easy-hupd-0004", "question": "How does the number of patent applications in 2015 compare to 2016?", "answer": 0.4057079318013343}
+{"qid": "easy-hupd-0005", "question": "How many examiners reviewed patent applications each year between 2017 and 2017?", "answer": 4484}
+{"qid": "easy-hupd-0006", "question": "How does the number of patent applications in 2015 compare to 2018?", "answer": 0.17120245245245244}
+{"qid": "easy-hupd-0007", "question": "What were the top5 CPC categories with the highest percentage of patent acceptance in 2015?", "answer": ["F22", "A22", "D07", "F26", "D05"]}
+{"qid": "easy-hupd-0008", "question": "What were the top3 CPC categories with the highest percentage of patent acceptance in 2017?", "answer": ["B81", "B28", "F17"]}
+{"qid": "easy-hupd-0009", "question": "What were the top2 CPC categories with the highest percentage of patent acceptance in 2017?", "answer": ["B81", "B28"]}
+{"qid": "easy-hupd-0010", "question": "How many examiners reviewed patent applications each year between 2015 and 2017?", "answer": 1828}
+{"qid": "easy-hupd-0011", "question": "How many examiners reviewed patent applications each year between 2016 and 2016?", "answer": 6052}
+{"qid": "easy-hupd-0012", "question": "How does the number of patent applications in 2015 compare to 2016?", "answer": 0.4057079318013343}
+{"qid": "easy-hupd-0013", "question": "Which applications took the longest time to be published after filing in 2018?", "answer": [10028796]}
+{"qid": "easy-hupd-0014", "question": "How does the number of patent applications in 2015 compare to 2018?", "answer": 0.17120245245245244}
+{"qid": "easy-hupd-0015", "question": "What was the average time between the filing and issuance of patents from 2016 to 2017?", "answer": 499.6364164086687}
+{"qid": "easy-hupd-0016", "question": "How many examiners reviewed patent applications each year between 2017 and 2018?", "answer": 3374}
+{"qid": "easy-hupd-0017", "question": "Which applications took the longest time to be published after filing in 2015?", "answer": [9933012]}
+{"qid": "easy-hupd-0018", "question": "What was the average time between the filing and issuance of patents from 2017 to 2017?", "answer": 343.4315992292871}
+{"qid": "easy-hupd-0019", "question": "Which applications took the longest time to be published after filing in 2015?", "answer": [9933012]}
+{"qid": "easy-hupd-0020", "question": "Which applications took the longest time to be published after filing in 2015?", "answer": [9933012]}
+{"qid": "easy-hupd-0021", "question": "How does the number of patent applications in 2016 compare to 2018?", "answer": 0.4219844844844845}
+{"qid": "easy-hupd-0022", "question": "Which applications took the longest time to be published after filing in 2016?", "answer": [10019966]}
+{"qid": "easy-hupd-0023", "question": "How many examiners reviewed patent applications each year between 2015 and 2017?", "answer": 1828}
+{"qid": "easy-hupd-0024", "question": "How many examiners reviewed patent applications each year between 2016 and 2017?", "answer": 3470}
+{"qid": "easy-hupd-0025", "question": "What was the average time between the filing and issuance of patents from 2017 to 2018?", "answer": 289.35227272727275}
+{"qid": "easy-hupd-0026", "question": "How many examiners reviewed patent applications each year between 2017 and 2017?", "answer": 4484}
+{"qid": "easy-hupd-0027", "question": "How does the number of patent applications in 2016 compare to 2018?", "answer": 0.4219844844844845}
+{"qid": "easy-hupd-0028", "question": "Which applications took the longest time to be published after filing in 2016?", "answer": [10019966]}
+{"qid": "easy-hupd-0029", "question": "How does the number of patent applications in 2016 compare to 2018?", "answer": 0.4219844844844845}
+{"qid": "easy-hupd-0030", "question": "What was the average time between the filing and issuance of patents from 2015 to 2016?", "answer": 609.4677191993234}
