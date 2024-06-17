@@ -77,7 +77,7 @@ if __name__ == "__main__":
     cache_file = f"{result_root}/{args.label}_{args.test_split}_cache.json"
     cache_jsonl = f"{result_root}/{args.label}_{args.test_split}_cache.jsonl"
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
-    print(result_file)
+    print("result_file", result_file)
 
     count, correct, wrong = 0, 0, 0
     pids = solver.pids[count:] # only use the remaining problems

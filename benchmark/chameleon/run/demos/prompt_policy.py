@@ -8,8 +8,6 @@ The modules are defined as follows:
 
 - LoadDB[DBName; subsetNames; split]: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
-
 - PandasInterpreter[pythonCode]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
 - PythonInterpreter[pythonCode]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
@@ -32,8 +30,6 @@ The modules are defined as follows, ordered by their interpretability from highe
 
 - LoadDB[DBName; subsetNames; split]: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- TargetFilter[targetColumn; filterCondition]: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
-
 - PandasInterpreter[pythonCode]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
 - PythonInterpreter[pythonCode]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations or custom data manipulation.
@@ -51,8 +47,6 @@ The modules are defined as follows, with the formulas used to calculate their in
 - Calculate[formula] {2}: This module calculates a given formula and returns the result. It takes in a mathematical formula and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
 - LoadDB[DBName; subsetNames; split] {3}: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
-
-- TargetFilter[targetColumn; filterCondition] {(if filterCondition is "not NA", then 4; otherwise, 5.)}: This module modifies a database in place by removing rows that don't satisfy the filter condition. It takes a target column and a filter condition, with the default being "not NA." Example conditions include "not NA," "keep ACCEPT,REJECT," and "remove 0,1." Normally, we use "TargetFilter" after loading the database with "LoadDB".
 
 - PandasInterpreter[pythonCode] {(if the number of lines of pythonCode is less than 20, 5; if the number of lines of pythonCode is between 20 and 100, 7; if the number of lines of pythonCode is greater than 100, 10.) * (if the number of imported packages in pythonCode is less than 5, 1; if the number of imported packages in pythonCode is between 5 and 10, 2; if the number of imported packages in pythonCode is greater than 10, 3)}: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
