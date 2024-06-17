@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table
+from pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -637,12 +637,12 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    # db.db_loader('hupd', '2016-2016', 'False')
-    # pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    # print(db.pandas_interpreter(pandas_code))
+    db.db_loader('hupd', '2016-2016', 'False')
+    pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
+    print(db.pandas_interpreter(pandas_code))
     
-    db.db_loader('hupd', '2016-2016', 'True')
-    db.classifier('logistic_regression', 'abstract', 'decision')
+    # db.db_loader('hupd', '2016-2016', 'True')
+    # db.classifier('logistic_regression', 'abstract', 'decision')
     
     
     
