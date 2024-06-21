@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table
+from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -79,7 +79,10 @@ class table_toolkits():
                 df_raw['filing_date'] = pd.to_datetime(df_raw['filing_date'])
                 df_raw['patent_issue_date'] = pd.to_datetime(df_raw['patent_issue_date'])
                 df_raw['date_published'] = pd.to_datetime(df_raw['date_published'])
-            print(df_raw.dtypes) ###
+                
+                df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
+                df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
+            # print(df_raw.dtypes)
             df.append(df_raw)
         df = pd.concat(df, ignore_index=True)
         if split=="False":
@@ -87,14 +90,14 @@ class table_toolkits():
             column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
             column_names_str = ', '.join(column_names)
             self.dataset_dict = None
-            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)
+            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has the following structure: {}".format(self.data.head())
         else:
             train_df, validation_df = train_test_split(df, test_size=0.4, random_state=42)
             train_dataset = Dataset.from_pandas(train_df)
             validation_dataset = Dataset.from_pandas(validation_df)
             self.dataset_dict = DatasetDict({"train": train_dataset, "validation": validation_dataset})
             self.data = None
-            return "We have successfully loaded the {} dataset dict that has the following structure: {}.".format(target_db, self.dataset_dict)
+            return "We have successfully loaded the {} dataset dict that has the following structure: {}".format(target_db, self.dataset_dict)
     
     # remove rows where the target column is NA or unwanted value
     # condition can be e.g. "not NA", "keep ACCEPT,REJECT", "remove 0,1" etc.
@@ -135,7 +138,7 @@ class table_toolkits():
             except KeyError as e:
                 column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
                 column_names_str = ', '.join(column_names)
-                return "Error: "+str(e)+"\nThe dataframe contains the following columns: "+column_names_str+"."
+                return "Error: "+str(e)+"\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(self.data.head())
             # other exceptions
             
     def classifier(self, model_name, section, target, num_classes=2):
@@ -637,9 +640,8 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    db.db_loader('hupd', '2016-2016', 'False')
+    db.db_loader('hupd', '2017-2017', 'False')
     pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    print(db.pandas_interpreter(pandas_code))
     
     # db.db_loader('hupd', '2016-2016', 'True')
     # db.classifier('logistic_regression', 'abstract', 'decision')

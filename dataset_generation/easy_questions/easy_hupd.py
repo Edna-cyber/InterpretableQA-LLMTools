@@ -1,4 +1,5 @@
 import os
+import copy
 import pandas as pd
 import json
 import random
@@ -34,15 +35,9 @@ def top_accepted_category(num, category, year):
         cat = "main_cpc_label"
     col = cat.replace("label", "code")
     df[col] = df[cat].apply(lambda x:x[:3] if isinstance(x, str) else x)
-    grouped = df.groupby(col).size().reset_index(name="counts")
-    df_accepted = df[df["decision"]=="ACCEPTED"]
-    del df
-    grouped_accepted = df_accepted.groupby(col).size().reset_index(name="accepted_counts")
-    del df_accepted
-    merged = pd.merge(grouped, grouped_accepted, on=col, how='inner')
-    merged["accepted_p"] = merged["accepted_counts"] / merged["counts"]
-    sorted_merged = merged.sort_values(by="accepted_p", ascending=False)
-    top_n = list(sorted_merged.head(num)[col])
+    df["acceptance"] = df["decision"].apply(lambda x: 1 if x =="ACCEPTED" else 0)
+    top_categories = df.groupby(col)['acceptance'].mean().nlargest(num)
+    top_n = top_categories.index.tolist()
     return top_n
 
 # Template 2: How does the number of patent applications in {year1} compare to {year2}?
@@ -52,6 +47,7 @@ def compare_applications(year_1, year_2):
     del df1
     df2 = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year_2))))
     len_df2 = len(df2)
+    del df2
     return len_df1 / len_df2
 
 # Template 3: Which applications took the longest time to be published after filing in {year}?
@@ -89,8 +85,8 @@ def common_examiners(start_year, end_year):
 
 questions = []
 question_id = 1
-while question_id<=30: #100
-    question_type = random.randint(0,4) #(0, 8)
+while question_id<=5: #100
+    question_type = random.randint(1,1) #(0, 8)
     if question_type == 0:
         # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
         start_year = random.randint(2015,2018)
@@ -100,8 +96,8 @@ while question_id<=30: #100
     elif question_type == 1:
         # What were the top{#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}?
         num = random.randint(2,5)
-        category = random.choice(["IPCR categories", "CPC categories"])
-        year = random.randint(2015,2018)
+        category = random.choice(["IPCR categories", "CPC categories"]) 
+        year = random.randint(2015,2018) 
         question = "What were the top{} {} with the highest percentage of patent acceptance in {}?".format(num, category, year)
         answer = top_accepted_category(num, category, year)
     elif question_type == 2:
