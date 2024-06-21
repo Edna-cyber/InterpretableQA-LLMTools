@@ -8,7 +8,7 @@ The modules are defined as follows:
 
 - LoadDB[DBName; subsetNames; split]: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- PandasInterpreter[pythonCode]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+- PandasInterpreter[pythonCode]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. You can only use "PandasInterpreter" after loading the dataframe with "LoadDB".
 
 - PythonInterpreter[pythonCode]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
@@ -30,7 +30,7 @@ The modules are defined as follows, ordered by their interpretability from highe
 
 - LoadDB[DBName; subsetNames; split]: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- PandasInterpreter[pythonCode]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+- PandasInterpreter[pythonCode]: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. You can only use "PandasInterpreter" after loading the dataframe with "LoadDB".
 
 - PythonInterpreter[pythonCode]: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
@@ -48,7 +48,7 @@ The modules are defined as follows, with the formulas used to calculate their in
 
 - LoadDB[DBName; subsetNames; split] {3}: This module loads a database specified by the DBName, subsetNames, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The DBName can be "hupd". The subsetNames is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- PandasInterpreter[pythonCode] {(if the number of lines of pythonCode < 10, 4; if the number of lines of pythonCode is between 10 and 20, 7; if the number of lines of pythonCode is between 21 and 100, 9; if the number of lines of pythonCode > 100, 10.) * (if the number of imported packages in pythonCode < 2, 1; if the number of imported packages in pythonCode is between 2 and 5, 1.5; if the number of imported packages in pythonCode > 5, 2)}: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+- PandasInterpreter[pythonCode] {(if the number of lines of pythonCode < 10, 4; if the number of lines of pythonCode is between 10 and 20, 7; if the number of lines of pythonCode is between 21 and 100, 9; if the number of lines of pythonCode > 100, 10.) * (if the number of imported packages in pythonCode < 2, 1; if the number of imported packages in pythonCode is between 2 and 5, 1.5; if the number of imported packages in pythonCode > 5, 2)}: This module interprets Pandas code written in Python, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. You can only use "PandasInterpreter" after loading the dataframe with "LoadDB".
 
 - PythonInterpreter[pythonCode] {(if the number of lines of pythonCode < 10, 4; if the number of lines of pythonCode is between 10 and 20, 7; if the number of lines of pythonCode is between 21 and 100, 9; if the number of lines of pythonCode > 100, 10.) * (if the number of imported packages in pythonCode < 2, 1; if the number of imported packages in pythonCode is between 2 and 5, 1.5; if the number of imported packages in pythonCode > 5, 2)}: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
@@ -276,6 +276,4 @@ Therefore, Modules1 is selected because it has a lower total interpretability co
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """ 
 
-prompt = prompt_header_formula+prompt_example_formula_full
-
-# verify the thought chain, if correct, add You only need to output Best Module. into prompt. 
+prompt = prompt_header_clean+prompt_example_clean                                                                                                
