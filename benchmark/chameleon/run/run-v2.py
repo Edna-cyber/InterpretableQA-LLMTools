@@ -79,7 +79,7 @@ if __name__ == "__main__":
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
     print("result_file", result_file)
 
-    count, correct, wrong = 0, 0, 0
+    count, correct = 0, 0
     pids = solver.pids[count:] # only use the remaining problems
 
     for pid in tqdm(pids):
@@ -161,9 +161,9 @@ if __name__ == "__main__":
                 # print("context", context) 
                 argument_lst = argument.split(";")
                 argument_lst = [x.strip() for x in argument_lst]
-                # print("argument_lst", argument_lst) 
+                print("argument_lst", argument_lst) 
                 output = ACTION_LIST[action_type](*argument_lst)
-                print("output", output) 
+                # print("output", output) 
                 i += 1
                 # input()
                 logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
@@ -178,30 +178,38 @@ if __name__ == "__main__":
         # remove all the "\n" in the context
         context = re.sub("\n", "", context)
         # print("context", context)
-        logs = logs + "\nGround-Truth Answer: "+str(solver.cache["example"]["answer"])
+        llm_answer = logs.strip().split('\n')[-1]
+        # print("llm_answer", llm_answer) 
+        gt_answer = str(solver.cache["example"]["answer"])
+        # print("gt_answer", gt_answer) 
+        if llm_answer==gt_answer:
+            correct += 1
+        elif gt_answer[0]=="[" and gt_answer[-1]=="]": # gt_answer is type list
+            correct += int(llm_answer==gt_answer[1:-1])
+        logs = logs + "\nGround-Truth Answer: "+gt_answer
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)): #<YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)) #<YOUR_OWN_PATH>
             logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version) #<YOUR_OWN_PATH>
         with open(os.path.join(logs_dir, pid+'.txt'), 'w') as f:
             f.write(logs)
 
-        acc = correct / count * 100
-        with open(cache_file, 'w') as f:
-            try:
-                f.write(json.dumps(solver.cache, indent=2, separators=(',', ': ')) + "\n")
-            except Exception as e:
-                print(e)
-                print(solver.cache)
-        
-        with open(cache_jsonl, 'w') as f:
-            try:
-                json.dump(solver.cache, f)
-                f.write('\n')
-            except Exception as e:
-                print(e)
-                print(solver.cache)
+    acc = correct / count * 100
+    with open(cache_file, 'w') as f:
+        try:
+            f.write(json.dumps(solver.cache, indent=2, separators=(',', ': ')) + "\n")
+        except Exception as e:
+            print(e)
+            print(solver.cache)
+    
+    with open(cache_jsonl, 'w') as f:
+        try:
+            json.dump(solver.cache, f)
+            f.write('\n')
+        except Exception as e:
+            print(e)
+            print(solver.cache)
 
-        # save the result
-        result = {'acc': acc, 'correct': correct, 'wrong':wrong, 'count': count, 'args': vars(args)}
-        with open(result_file, 'w') as f:
-            json.dump(result, f, indent=2, separators=(',', ': '))
+    # save the result
+    result = {'acc': acc, 'correct': correct, 'count': count, 'args': vars(args)}
+    with open(result_file, 'w') as f:
+        json.dump(result, f, indent=2, separators=(',', ': '))

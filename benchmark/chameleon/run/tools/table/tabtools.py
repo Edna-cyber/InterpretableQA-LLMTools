@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table
+from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -139,6 +139,8 @@ class table_toolkits():
                 column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
                 column_names_str = ', '.join(column_names)
                 return "Error: "+str(e)+"\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(self.data.head())
+            except Exception as e:
+                return "Error: "+str(e)
             # other exceptions
             
     def classifier(self, model_name, section, target, num_classes=2):
@@ -589,7 +591,6 @@ class table_toolkits():
             tokenizer = tokenizer, 
             section = section
             )
-        print(data_loaders) ###
         del self.dataset_dict
 
         if not validation:
@@ -640,9 +641,11 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    db.db_loader('hupd', '2017-2017', 'False')
+    db.db_loader('hupd', '2016-2016', 'False')
     pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    
+    pandas_code = "import pandas as pd\ndf['time_to_publish'] = (df['date_published'] - df['filing_date']).dt.days\nans = df.loc[df['time_to_publish'].idxmax()]"
+    print(db.pandas_interpreter(pandas_code))
+
     # db.db_loader('hupd', '2016-2016', 'True')
     # db.classifier('logistic_regression', 'abstract', 'decision')
     
