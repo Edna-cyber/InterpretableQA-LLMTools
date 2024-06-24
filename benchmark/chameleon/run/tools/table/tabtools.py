@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
+from pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -69,12 +69,8 @@ class table_toolkits():
             file_path = "{}/data/external_corpus/{}/{}_{}.csv".format(self.path, target_db, target_db, sub)
             df_raw = pd.read_csv(file_path)
             if target_db=="hupd":
-                df_raw['patent_number'] = df_raw['patent_number'].fillna(0)
-                df_raw['patent_number'] = df_raw['patent_number'].replace({'None':0, 'nan':0})
-                df_raw['patent_number'] = df_raw['patent_number'].astype(int)
-                df_raw['examiner_id'] = df_raw['examiner_id'].fillna(0)
-                df_raw['examiner_id'] = df_raw['examiner_id'].replace({'':0})
-                df_raw['examiner_id'] = df_raw['examiner_id'].astype(float).astype(int)
+                df_raw['patent_number'] = pd.to_numeric(df_raw['patent_number'], errors='coerce').astype('Int64').replace(0, pd.NA) # so that the LLM is aware of which patent numbers are invalid 
+                df_raw['examiner_id'] = pd.to_numeric(df_raw['examiner_id'], errors='coerce').astype('Int64') 
                 
                 df_raw['filing_date'] = pd.to_datetime(df_raw['filing_date'])
                 df_raw['patent_issue_date'] = pd.to_datetime(df_raw['patent_issue_date'])
@@ -83,6 +79,8 @@ class table_toolkits():
                 df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
                 df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
             # print(df_raw.dtypes)
+            # print(df_raw.head())
+            print(df_raw["patent_number"].unique())
             df.append(df_raw)
         df = pd.concat(df, ignore_index=True)
         if split=="False":
@@ -642,9 +640,8 @@ class table_toolkits():
 if __name__ == "__main__":
     db = table_toolkits()
     db.db_loader('hupd', '2016-2016', 'False')
-    pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    pandas_code = "import pandas as pd\ndf['time_to_publish'] = (df['date_published'] - df['filing_date']).dt.days\nans = df.loc[df['time_to_publish'].idxmax()]"
-    print(db.pandas_interpreter(pandas_code))
+    # pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
+    # print(db.pandas_interpreter(pandas_code))
 
     # db.db_loader('hupd', '2016-2016', 'True')
     # db.classifier('logistic_regression', 'abstract', 'decision')

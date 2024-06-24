@@ -40,7 +40,7 @@ def top_accepted_category(num, category, year):
     top_n = top_categories.index.tolist()
     return top_n
 
-# Template 2: How does the number of patent applications filed in {year1} compare proportionally to {year2}?
+# Template 2: How does the number of patent applications filed in {year1} compare proportionally to those filed in {year2}?
 def compare_applications(year_1, year_2):
     df1 = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year_1))))
     len_df1 = len(df1)
@@ -50,16 +50,16 @@ def compare_applications(year_1, year_2):
     del df2
     return len_df1 / len_df2
 
-# Template 3: Which application took the longest time to be published after filing in {year}?
+# Template 3: What is the title of the patent that took the longest time to be published after filing in {year}?
 def longest_time(year):
     df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
     df["date_published"] = pd.to_datetime(df["date_published"])
     df["filing_date"] = pd.to_datetime(df["filing_date"])
     df["duration"] = df["date_published"]-df["filing_date"]
     sorted_df = df.sort_values(by="duration", ascending=False).reset_index()    
-    return sorted_df.at[0,"patent_number"]
+    return sorted_df.at[0,"title"]
     
-# Template 4: How many examiners reviewed patent applications each year between {start_year} and {end_year}?
+# Template 4: How many examiners reviewed patent applications in every single year between {start_year} and {end_year}?
 def common_examiners(start_year, end_year):
     examiners = set()
     for year in range(start_year, end_year+1):
@@ -78,8 +78,8 @@ def common_examiners(start_year, end_year):
 
 questions = []
 question_id = 1
-while question_id<=5: #100
-    question_type = random.randint(3,3) #(0, 8)
+while question_id<=30: #100
+    question_type = random.randint(0,4) #(0, 8)
     if question_type == 0:
         # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
         start_year = random.randint(2015,2018)
@@ -94,23 +94,23 @@ while question_id<=5: #100
         question = "What were the top{} {} with the highest percentage of patent acceptance in {}?".format(num, category, year)
         answer = top_accepted_category(num, category, year)
     elif question_type == 2:
-        # How does the number of patent applications filed in {year1} compare proportionally to {year2}?
+        # How does the number of patent applications filed in {year1} compare proportionally to those filed in {year2}?
         year_1 = random.randint(2015,2018)
         year_2 = random.randint(2015,2018)
         while year_2==year_1:
             year_2 = random.randint(2015,2018)
-        question = "How does the number of patent applications filed in {} compare proportionally to {}?".format(year_1, year_2)
+        question = "How does the number of patent applications filed in {} compare proportionally to those filed in {}?".format(year_1, year_2)
         answer = compare_applications(year_1, year_2)
     elif question_type == 3:
-        # Which application took the longest time to be published after filing in {year}?
-        year = random.randint(2015,2018)
-        question = "Which application took the longest time to be published after filing in {}?".format(year)
+        # What is the title of the patent that took the longest time to be published after filing in {year}?
+        year = random.randint(2015,2017) # not include 2018, as most applications are still pending
+        question = "What is the title of the patent that took the longest time to be published after filing in {}?".format(year)
         answer = longest_time(year)
     elif question_type == 4:
-        # How many examiners reviewed patent applications each year between {start_year} and {end_year}?
+        # How many examiners reviewed patent applications in every single year between {start_year} and {end_year}?
         start_year = random.randint(2015,2018)
         end_year = random.randint(start_year,2018)
-        question = "How many examiners reviewed patent applications each year between {} and {}?".format(start_year, end_year)
+        question = "How many examiners reviewed patent applications in every single year between {} and {}?".format(start_year, end_year)
         answer = common_examiners(start_year, end_year)
     # elif question_type == 5:
     #     # What was the average number of inventors per application from {start_year} to {end_year}?
