@@ -71,11 +71,6 @@ def common_examiners(start_year, end_year):
         del df
     return len(examiners)
 
-# # What was the average number of inventors per application from {start_year} to {end_year}?
-# def number_inventors(start_year, end_year):
-#     for year in range(start_year, end_year+1):
-#         df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
-
 questions = []
 question_id = 1
 while question_id<=30: #100
@@ -112,14 +107,6 @@ while question_id<=30: #100
         end_year = random.randint(start_year,2018)
         question = "How many examiners reviewed patent applications in every single year between {} and {}?".format(start_year, end_year)
         answer = common_examiners(start_year, end_year)
-    # elif question_type == 5:
-    #     # What was the average number of inventors per application from {start_year} to {end_year}?
-    #     start_year = random.randint(2015,2018)
-    #     end_year = random.randint(start_year,2018)
-    #     question = "What was the average number of inventors per application from {start_year} to {end_year}?".format(start_year, end_year)
-    #     answer = number_inventors(start_year, end_year)
-    # elif question_type == 6:
-        # Who were the top 5 most prolific inventors based on the number of applications in {year}?
     
     # use None to signify not adding to the questions / answers
     if answer:
