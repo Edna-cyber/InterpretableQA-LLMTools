@@ -6,6 +6,7 @@ import argparse
 import random
 from tqdm import tqdm
 from demos import prompt_policy
+from openai import OpenAI
 # add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 
@@ -32,6 +33,10 @@ ACTION_LIST = {
     'Finish': finish
 }
 
+openai.api_key = os.getenv("OPENAI_API_KEY")
+print(openai.api_key)
+client = OpenAI()
+
 tools = [
     {
         "type": "function",
@@ -41,12 +46,12 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "mathOp": {
+                    "input_query": {
                         "type": "string",
                         "description": "An arithmetic operation, e.g. 2*3.",
                     }
                 },
-                "required": ["mathOp"],
+                "required": ["input_query"],
             },
         },
     },
@@ -58,20 +63,20 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "DBName": {
+                    "target_db": {
                         "type": "string",
                         "description": "The name of the database to be loaded, e.g. hupd",
                     },
-                    "subset": {
+                    "duration": {
                         "type": "string",
                         "description": "The subset of the database is specified by the range of years in the format startYear-endYear, inclusive on both ends, e.g. 2016-2018.",
                     },
                     "split": {
                         "type": "boolean",
-                        "description": "When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. The default value of split is False.",
+                        "description": "When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. The default value is False.",
                     }
                 },
-                "required": ["DBName", "subset"],
+                "required": ["target_db", "duration"],
             },
         },
     },
@@ -83,12 +88,12 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "pythonCode": {
+                    "pandas_code": {
                         "type": "string",
                         "description": "Pandas code written in Python that involves operations on a DataFrame df",
                     }
                 },
-                "required": ["pythonCode"],
+                "required": ["pandas_code"],
             },
         },
     },
@@ -100,12 +105,12 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "pythonCode": {
+                    "python_code": {
                         "type": "string",
                         "description": "Python code",
                     }
                 },
-                "required": ["pythonCode"],
+                "required": ["python_code"],
             },
         },
     },
@@ -117,20 +122,24 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "modelName": {
+                    "model_name": {
                         "type": "string",
                         "description": "The modelName can be logistic_regression or distilbert-base-uncased.",
                     },
-                    "predictorSection": {
+                    "section": {
                         "type": "string",
                         "description": "The predictor variable of the classifier model, which is natural language requiring tokenization.",
                     },
                     "target": {
                         "type": "string",
                         "description": "The target variable of the classifier model.",
+                    }, 
+                    "num_classes": {
+                        "type": "integer",
+                        "description": "The number of classes in the classification task. The default value is 2.",
                     }
                 },
-                "required": ["modelName", "predictorSection", "target"], 
+                "required": ["model_name", "section", "target"], 
             },
         },
     },
@@ -142,19 +151,16 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "answer": {
+                    "argument": {
                         "type": "string",
                         "description": "The final answer to be returned",
                     }
                 },
-                "required": ["answer"], 
+                "required": ["argument"], 
             },
         },
     }
 ]
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
-print(openai.api_key)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -193,8 +199,6 @@ if __name__ == "__main__":
     # Get the result file
     result_root = f"{args.output_root}/{args.task_name}" 
     os.makedirs(result_root, exist_ok=True)
-    cache_file = f"{result_root}/{args.label}_{args.test_split}_cache.json"
-    cache_jsonl = f"{result_root}/{args.label}_{args.test_split}_cache.jsonl"
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
     print("result_file", result_file)
 
@@ -219,67 +223,99 @@ if __name__ == "__main__":
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ]
+        print("system_prompt", system_prompt) ###
+        print("user_prompt", user_prompt) ###
+        response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
+        print("response", response) ###
+        response_message = response.choices[0].message
+        tool_calls = response_message.tool_calls
+        print("tool_calls", tool_calls) ###
+        if tool_calls:
+            messages.append(response_message)
+            print("messages", messages) ###
+            for tool_call in tool_calls:
+                function_name = tool_call.function.name
+                function_to_call = ACTION_LIST[function_name]
+                function_args = json.loads(tool_call.function.arguments)
+                function_response = function_to_call(**function_args)
+                print("function_response", function_response)
+                messages.append(
+                    {
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_name,
+                        "content": function_response,
+                    }
+                )  # extend conversation with function response
+            print("new messages", messages) ###
+            second_response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+            )  # get a new response from the model where it can see the function response
+            print("second_response", second_response) ###
+            messages.append(second_response)
+        print(messages) ###
     
-        while i<len(modules):
-            try:
-                attempts = 0
-                demo_prompt = prompt_policy.prompt.strip() 
-                question = example["question"]
-                if context != "":
-                    if output.startswith("Error:"):
-                        if attempts==0:
-                            i -= 1
-                            attempts += 1
-                    module = modules[i]
-                    test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
-                else:
-                    module = modules[i]
-                    test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
-                # print("i", i)
-                # print("module", module)
-                # need to replace the prompt after predicting the modules
-                demo_prompt = re.sub(r'Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt) ###
-                demo_prompt = re.sub(r'Please provide only the sequence of Best Modules like those from the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt)
-                full_prompt = demo_prompt + "\n\n" + test_prompt
-                messages=[
-                    {"role": "user", "content": full_prompt},
-                ]
-                # print("test_prompt", test_prompt) 
-                # execute the module
-                action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
-                # print("action", action) 
-                if action[0]=="[" and action[-1]=="]":
-                    current = action[2:action.find(",")-1] # first element in list string, and then remove double quotes
-                else:
-                    current = action
-                # print("current", current)
-                left_bracket = current.find("[") 
-                right_bracket = current.rfind("]") 
-                action_type = current[:left_bracket] 
-                argument = current[left_bracket+1:right_bracket] 
-                # print("action_type", action_type) 
-                # print("argument", argument) 
-                if context == "":
-                    context = module+"["+argument+"]"
-                else:
-                    context = context+"-->"+module+"["+argument+"]"
-                # print("context", context) 
-                argument_lst = argument.split(";")
-                argument_lst = [x.strip() for x in argument_lst]
-                # print("argument_lst", argument_lst) 
-                output = ACTION_LIST[action_type](*argument_lst)
-                # print("output", output) 
-                i += 1
-                # input()
-                logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
-                if count < 10:
-                    print(f"======== [Module]: {module} ========\n")
-                    print(f"# [Input]\n{input}\n")
-                    print(f"# [Output]\n{output}\n")
-            except Exception as e:
-                print(f"An error occurred: {e}")
-                logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+str(e)
-                break
+        # while i<len(modules):
+        #     try:
+        #         attempts = 0
+        #         demo_prompt = prompt_policy.prompt.strip() 
+        #         question = example["question"]
+        #         if context != "":
+        #             if output.startswith("Error:"):
+        #                 if attempts==0:
+        #                     i -= 1
+        #                     attempts += 1
+        #             module = modules[i]
+        #             test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
+        #         else:
+        #             module = modules[i]
+        #             test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
+        #         # print("i", i)
+        #         # print("module", module)
+        #         # need to replace the prompt after predicting the modules
+        #         demo_prompt = re.sub(r'Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt) ###
+        #         demo_prompt = re.sub(r'Please provide only the sequence of Best Modules like those from the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt)
+        #         full_prompt = demo_prompt + "\n\n" + test_prompt
+        #         messages=[
+        #             {"role": "user", "content": full_prompt},
+        #         ]
+        #         # print("test_prompt", test_prompt) 
+        #         # execute the module
+        #         action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
+        #         # print("action", action) 
+        #         if action[0]=="[" and action[-1]=="]":
+        #             current = action[2:action.find(",")-1] # first element in list string, and then remove double quotes
+        #         else:
+        #             current = action
+        #         # print("current", current)
+        #         left_bracket = current.find("[") 
+        #         right_bracket = current.rfind("]") 
+        #         action_type = current[:left_bracket] 
+        #         argument = current[left_bracket+1:right_bracket] 
+        #         # print("action_type", action_type) 
+        #         # print("argument", argument) 
+        #         if context == "":
+        #             context = module+"["+argument+"]"
+        #         else:
+        #             context = context+"-->"+module+"["+argument+"]"
+        #         # print("context", context) 
+        #         argument_lst = argument.split(";")
+        #         argument_lst = [x.strip() for x in argument_lst]
+        #         # print("argument_lst", argument_lst) 
+        #         output = ACTION_LIST[action_type](*argument_lst)
+        #         # print("output", output) 
+        #         i += 1
+        #         # input()
+        #         logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
+        #         if count < 10:
+        #             print(f"======== [Module]: {module} ========\n")
+        #             print(f"# [Input]\n{input}\n")
+        #             print(f"# [Output]\n{output}\n")
+        #     except Exception as e:
+        #         print(f"An error occurred: {e}")
+        #         logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+str(e)
+        #         break
         # remove all the "\n" in the context
         context = re.sub("\n", "", context)
         # print("context", context)

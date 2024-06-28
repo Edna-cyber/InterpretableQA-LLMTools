@@ -36,12 +36,12 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "mathOp": {
+                    "input_query": {
                         "type": "string",
                         "description": "An arithmetic operation, e.g. 2*3.",
                     }
                 },
-                "required": ["mathOp"],
+                "required": ["input_query"],
             },
         },
     },
@@ -53,20 +53,20 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "DBName": {
+                    "target_db": {
                         "type": "string",
                         "description": "The name of the database to be loaded, e.g. hupd",
                     },
-                    "subset": {
+                    "duration": {
                         "type": "string",
                         "description": "The subset of the database is specified by the range of years in the format startYear-endYear, inclusive on both ends, e.g. 2016-2018.",
                     },
                     "split": {
                         "type": "boolean",
-                        "description": "When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. The default value of split is False.",
+                        "description": "When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. The default value is False.",
                     }
                 },
-                "required": ["DBName", "subset"],
+                "required": ["target_db", "duration"],
             },
         },
     },
@@ -78,12 +78,12 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "pythonCode": {
+                    "pandas_code": {
                         "type": "string",
                         "description": "Pandas code written in Python that involves operations on a DataFrame df",
                     }
                 },
-                "required": ["pythonCode"],
+                "required": ["pandas_code"],
             },
         },
     },
@@ -95,12 +95,12 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "pythonCode": {
+                    "python_code": {
                         "type": "string",
                         "description": "Python code",
                     }
                 },
-                "required": ["pythonCode"],
+                "required": ["python_code"],
             },
         },
     },
@@ -112,20 +112,24 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "modelName": {
+                    "model_name": {
                         "type": "string",
                         "description": "The modelName can be logistic_regression or distilbert-base-uncased.",
                     },
-                    "predictorSection": {
+                    "section": {
                         "type": "string",
                         "description": "The predictor variable of the classifier model, which is natural language requiring tokenization.",
                     },
                     "target": {
                         "type": "string",
                         "description": "The target variable of the classifier model.",
+                    }, 
+                    "num_classes": {
+                        "type": "integer",
+                        "description": "The number of classes in the classification task. The default value is 2.",
                     }
                 },
-                "required": ["modelName", "predictorSection", "target"], 
+                "required": ["model_name", "section", "target"], 
             },
         },
     },
@@ -137,12 +141,12 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "answer": {
+                    "argument": {
                         "type": "string",
                         "description": "The final answer to be returned",
                     }
                 },
-                "required": ["answer"], 
+                "required": ["argument"], 
             },
         },
     }
@@ -184,8 +188,7 @@ class solver:
         ]
         print(f'PROMPT: \n{full_prompt}\n' + '-' * 20 + '\n')
         # execute the module
-        response = client.chat.completions.create(model=self.policy_engine, messages=messages, temperature=self.policy_temperature, max_tokens=self.policy_max_tokens, tools=tools, tool_choice="auto")
-        response_message = response.choices[0].message
+
         print(f'GPT RESPONSE: \n{response_message}\n')
         # if "Best Modules:" in modules:
         #     cost_start_ind = modules.rfind("{") ###
