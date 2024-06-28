@@ -59,7 +59,7 @@ class table_toolkits():
         self.duration = None
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
 
-    def db_loader(self, target_db, duration, split="False"): # change examples and description in prompt policy # todo: for forecasting tasks, different loading
+    def db_loader(self, target_db, duration, split=False): # change examples and description in prompt policy # todo: for forecasting tasks, different loading
         self.duration = duration
         df = []
         hyphen_ind = duration.index("-")
@@ -638,11 +638,11 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    db.db_loader('hupd', '2016-2016', 'False')
+    db.db_loader('hupd', '2016-2016', False)
     pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
     print(db.pandas_interpreter(pandas_code))
 
-    # db.db_loader('hupd', '2016-2016', 'True')
+    # db.db_loader('hupd', '2016-2016', True)
     # db.classifier('logistic_regression', 'abstract', 'decision')
     
     

@@ -23,7 +23,6 @@ current_datetime = datetime.datetime.now()
 datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
 db = table_toolkits()
-
 ACTION_LIST = {
     'Calculate': WolframAlphaCalculator,
     'LoadDB': db.db_loader, 
@@ -32,6 +31,127 @@ ACTION_LIST = {
     'Classifier': db.classifier,
     'Finish': finish
 }
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "Calculate",
+            "description": "Conduct an arithmetic operation",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mathOp": {
+                        "type": "string",
+                        "description": "An arithmetic operation, e.g. 2*3.",
+                    }
+                },
+                "required": ["mathOp"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "LoadDB",
+            "description": "Load a database specified by the DBName, subset, and a boolean value split. Normally, we only use LoadDB when the question requires data from a specific structured database.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "DBName": {
+                        "type": "string",
+                        "description": "The name of the database to be loaded, e.g. hupd",
+                    },
+                    "subset": {
+                        "type": "string",
+                        "description": "The subset of the database is specified by the range of years in the format startYear-endYear, inclusive on both ends, e.g. 2016-2018.",
+                    },
+                    "split": {
+                        "type": "boolean",
+                        "description": "When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. The default value of split is False.",
+                    }
+                },
+                "required": ["DBName", "subset"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "PandasInterpreter",
+            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We can only use PandasInterpreter after loading the dataframe with LoadDB.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "pythonCode": {
+                        "type": "string",
+                        "description": "Pandas code written in Python that involves operations on a DataFrame df",
+                    }
+                },
+                "required": ["pythonCode"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "PythonInterpreter",
+            "description": "Interprets Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We don't use PythonInterpreter when the question requires data manipulation performed on a specific structured dataframe.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "pythonCode": {
+                        "type": "string",
+                        "description": "Python code",
+                    }
+                },
+                "required": ["pythonCode"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "Classifier",
+            "description": "Run a specified classifier model on the given predictorSection to predict the target. Normally, we use the Classifier module for binary or multi-class classification tasks.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "modelName": {
+                        "type": "string",
+                        "description": "The modelName can be logistic_regression or distilbert-base-uncased.",
+                    },
+                    "predictorSection": {
+                        "type": "string",
+                        "description": "The predictor variable of the classifier model, which is natural language requiring tokenization.",
+                    },
+                    "target": {
+                        "type": "string",
+                        "description": "The target variable of the classifier model.",
+                    }
+                },
+                "required": ["modelName", "predictorSection", "target"], 
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "Finish",
+            "description": "Return the final answer and finish the task.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "answer": {
+                        "type": "string",
+                        "description": "The final answer to be returned",
+                    }
+                },
+                "required": ["answer"], 
+            },
+        },
+    }
+]
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 print(openai.api_key)
