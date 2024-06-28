@@ -73,8 +73,8 @@ def common_examiners(start_year, end_year):
 
 questions = []
 question_id = 1
-while question_id<=30: #100
-    question_type = random.randint(0,4) #(0, 8)
+while question_id<=10: #100
+    question_type = random.randint(0,1) #(0, 8)
     if question_type == 0:
         # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
         start_year = random.randint(2015,2018)
@@ -107,7 +107,6 @@ while question_id<=30: #100
         end_year = random.randint(start_year,2018)
         question = "How many examiners reviewed patent applications in every single year between {} and {}?".format(start_year, end_year)
         answer = common_examiners(start_year, end_year)
-    
     # use None to signify not adding to the questions / answers
     if answer:
         questions.append({"qid": "easy-hupd-{:0>4d}".format(question_id), "question":question, "answer":answer})

@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
+from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # 
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -80,7 +80,6 @@ class table_toolkits():
                 df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
             # print(df_raw.dtypes)
             # print(df_raw.head())
-            print(df_raw["patent_number"].unique())
             df.append(df_raw)
         df = pd.concat(df, ignore_index=True)
         if split=="False":
@@ -640,8 +639,8 @@ class table_toolkits():
 if __name__ == "__main__":
     db = table_toolkits()
     db.db_loader('hupd', '2016-2016', 'False')
-    # pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    # print(db.pandas_interpreter(pandas_code))
+    pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
+    print(db.pandas_interpreter(pandas_code))
 
     # db.db_loader('hupd', '2016-2016', 'True')
     # db.classifier('logistic_regression', 'abstract', 'decision')

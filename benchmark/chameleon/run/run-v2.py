@@ -79,7 +79,7 @@ if __name__ == "__main__":
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
     print("result_file", result_file)
 
-    count, correct = 0, 0
+    count, correct, cost = 0, 0, 0
     pids = solver.pids[count:] # only use the remaining problems
 
     for pid in tqdm(pids):
@@ -93,7 +93,8 @@ if __name__ == "__main__":
         solver.cache["example"] = solver.examples[pid] # get one example 
 
         # [1] Predict the modules
-        modules = solver.predict_modules()
+        modules, single_cost = solver.predict_modules()
+        cost += single_cost
         modules = modules[1:-1]
         modules_lst = modules.split('", "')
         modules = []
@@ -133,7 +134,7 @@ if __name__ == "__main__":
                 # print("i", i)
                 # print("module", module)
                 # need to replace the prompt after predicting the modules
-                demo_prompt = re.sub(r'Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt)
+                demo_prompt = re.sub(r'Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt) ###
                 demo_prompt = re.sub(r'Please provide only the sequence of Best Modules like those from the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt)
                 full_prompt = demo_prompt + "\n\n" + test_prompt
                 messages=[
@@ -161,7 +162,7 @@ if __name__ == "__main__":
                 # print("context", context) 
                 argument_lst = argument.split(";")
                 argument_lst = [x.strip() for x in argument_lst]
-                print("argument_lst", argument_lst) 
+                # print("argument_lst", argument_lst) 
                 output = ACTION_LIST[action_type](*argument_lst)
                 # print("output", output) 
                 i += 1
@@ -194,6 +195,7 @@ if __name__ == "__main__":
             f.write(logs)
 
     acc = correct / count * 100
+    cost = cost / count
     with open(cache_file, 'w') as f:
         try:
             f.write(json.dumps(solver.cache, indent=2, separators=(',', ': ')) + "\n")
@@ -210,6 +212,6 @@ if __name__ == "__main__":
             print(solver.cache)
 
     # save the result
-    result = {'acc': acc, 'correct': correct, 'count': count, 'args': vars(args)}
+    result = {'acc': acc, 'correct': correct, 'count': count, 'cost': cost, 'args': vars(args)}
     with open(result_file, 'w') as f:
         json.dump(result, f, indent=2, separators=(',', ': '))

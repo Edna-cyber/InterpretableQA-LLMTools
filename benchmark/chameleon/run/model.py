@@ -103,13 +103,16 @@ class solver:
         modules = get_chat_response(messages, self.api_key, self.policy_engine, self.policy_temperature, self.policy_max_tokens)
         print(f'GPT RESPONSE: \n{modules}\n')
         if "Best Modules:" in modules:
+            cost_start_ind = modules.rfind("{") ###
+            cost_end_ind = modules.rfind("}") ###
+            single_cost = int(modules[cost_start_ind+1:cost_end_ind]) ###
             start_ind = modules.find("Best Modules: ")+len("Best Modules: ")
-            end_ind = modules.find("Thought:")
-            modules = modules[start_ind:end_ind]
+            end_ind = modules.rfind("]") # find("Thought:")
+            modules = modules[start_ind:end_ind+1]
         # modules = self.update_modules(modules)
         # update the cache
         self.cache["modules:input"] = test_prompt
         self.cache["modules:output"] = modules
-        return modules
+        return modules, single_cost ###
     
     
