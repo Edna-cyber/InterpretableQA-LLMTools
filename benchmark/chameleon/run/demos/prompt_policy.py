@@ -84,27 +84,27 @@ Question: What is the 20th Fibonacci number?
 Modules1: ["Calculate[0+0]", "Calculate[0+1]", "Calculate[0+1]", "Calculate[1+1]", "Calculate[1+2]", "Calculate[2+3]", "Calculate[3+5]", "Calculate[5+8]", "Calculate[8+13]", "Calculate[13+21]", "Calculate[21+34]", "Calculate[34+55]", "Calculate[55+89]", "Calculate[89+144]", "Calculate[144+233]", "Calculate[233+377]", "Calculate[377+610]", "Calculate[610+987]", "Calculate[987+1597]", "Calculate[1597+2584]", "Finish[4181]"]
 Modules2: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
 
-Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
-
 Thought: Modules2 is selected because it's more interpretable. 
+
+Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
 
 Question: Which month had the highest number of patent applications in 2016?
 
 Modules1: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
 Modules2: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter["import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0]", "Finish[12]"]
 
-Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
-
 Thought: Modules1 is selected because it's more interpretable.
+
+Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
 
 Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
 
 Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
 Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
 
-Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-
 Thought: Modules1 is selected because it's more interpretable. 
+
+Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like the examples above and nothing else.
 """
@@ -115,92 +115,30 @@ Question: What is the 20th Fibonacci number?
 Modules1: ["Calculate[0+0]", "Calculate[0+1]", "Calculate[0+1]", "Calculate[1+1]", "Calculate[1+2]", "Calculate[2+3]", "Calculate[3+5]", "Calculate[5+8]", "Calculate[8+13]", "Calculate[13+21]", "Calculate[21+34]", "Calculate[34+55]", "Calculate[55+89]", "Calculate[89+144]", "Calculate[144+233]", "Calculate[233+377]", "Calculate[377+610]", "Calculate[610+987]", "Calculate[987+1597]", "Calculate[1597+2584]", "Finish[4181]"]
 Modules2: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
 
-Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
-
 Thought: Modules2 is selected because it's more interpretable. 
+
+Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
 
 Question: Which month had the highest number of patent applications in 2016?
 
 Modules1: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
 Modules2: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter["import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0]", "Finish[12]"]
-
-Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
 
 Thought: Modules1 is selected because it's more interpretable.
 
+Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
+
 Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
 
 Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
 Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
-
-Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
 
 Thought: Modules1 is selected because it's more interpretable. 
 
+Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
+
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """
-
-prompt_example_rank = """
-Question: What is the 20th Fibonacci number?
-
-Modules1: ["Calculate[0+0]", "Calculate[0+1]", "Calculate[0+1]", "Calculate[1+1]", "Calculate[1+2]", "Calculate[2+3]", "Calculate[3+5]", "Calculate[5+8]", "Calculate[8+13]", "Calculate[13+21]", "Calculate[21+34]", "Calculate[34+55]", "Calculate[55+89]", "Calculate[89+144]", "Calculate[144+233]", "Calculate[233+377]", "Calculate[377+610]", "Calculate[610+987]", "Calculate[987+1597]", "Calculate[1597+2584]", "Finish[4181]"]
-Modules2: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
-
-Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
-
-Thought: Modules1 uses Calculate, which is ranked higher in interpretability than PythonInterpreter. All the other modules in both Modules1 and Modules2 are the same. However, Modules1 has 21 modules in total, while Modules2 only has 2 modules. Consequently, Modules2 is chosen for its greater interpretability.
-
-Question: Which month had the highest number of patent applications in 2016?
-
-Modules1: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
-Modules2: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter["import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0]", "Finish[12]"]
-
-Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
-
-Thought: 
-
-Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
-
-Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
-
-Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-
-Thought: 
-
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like those from the examples above and nothing else.
-"""
-
-prompt_example_rank_full = """
-Question: What is the 20th Fibonacci number?
-
-Modules1: ["Calculate[0+0]", "Calculate[0+1]", "Calculate[0+1]", "Calculate[1+1]", "Calculate[1+2]", "Calculate[2+3]", "Calculate[3+5]", "Calculate[5+8]", "Calculate[8+13]", "Calculate[13+21]", "Calculate[21+34]", "Calculate[34+55]", "Calculate[55+89]", "Calculate[89+144]", "Calculate[144+233]", "Calculate[233+377]", "Calculate[377+610]", "Calculate[610+987]", "Calculate[987+1597]", "Calculate[1597+2584]", "Finish[4181]"]
-Modules2: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
-
-Best Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
-
-Thought: Modules1 uses Calculate, which is ranked higher in interpretability than PythonInterpreter. All the other modules in both Modules1 and Modules2 are the same. However, Modules1 has 21 modules in total, while Modules2 only has 2 modules. Consequently, Modules2 is chosen for its greater interpretability.
-
-Question: Which month had the highest number of patent applications in 2016?
-
-Modules1: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
-Modules2: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter["import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0]", "Finish[12]"]
-
-Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
-
-Thought: 
-
-Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
-
-Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
-
-Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-
-Thought: 
-
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
-""" 
 
 prompt_example_formula = """
 Question: What is the 20th Fibonacci number?
