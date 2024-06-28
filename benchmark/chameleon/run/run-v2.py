@@ -10,7 +10,7 @@ from demos import prompt_policy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 
 from utilities import *
-from model import solver 
+from model import solver
 
 from tools.code.python_interpreter import execute as python_interpreter
 from tools.math.calculator import calculator, WolframAlphaCalculator
@@ -182,7 +182,6 @@ def parse_args():
     print(json.dumps(vars(args), indent=2, sort_keys=False))
     return args
 
-
 if __name__ == "__main__":
     args = parse_args()
     random.seed(args.seed)
@@ -203,44 +202,29 @@ if __name__ == "__main__":
     pids = solver.pids[count:] # only use the remaining problems
 
     for pid in tqdm(pids):
-        solver.cache = {"pid": pid} # clear the cache
-
         if count < 10:
             print("\n\n===================================\n")
             print(f"# [Pid]: {pid}\n") # problem id
 
         count += 1  # number of current results
-        solver.cache["example"] = solver.examples[pid] # get one example 
-
-        # [1] Predict the modules
-        modules, single_cost = solver.predict_modules()
-        cost += single_cost
-        modules = modules[1:-1]
-        modules_lst = modules.split('", "')
-        modules = []
-        if len(modules_lst)>1: 
-            for i in range(len(modules_lst)):
-                if i==0:
-                    modules.append(modules_lst[i][1:])
-                elif i==len(modules_lst)-1:
-                    modules.append(modules_lst[i][:-1])
-                else:
-                    modules.append(modules_lst[i])
-        else:
-            modules = [module[1:-1] for module in modules_lst]
-        
-        # [2] Execute the modules 
-        if count < 10:
-            print(f"# [Modules]\n{modules}\n")
+        example = solver.examples[pid] # get one example 
+        system_prompt = prompt_policy.prompt.strip() 
+        user_prompt = example["question"]
         
         context = ""
         logs = ""
         i = 0
+        
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+    
         while i<len(modules):
             try:
                 attempts = 0
                 demo_prompt = prompt_policy.prompt.strip() 
-                question = solver.cache["example"]["question"]
+                question = example["question"]
                 if context != "":
                     if output.startswith("Error:"):
                         if attempts==0:
@@ -301,7 +285,7 @@ if __name__ == "__main__":
         # print("context", context)
         llm_answer = logs.strip().split('\n')[-1]
         # print("llm_answer", llm_answer) 
-        gt_answer = str(solver.cache["example"]["answer"])
+        gt_answer = str(example["answer"])
         # print("gt_answer", gt_answer) 
         if llm_answer==gt_answer:
             correct += 1
@@ -316,20 +300,6 @@ if __name__ == "__main__":
 
     acc = correct / count * 100
     cost = cost / count
-    with open(cache_file, 'w') as f:
-        try:
-            f.write(json.dumps(solver.cache, indent=2, separators=(',', ': ')) + "\n")
-        except Exception as e:
-            print(e)
-            print(solver.cache)
-    
-    with open(cache_jsonl, 'w') as f:
-        try:
-            json.dump(solver.cache, f)
-            f.write('\n')
-        except Exception as e:
-            print(e)
-            print(solver.cache)
 
     # save the result
     result = {'acc': acc, 'correct': correct, 'count': count, 'cost': cost, 'args': vars(args)}
