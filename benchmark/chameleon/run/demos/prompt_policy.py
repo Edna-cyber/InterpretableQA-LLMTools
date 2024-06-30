@@ -1,3 +1,4 @@
+import json
 
 prompt_header_clean = """
 You need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question.
@@ -214,4 +215,112 @@ Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression;
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.
 """ 
 
+messages = [
+    {
+        'role': 'user',
+        'content': 'What is the 20th Fibonacci number?'
+    },
+    {
+        'role': 'assistant',
+        'tool_calls': [{
+            'id': 'call_0',
+            'function': {
+                'name': 'PythonInterpreter',
+                'arguments': json.dumps({
+                    "python_code": "# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n"
+                })
+            },
+            'type': 'function'
+        }]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'PythonInterpreter',
+        'content': 4181
+    },
+    {
+        'role': 'assistant',
+        'tool_calls': [{
+            'id': 'call_1',
+            'function': {
+                'name': 'Finish',
+                'arguments': json.dumps({
+                    "argument": 4181
+                })
+            },
+            'type': 'function'
+        }]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': 4181
+    },
+    {
+        'role': 'user',
+        'content': 'Which month had the highest number of patent applications in 2016?' ###
+    },
+    {
+        'role': 'assistant',
+        'tool_calls': [{
+            'id': 'call_0',
+            'function': {
+                'name': 'LoadDB', 
+                'arguments': json.dumps({
+                    "target_db": "hupd", "duration": "2016-2016", "split": False
+                })
+            },
+            'type': 'function'
+        }]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'LoadDB',
+        'content': "We have successfully loaded the hupd dataframe, including the following columns: 'patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'. It has the following structure: patent_number decision  ... icpr_category cpc_category 0 <NA>  PENDING  ... F16  F16 1 <NA>  PENDING  ... C12  C12 2 <NA>  PENDING  ... H04  H04 3 <NA>  PENDING  ... G06  G06 4 <NA>  PENDING  ... H02  H02"
+    },
+    {
+        'role': 'assistant',
+        'tool_calls': [{
+            'id': 'call_1',
+            'function': {
+                'name': 'PandasInterpreter',
+                'arguments': json.dumps({
+                    "pandas_code": "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]"
+                })
+            },
+            'type': 'function'
+        }]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'PandasInterpreter',
+        'content': 12
+    }
+    {
+        'role': 'assistant',
+        'tool_calls': [{
+            'id': 'call_1',
+            'function': {
+                'name': 'Finish',
+                'arguments': json.dumps({
+                    "argument": 12
+                })
+            },
+            'type': 'function'
+        }]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': 12
+    }
+]
+
+
 prompt = prompt_header_formula+prompt_example_formula_full
+# prompt = messages
