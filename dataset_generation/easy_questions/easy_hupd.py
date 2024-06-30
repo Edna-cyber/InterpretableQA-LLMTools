@@ -109,7 +109,7 @@ while question_id<=10: #100
         answer = common_examiners(start_year, end_year)
     # use None to signify not adding to the questions / answers
     if answer:
-        questions.append({"qid": "easy-hupd-{:0>4d}".format(question_id), "question":question, "answer":answer})
+        questions.append({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
         question_id += 1
 
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy/hupd-easy.jsonl', mode='w') as writer:
