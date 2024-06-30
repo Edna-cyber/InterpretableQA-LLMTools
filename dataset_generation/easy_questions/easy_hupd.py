@@ -74,7 +74,7 @@ def common_examiners(start_year, end_year):
 questions = []
 question_id = 1
 while question_id<=10: #100
-    question_type = random.randint(0,1) #(0, 8)
+    question_type = random.randint(0,4) #(0, 8)
     if question_type == 0:
         # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
         start_year = random.randint(2015,2018)

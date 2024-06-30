@@ -7,6 +7,7 @@ import random
 from tqdm import tqdm
 from demos import prompt_policy
 from openai import OpenAI
+from collections import defaultdict
 # add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 
@@ -17,7 +18,6 @@ from tools.code.python_interpreter import execute as python_interpreter
 from tools.math.calculator import calculator, WolframAlphaCalculator
 from tools.table.tabtools import table_toolkits
 from tools.finish import finish
-import jsonlines
 import datetime
 
 current_datetime = datetime.datetime.now()
@@ -34,7 +34,6 @@ ACTION_LIST = {
 }
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
-print(openai.api_key)
 client = OpenAI()
 
 tools = [
@@ -65,7 +64,7 @@ tools = [
                 "properties": {
                     "target_db": {
                         "type": "string",
-                        "description": "The name of the database to be loaded, e.g. hupd",
+                        "description": "The name of the database to be loaded. The only choices for target_db are hupd (a patent dataset).",
                     },
                     "duration": {
                         "type": "string",
@@ -162,6 +161,55 @@ tools = [
     }
 ]
 
+def calc_cost(function_type, function_arguments):
+    if function_type=="Calculate":
+        return 2
+    if function_type=="LoadDB":
+        return 3
+    if function_type=="PandasInterpreter":
+        num_lines = len(function_arguments["pandas_code"].split('\n'))
+        num_packages = function_arguments["pandas_code"].count('import')
+        if num_lines<10:
+            lines_cost = 4
+        elif num_lines<=20:
+            lines_cost = 7
+        elif num_lines<=100:
+            lines_cost = 9
+        else:
+            lines_cost = 10
+        if num_packages<2:
+            packages_cost = 1
+        elif num_packages<=5:
+            packages_cost = 1.5
+        else:
+            packages_cost = 2
+        return lines_cost*packages_cost
+    if function_type=="PythonInterpreter":
+        num_lines = len(function_arguments["python_code"].split('\n'))
+        num_packages = function_arguments["python_code"].count('import')
+        if num_lines<10:
+            lines_cost = 4
+        elif num_lines<=20:
+            lines_cost = 7
+        elif num_lines<=100:
+            lines_cost = 9
+        else:
+            lines_cost = 10
+        if num_packages<2:
+            packages_cost = 1
+        elif num_packages<=5:
+            packages_cost = 1.5
+        else:
+            packages_cost = 2
+        return lines_cost*packages_cost
+    if function_type=="Classifier":
+        if function_arguments["model_name"]=="logistic_regression":
+            return 7
+        if function_arguments["model_name"]=="distilbert-base-uncased":
+            return 10
+    if function_type=="Finish":
+        return 1
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_root', type=str, default='../results')
@@ -202,142 +250,77 @@ if __name__ == "__main__":
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
     print("result_file", result_file)
 
-    count, correct, cost = 0, 0, 0
-    pids = solver.pids[count:] # only use the remaining problems
+    total_count, total_correct, total_cost = 0, 0, 0
+    count, correct, cost = defaultdict(int), defaultdict(int), defaultdict(int)
+    pids = solver.pids
 
     for pid in tqdm(pids):
-        if count < 10:
+        if total_count < 10:
             print("\n\n===================================\n")
             print(f"# [Pid]: {pid}\n") # problem id
 
-        count += 1  # number of current results
+        total_count += 1  
         example = solver.examples[pid] # get one example 
-        system_prompt = prompt_policy.prompt.strip() 
-        user_prompt = example["question"]
+        user_prompt = example["question"] 
+        question_type = example["question_type"]
+        count[question_type] += 1
         
-        context = ""
-        logs = ""
-        i = 0
-        
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        print("system_prompt", system_prompt) ###
-        print("user_prompt", user_prompt) ###
-        response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
-        print("response", response) ###
-        response_message = response.choices[0].message
-        tool_calls = response_message.tool_calls
-        print("tool_calls", tool_calls) ###
-        if tool_calls:
-            messages.append(response_message)
-            print("messages", messages) ###
-            for tool_call in tool_calls:
-                function_name = tool_call.function.name
-                function_to_call = ACTION_LIST[function_name]
-                function_args = json.loads(tool_call.function.arguments)
-                function_response = function_to_call(**function_args)
-                print("function_response", function_response)
-                messages.append(
-                    {
-                        "tool_call_id": tool_call.id,
-                        "role": "tool",
-                        "name": function_name,
-                        "content": function_response,
-                    }
-                )  # extend conversation with function response
-            print("new messages", messages) ###
-            second_response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=messages,
-            )  # get a new response from the model where it can see the function response
-            print("second_response", second_response) ###
-            messages.append(second_response)
-        print(messages) ###
-    
-        # while i<len(modules):
-        #     try:
-        #         attempts = 0
-        #         demo_prompt = prompt_policy.prompt.strip() 
-        #         question = example["question"]
-        #         if context != "":
-        #             if output.startswith("Error:"):
-        #                 if attempts==0:
-        #                     i -= 1
-        #                     attempts += 1
-        #             module = modules[i]
-        #             test_prompt =  f"Question: {question}\n\n{context}-->{module}\n\nLast action output: {output}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
-        #         else:
-        #             module = modules[i]
-        #             test_prompt =  f"Question: {question}\n\n{module}\n\nFill ONLY the currect {module} action with arguments and nothing else:\n"
-        #         # print("i", i)
-        #         # print("module", module)
-        #         # need to replace the prompt after predicting the modules
-        #         demo_prompt = re.sub(r'Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt) ###
-        #         demo_prompt = re.sub(r'Please provide only the sequence of Best Modules like those from the examples above and nothing else.', 'Please provide only the sequence of Modules like the examples above and nothing else.', demo_prompt)
-        #         full_prompt = demo_prompt + "\n\n" + test_prompt
-        #         messages=[
-        #             {"role": "user", "content": full_prompt},
-        #         ]
-        #         # print("test_prompt", test_prompt) 
-        #         # execute the module
-        #         action = get_chat_response(messages, openai.api_key, args.policy_engine, args.policy_temperature, args.policy_max_tokens) 
-        #         # print("action", action) 
-        #         if action[0]=="[" and action[-1]=="]":
-        #             current = action[2:action.find(",")-1] # first element in list string, and then remove double quotes
-        #         else:
-        #             current = action
-        #         # print("current", current)
-        #         left_bracket = current.find("[") 
-        #         right_bracket = current.rfind("]") 
-        #         action_type = current[:left_bracket] 
-        #         argument = current[left_bracket+1:right_bracket] 
-        #         # print("action_type", action_type) 
-        #         # print("argument", argument) 
-        #         if context == "":
-        #             context = module+"["+argument+"]"
-        #         else:
-        #             context = context+"-->"+module+"["+argument+"]"
-        #         # print("context", context) 
-        #         argument_lst = argument.split(";")
-        #         argument_lst = [x.strip() for x in argument_lst]
-        #         # print("argument_lst", argument_lst) 
-        #         output = ACTION_LIST[action_type](*argument_lst)
-        #         # print("output", output) 
-        #         i += 1
-        #         # input()
-        #         logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+output
-        #         if count < 10:
-        #             print(f"======== [Module]: {module} ========\n")
-        #             print(f"# [Input]\n{input}\n")
-        #             print(f"# [Output]\n{output}\n")
-        #     except Exception as e:
-        #         print(f"An error occurred: {e}")
-        #         logs = logs + "\n"+"="*30+"\n"+context+"\n\n"+str(e)
-        #         break
-        # remove all the "\n" in the context
-        context = re.sub("\n", "", context)
-        # print("context", context)
-        llm_answer = logs.strip().split('\n')[-1]
+        messages = prompt_policy.messages
+        messages.append({"role": "user", "content": user_prompt})
+        function_type = None
+        while function_type!="Finish":
+            response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
+            choice = response.choices[0]
+            response_message = choice.message
+            tool_calls = response_message.tool_calls
+            
+            if tool_calls:
+                messages.append(response_message)
+                for tool_call in tool_calls:
+                    function_type = tool_call.function.name
+                    function = ACTION_LIST[function_type]
+                    function_arguments = json.loads(tool_call.function.arguments)
+                    cost[question_type] += calc_cost(function_type, function_arguments)
+                    total_cost += calc_cost(function_type, function_arguments)
+                    function_response = function(**function_arguments)
+                    messages.append(
+                        {
+                            "tool_call_id": tool_call.id,
+                            "role": "tool",
+                            "name": function_type,
+                            "content": function_response,
+                        }
+                    )  
+
+        llm_answer = messages[-1].content
         # print("llm_answer", llm_answer) 
         gt_answer = str(example["answer"])
         # print("gt_answer", gt_answer) 
         if llm_answer==gt_answer:
-            correct += 1
+            correct[question_type] += 1
+            total_correct += 1
         elif gt_answer[0]=="[" and gt_answer[-1]=="]": # gt_answer is type list
-            correct += int(llm_answer==gt_answer[1:-1])
-        logs = logs + "\nGround-Truth Answer: "+gt_answer
+            correct[question_type] += int(llm_answer==gt_answer[1:-1])
+            total_correct += int(llm_answer==gt_answer[1:-1])
+        
+        logs = messages
+        logs.append({"Ground-Truth Answer": gt_answer})
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)): #<YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)) #<YOUR_OWN_PATH>
             logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version) #<YOUR_OWN_PATH>
-        with open(os.path.join(logs_dir, pid+'.txt'), 'w') as f:
-            f.write(logs)
+        with open(os.path.join(logs_dir, f"{pid}.json"), 'w') as f:
+            f.write(json.dumps(logs, indent=4))
 
-    acc = correct / count * 100
-    cost = cost / count
-
+    acc = {}
+    for key in count:
+        if key not in correct:
+            acc[key] = 0
+        else:
+            acc[key] = correct[key] / count[key] * 100
+    agg_acc = total_correct / total_count * 100
+    agg_cost = total_cost / total_count * 100
+        
     # save the result
-    result = {'acc': acc, 'correct': correct, 'count': count, 'cost': cost, 'args': vars(args)}
+    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'count': total_count, 'args': vars(args)}
     with open(result_file, 'w') as f:
-        json.dump(result, f, indent=2, separators=(',', ': '))
+        json.dump(result, f, indent=4, separators=(',', ': '))

@@ -53,7 +53,7 @@ The modules are defined as follows, with the formulas used to calculate their in
 
 - PythonInterpreter[pythonCode] {(if the number of lines of pythonCode < 10, 4; if the number of lines of pythonCode is between 10 and 20, 7; if the number of lines of pythonCode is between 21 and 100, 9; if the number of lines of pythonCode > 100, 10.) * (if the number of imported packages in pythonCode < 2, 1; if the number of imported packages in pythonCode is between 2 and 5, 1.5; if the number of imported packages in pythonCode > 5, 2)}: This module interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- Classifier[modelName; predictorSection; target; numClasses]: This module runs a specified classifier model on the given predictorSection to predict the target, which has numClasses number of classes. The modelName can be "logistic_regression" or "distilbert-base-uncased". The predictorSection is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of numClasses is 2 for binary classification. Normally, we use the "Classifier" module for binary or multi-class classification tasks.
+- Classifier[modelName; predictorSection; target; numClasses] {(if modelName is "logistic_regression", 7; if modelName is "distilbert-base-uncased", 10)}: This module runs a specified classifier model on the given predictorSection to predict the target, which has numClasses number of classes. The modelName can be "logistic_regression" or "distilbert-base-uncased". The predictorSection is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of numClasses is 2 for binary classification. Normally, we use the "Classifier" module for binary or multi-class classification tasks.
 
 - Finish[answer] {1}: This module returns the final answer and finishes the task. This module is the final module in the sequence that encapsulates the result of all previous modules.
 
@@ -214,7 +214,6 @@ Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression;
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.
 """ 
-
 
 # content needs to be a string
 messages = [
@@ -386,4 +385,3 @@ messages = [
 
 
 prompt = prompt_header_formula+prompt_example_formula_full
-# prompt = messages
