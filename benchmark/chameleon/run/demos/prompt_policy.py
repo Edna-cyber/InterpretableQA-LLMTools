@@ -74,7 +74,7 @@ Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as 
 
 Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
 
-Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
+Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"]
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules like the examples above and nothing else.
 """
@@ -100,12 +100,12 @@ Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import panda
 
 Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
 
-Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
+Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"]
+Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]", "Finish[ACCEPTED]"]
 
 Thought: Modules1 is selected because it's more interpretable. 
 
-Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
+Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"]
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like the examples above and nothing else.
 """
@@ -131,12 +131,12 @@ Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import panda
 
 Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
 
-Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
+Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"]
+Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]", "Finish[ACCEPTED]"]
 
 Thought: Modules1 is selected because it's more interpretable. 
 
-Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
+Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"]
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """
@@ -166,14 +166,14 @@ Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import panda
 
 Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
 
-Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
+Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"]
+Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]", "Finish[ACCEPTED]"]
 
 Thought: Total interpretability cost of Modules1 is calculated as follows: "LoadDB[hupd; 2015-2017; True]" {3}, "Classifier[logistic_regression; abstract; decision]" {7 (modelName is "logistic_regression")}. Summing these costs: 3+7=10.
 Total interpretability cost of Modules2 is calculated as follows: "LoadDB[hupd; 2015-2017; True]" {3}, "Classifier[distilbert-base-uncased; abstract; decision]" {10 (modelName is "logistic_regression")}. Summing these costs: 3+10=13.
 Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2.
 
-Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"] {10}
+Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"] {10}
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like those from the examples above and nothing else.
 """ 
@@ -203,18 +203,20 @@ Best Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import panda
 
 Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
 
-Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"]
-Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]"]
+Modules1: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"]
+Modules2: ["LoadDB[hupd; 2015-2017; True]", "Classifier[distilbert-base-uncased; abstract; decision]", "Finish[ACCEPTED]"]
 
 Thought: Total interpretability cost of Modules1 is calculated as follows: "LoadDB[hupd; 2015-2017; True]" {3}, "Classifier[logistic_regression; abstract; decision]" {7 (modelName is "logistic_regression")}. Summing these costs: 3+7=10.
 Total interpretability cost of Modules2 is calculated as follows: "LoadDB[hupd; 2015-2017; True]" {3}, "Classifier[distilbert-base-uncased; abstract; decision]" {10 (modelName is "logistic_regression")}. Summing these costs: 3+10=13.
 Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2.
 
-Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]"] {10}
+Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"] {10}
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of modules that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.
 """ 
 
+
+# content needs to be a string
 messages = [
     {
         'role': 'user',
@@ -234,10 +236,10 @@ messages = [
         }]
     },
     {
-        'tool_call_id': 'call_1',
+        'tool_call_id': 'call_0',
         'role': 'tool',
         'name': 'PythonInterpreter',
-        'content': 4181
+        'content': '4181'
     },
     {
         'role': 'assistant',
@@ -256,11 +258,11 @@ messages = [
         'tool_call_id': 'call_1',
         'role': 'tool',
         'name': 'Finish',
-        'content': 4181
+        'content': '4181'
     },
     {
         'role': 'user',
-        'content': 'Which month had the highest number of patent applications in 2016?' ###
+        'content': 'Which month had the highest number of patent applications in 2016?' 
     },
     {
         'role': 'assistant',
@@ -298,12 +300,12 @@ messages = [
         'tool_call_id': 'call_1',
         'role': 'tool',
         'name': 'PandasInterpreter',
-        'content': 12
-    }
+        'content': '12'
+    },
     {
         'role': 'assistant',
         'tool_calls': [{
-            'id': 'call_1',
+            'id': 'call_2',
             'function': {
                 'name': 'Finish',
                 'arguments': json.dumps({
@@ -314,10 +316,71 @@ messages = [
         }]
     },
     {
-        'tool_call_id': 'call_1',
+        'tool_call_id': 'call_2',
         'role': 'tool',
         'name': 'Finish',
-        'content': 12
+        'content': '12'
+    },
+    {
+        'role': 'user',
+        'content': "Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?"
+    },
+    {
+        'role': 'assistant',
+        'tool_calls': [{
+            'id': 'call_0',
+            'function': {
+                'name': 'LoadDB', 
+                'arguments': json.dumps({
+                    "target_db": "hupd", "duration": "2015-2017", "split": True
+                })
+            },
+            'type': 'function'
+        }]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'LoadDB',
+        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 18011}) validation: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 12008})})"
+    },
+    {
+        'role': 'assistant',
+        'tool_calls': [{
+            'id': 'call_1',
+            'function': {
+                'name': 'Classifier',
+                'arguments': json.dumps({
+                    "model_name": "logistic_regression", "section": "abstract", "target": "decision"
+                })
+            },
+            'type': 'function'
+        }]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'Classifier',
+        'content': 'ACCEPTED'
+    }, 
+    {
+        'role': 'assistant',
+        'tool_calls': [{
+            'id': 'call_2',
+            'function': {
+                'name': 'Finish',
+                'arguments': json.dumps({
+                    "argument": 'ACCEPTED'
+                })
+            },
+            'type': 'function'
+        }]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': 'ACCEPTED'
     }
 ]
 
