@@ -83,7 +83,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "PandasInterpreter",
-            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We can only use PandasInterpreter after loading the dataframe with LoadDB.",
+            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We can only use PandasInterpreter after LoadDB.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -267,32 +267,40 @@ if __name__ == "__main__":
         
         messages = prompt_policy.messages
         messages.append({"role": "user", "content": user_prompt})
+        logs = messages
         function_type = None
         while function_type!="Finish":
-            response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
-            choice = response.choices[0]
-            response_message = choice.message
-            tool_calls = response_message.tool_calls
-            
-            if tool_calls:
-                messages.append(response_message)
-                for tool_call in tool_calls:
-                    function_type = tool_call.function.name
-                    function = ACTION_LIST[function_type]
-                    function_arguments = json.loads(tool_call.function.arguments)
-                    cost[question_type] += calc_cost(function_type, function_arguments)
-                    total_cost += calc_cost(function_type, function_arguments)
-                    function_response = function(**function_arguments)
-                    messages.append(
-                        {
-                            "tool_call_id": tool_call.id,
-                            "role": "tool",
-                            "name": function_type,
-                            "content": function_response,
-                        }
-                    )  
-
-        llm_answer = messages[-1].content
+            try:
+                print("messages", messages) ###
+                response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
+                choice = response.choices[0]
+                response_message = choice.message
+                tool_calls = response_message.tool_calls
+                
+                if tool_calls:
+                    messages.append(response_message)
+                    for tool_call in tool_calls:
+                        function_type = tool_call.function.name
+                        function = ACTION_LIST[function_type]
+                        function_arguments = json.loads(tool_call.function.arguments)
+                        cost[question_type] += calc_cost(function_type, function_arguments)
+                        total_cost += calc_cost(function_type, function_arguments)
+                        function_response = function(**function_arguments)
+                        tool_call_response = {
+                                "tool_call_id": tool_call.id,
+                                "role": "tool",
+                                "name": function_type,
+                                "content": function_response,
+                            }
+                        messages.append(tool_call_response)  
+                        logs.append(tool_call_response)
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                logs.append(json.dumps(str(e)))
+                break
+                
+        print(messages) ###
+        llm_answer = messages[-1]["content"]
         # print("llm_answer", llm_answer) 
         gt_answer = str(example["answer"])
         # print("gt_answer", gt_answer) 
@@ -303,12 +311,11 @@ if __name__ == "__main__":
             correct[question_type] += int(llm_answer==gt_answer[1:-1])
             total_correct += int(llm_answer==gt_answer[1:-1])
         
-        logs = messages
         logs.append({"Ground-Truth Answer": gt_answer})
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)): #<YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)) #<YOUR_OWN_PATH>
             logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version) #<YOUR_OWN_PATH>
-        with open(os.path.join(logs_dir, f"{pid}.json"), 'w') as f:
+        with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
             f.write(json.dumps(logs, indent=4))
 
     acc = {}
