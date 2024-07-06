@@ -306,31 +306,34 @@ if __name__ == "__main__":
         iterations = 0
         while function_type!="Finish" and iterations<10:
             try:
-                print("messages 1: {} \n".format(messages)) ###
+                if len(messages)>=3:
+                    print("last check", messages[2])
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
-                print("response", response) 
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
-                print("here 1")
-                
+                                
                 if tool_calls:
-                    print("here 2")
                     tool_call = tool_calls[0]
                     print("here 3")
+                    print(type(tool_call.function.arguments))
+                    # print(type(json.loads(tool_call.id))) ###
+                    print(type(json.loads(tool_call.function.arguments)))
                     messages.append({
                         "role": choice.message.role,
                         "content": choice.message.content,
-                        "function_call": {
-                            "id": tool_call.id,
-                            "function": {
-                                "arguments": tool_call.function.arguments,
-                                "name": tool_call.function.name,
-                            },
-                            "type": tool_call.type,
+                        "tool_calls": {
+                            "arguments": json.loads(tool_call.function.arguments),
+                            "name": tool_call.function.name
                         }
                     }) # response_message
                     print("messages 2: {} \n".format(messages)) ###
+                    # "tool_calls": {
+                    #         "id": tool_call.id,
+                    #         "arguments": json.loads(tool_call.function.arguments),
+                    #         "name": tool_call.function.name,
+                    #         "type": tool_call.type,
+                    #     }
             
                     function_type = tool_call.function.name
                     function = ACTION_LIST[function_type]
@@ -345,8 +348,8 @@ if __name__ == "__main__":
                             "content": function_response,
                         }
                     messages.append(tool_call_response)  
-                    print("messages 3: {} \n".format(messages)) ###
                     logs.append(tool_call_response)
+                    print("here?")
                     # second_response = client.chat.completions.create(
                     #     model=args.policy_engine,
                     #     messages=messages,
