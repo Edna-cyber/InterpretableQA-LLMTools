@@ -283,10 +283,16 @@ if __name__ == "__main__":
                     messages.append({
                         "role": choice.message.role,
                         "content": choice.message.content,
-                        "function_call": {
-                            "arguments": tool_call.function.arguments,
-                            "name": tool_call.function.name
-                        }
+                        "tool_calls": [
+                            {
+                                "id": tool_call.id,
+                                "type": tool_call.type, 
+                                "function": {
+                                    "name": tool_call.function.name,
+                                    "arguments": tool_call.function.arguments
+                                }
+                            }
+                        ]
                     }) # response_message
                                 
                     function_type = tool_call.function.name
@@ -297,7 +303,7 @@ if __name__ == "__main__":
                     function_response = function(**function_arguments)
                     tool_call_response = {
                             "tool_call_id": tool_call.id,
-                            "role": "function",
+                            "role": "tool",
                             "name": function_type,
                             "content": function_response,
                         }
