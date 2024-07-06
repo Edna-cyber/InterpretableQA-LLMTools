@@ -1,19 +1,19 @@
 import json
 
 prompt_header_clean = """
-You need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question.
+You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question.
 
 The tools are defined as follows:
 
 - Calculate(query): This tool conducts an arithmetic operation and returns the result. It takes in an arithmetic operation and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB(target_db; duration; split): This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
+- LoadDB(target_db, duration, split): This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- PandasInterpreter(pandas_code): This tool interprets Pandas code written in Python that involves operations on a DataFrame df, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. We can only use "PandasInterpreter" after loading the dataframe with "LoadDB".
+- PandasInterpreter(pandas_code): This tool interprets Pandas code written in Python that involves operations on a DataFrame df, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter.
 
 - PythonInterpreter(python_code): This tool interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- Classifier(model_name; section; target; num_classes): This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
+- Classifier(model_name, section, target, num_classes): This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
 
 - Finish(argument): This tool returns the final answer and finishes the task. This tool is the final tool in the sequence that encapsulates the result of all previous tools.
 
@@ -21,7 +21,7 @@ Below are some examples that map the problem to the tools.
 """
 
 prompt_header_rank = """
-You need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question.
+You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question.
 
 The tools are defined as follows, ordered by their interpretability from highest to lowest:
 
@@ -29,13 +29,13 @@ The tools are defined as follows, ordered by their interpretability from highest
 
 - Calculate(query): This tool conducts an arithmetic operation and returns the result. It takes in an arithmetic operation and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB(target_db; duration; split): This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
+- LoadDB(target_db, duration, split): This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
 - PandasInterpreter(pandas_code): This tool interprets Pandas code written in Python that involves operations on a DataFrame df, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. We can only use "PandasInterpreter" after loading the dataframe with "LoadDB".
 
 - PythonInterpreter(python_code): This tool interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- Classifier(model_name; section; target; num_classes): This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
+- Classifier(model_name, section, target, num_classes): This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
 
 Below are some examples that map the problem to the tools. When addressing a question, tools positioned higher on this list are preferred over those that are lower.
 """
@@ -47,13 +47,13 @@ The tools are defined as follows, with the formulas used to calculate their inte
 
 - Calculate(query) {2}: This tool conducts an arithmetic operation and returns the result. It takes in an arithmetic operation and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB(target_db; duration; split) {3}: This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
+- LoadDB(target_db, duration, split) {3}: This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
 - PandasInterpreter(pandas_code) {(if the number of lines of pandas_code < 10, 4; if the number of lines of pandas_code is between 10 and 20, 7; if the number of lines of pandas_code is between 21 and 100, 9; if the number of lines of pandas_code > 100, 10.) * (if the number of imported packages in pandas_code < 2, 1; if the number of imported packages in pandas_code is between 2 and 5, 1.5; if the number of imported packages in pandas_code > 5, 2)}: This tool interprets Pandas code written in Python that involves operations on a DataFrame df, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. We can only use "PandasInterpreter" after loading the dataframe with "LoadDB".
 
 - PythonInterpreter(python_code) {(if the number of lines of python_code < 10, 4; if the number of lines of python_code is between 10 and 20, 7; if the number of lines of python_code is between 21 and 100, 9; if the number of lines of python_code > 100, 10.) * (if the number of imported packages in python_code < 2, 1; if the number of imported packages in python_code is between 2 and 5, 1.5; if the number of imported packages in python_code > 5, 2)}: This tool interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- Classifier(model_name; section; target; num_classes) {(if model_name is "logistic_regression", 7; if model_name is "distilbert-base-uncased", 10)}: This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
+- Classifier(model_name, section, target, num_classes) {(if model_name is "logistic_regression", 7; if model_name is "distilbert-base-uncased", 10)}: This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
 
 - Finish(argument) {1}: This tool returns the final answer and finishes the task. This tool is the final tool in the sequence that encapsulates the result of all previous tools.
 
@@ -66,15 +66,15 @@ Below are some examples that map problems to tools. When addressing a question, 
 prompt_example_clean = """
 Question: What is the 20th Fibonacci number?
 
-Modules: ["PythonInterpreter[# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n]", "Finish[4181]"]
+Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n), Finish(4181)
 
 Question: Which month had the highest number of patent applications in 2016?
 
-Modules: ["LoadDB[hupd; 2016-2016; False]", "PandasInterpreter[import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]]", "Finish[12]"]
+Modules: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]), Finish(12)
 
 Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
 
-Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"]
+Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision), Finish(ACCEPTED)
 
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules like the examples above and nothing else.
 """
@@ -215,7 +215,7 @@ Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression;
 Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.
 """ 
 
-prompt = prompt_header_formula+prompt_example_formula_full
+prompt = prompt_header_clean+prompt_example_clean
 
 
 # content needs to be a string

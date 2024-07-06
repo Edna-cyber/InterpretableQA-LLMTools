@@ -264,40 +264,6 @@ if __name__ == "__main__":
         user_prompt = example["question"] 
         question_type = example["question_type"]
         count[question_type] += 1
-        
-        # messages = prompt_policy.messages
-        # messages.append({"role": "user", "content": user_prompt})
-        # # messages = [{"role": "system", "content": prompt_policy.prompt}] #+prompt_policy.messages
-        # # messages.append({"role": "user", "content": user_prompt})
-        # function_type = None
-        # while function_type!="Finish":
-        #     print("messages", messages)
-        #     response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
-        #     choice = response.choices[0]
-        #     response_message = choice.message
-        #     tool_calls = response_message.tool_calls
-            
-        #     if tool_calls:
-        #         messages.append(response_message)
-        #         for tool_call in tool_calls:
-        #             function_type = tool_call.function.name
-        #             function = ACTION_LIST[function_type]
-        #             function_arguments = json.loads(tool_call.function.arguments)
-        #             cost[question_type] += calc_cost(function_type, function_arguments)
-        #             total_cost += calc_cost(function_type, function_arguments)
-        #             function_response = function(**function_arguments)
-        #             messages.append(
-        #                 {
-        #                     "tool_call_id": tool_call.id,
-        #                     "role": "tool",
-        #                     "name": function_type,
-        #                     "content": function_response,
-        #                 }
-        #             )  
-
-        # print("message", messages)
-        # llm_answer = messages[-1].content
-        # # print("llm_answer", llm_answer) 
 
         messages = [{"role": "system", "content": prompt_policy.prompt.strip()}] #+prompt_policy.messages
         messages.append({"role": "user", "content": user_prompt})
@@ -306,8 +272,6 @@ if __name__ == "__main__":
         iterations = 0
         while function_type!="Finish" and iterations<10:
             try:
-                if len(messages)>=3:
-                    print("last check", messages[2])
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
                 choice = response.choices[0]
                 response_message = choice.message
@@ -315,26 +279,16 @@ if __name__ == "__main__":
                                 
                 if tool_calls:
                     tool_call = tool_calls[0]
-                    print("here 3")
-                    print(type(tool_call.function.arguments))
-                    # print(type(json.loads(tool_call.id))) ###
-                    print(type(json.loads(tool_call.function.arguments)))
+                    
                     messages.append({
                         "role": choice.message.role,
                         "content": choice.message.content,
-                        "tool_calls": {
-                            "arguments": json.loads(tool_call.function.arguments),
+                        "function_call": {
+                            "arguments": tool_call.function.arguments,
                             "name": tool_call.function.name
                         }
                     }) # response_message
-                    print("messages 2: {} \n".format(messages)) ###
-                    # "tool_calls": {
-                    #         "id": tool_call.id,
-                    #         "arguments": json.loads(tool_call.function.arguments),
-                    #         "name": tool_call.function.name,
-                    #         "type": tool_call.type,
-                    #     }
-            
+                                
                     function_type = tool_call.function.name
                     function = ACTION_LIST[function_type]
                     function_arguments = json.loads(tool_call.function.arguments)
@@ -343,19 +297,12 @@ if __name__ == "__main__":
                     function_response = function(**function_arguments)
                     tool_call_response = {
                             "tool_call_id": tool_call.id,
-                            "role": "tool",
+                            "role": "function",
                             "name": function_type,
                             "content": function_response,
                         }
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
-                    print("here?")
-                    # second_response = client.chat.completions.create(
-                    #     model=args.policy_engine,
-                    #     messages=messages,
-                    # )
-                    # messages.append(second_response)
-                    # print("messages 4: {} \n".format(messages)) ###
                     iterations += 1
             except Exception as e:
                 print(f"An error occurred: {e}")
