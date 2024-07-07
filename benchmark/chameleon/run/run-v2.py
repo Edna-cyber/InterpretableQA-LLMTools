@@ -263,11 +263,12 @@ if __name__ == "__main__":
         example = solver.examples[pid] # get one example 
         user_prompt = example["question"] 
         question_type = example["question_type"]
+        gt_cost = 0
         count[question_type] += 1
 
-        # messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
+        messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
         # messages = [{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+prompt_policy.messages_formula
-        messages = prompt_policy.messages_formula
+        # messages = prompt_policy.messages_formula
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
@@ -279,10 +280,10 @@ if __name__ == "__main__":
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
-                if iterations == 0: # only used for the formula prompt
-                    thought = response_message.content
-                    start_ind = thought.rfind("Cost is ")+len("Cost is ")
-                    llm_cost = int(thought[start_ind:])
+                # if iterations == 0: # only used for the formula prompt
+                #     thought = response_message.content
+                #     start_ind = thought.rfind("Cost is ")+len("Cost is ")
+                #     llm_cost = int(thought[start_ind:])
                                 
                 if tool_calls:
                     tool_call = tool_calls[0]
@@ -324,7 +325,8 @@ if __name__ == "__main__":
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
                     iterations += 1
-                    time.sleep(30)
+                else:
+                    break
                     
             except Exception as e:
                 print(f"An error occurred: {e}")
