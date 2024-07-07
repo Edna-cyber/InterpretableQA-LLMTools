@@ -226,16 +226,19 @@ messages = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_0',
-            'function': {
-                'name': 'PythonInterpreter',
-                'arguments': json.dumps({
-                    "python_code": "# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n"
-                })
-            },
-            'type': 'function'
-        }]
+        'content': "",
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'PythonInterpreter',
+                    'arguments': json.dumps({
+                        "python_code": "# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_0',
@@ -253,16 +256,18 @@ messages = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_0',
-            'function': {
-                'name': 'LoadDB',
-                'arguments': json.dumps({
-                    "target_db": "hupd", "duration": "2016-2016", "split": False
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LoadDB',
+                    'arguments': json.dumps({
+                        "target_db": "hupd", "duration": "2016-2016", "split": False
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_0',
@@ -272,16 +277,18 @@ messages = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_1',
-            'function': {
-                'name': 'PandasInterpreter',
-                'arguments': json.dumps({
-                    "pandas_code": "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]"
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'PandasInterpreter',
+                    'arguments': json.dumps({
+                        "pandas_code": "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_1',
@@ -299,16 +306,18 @@ messages = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_0',
-            'function': {
-                'name': 'LoadDB',
-                'arguments': json.dumps({
-                    "target_db": "hupd", "duration": "2015-2017", "split": True
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LoadDB',
+                    'arguments': json.dumps({
+                        "target_db": "hupd", "duration": "2015-2017", "split": True
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_0',
@@ -318,16 +327,18 @@ messages = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_1',
-            'function': {
-                'name': 'Classifier',
-                'arguments': json.dumps({
-                    "model_name": "logistic_regression", "section": "abstract", "target": "decision"
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'Classifier',
+                    'arguments': json.dumps({
+                        "model_name": "logistic_regression", "section": "abstract", "target": "decision"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_1',
@@ -405,16 +416,18 @@ messages_formula = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_0',
-            'function': {
-                'name': 'PythonInterpreter',
-                'arguments': json.dumps({
-                    "python_code": "# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n"
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'PythonInterpreter',
+                    'arguments': json.dumps({
+                        "python_code": "# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_0',
@@ -443,16 +456,18 @@ messages_formula = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_0',
-            'function': {
-                'name': 'LoadDB',
-                'arguments': json.dumps({
-                    "target_db": "hupd", "duration": "2016-2016", "split": False
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LoadDB',
+                    'arguments': json.dumps({
+                        "target_db": "hupd", "duration": "2016-2016", "split": False
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_0',
@@ -462,16 +477,18 @@ messages_formula = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_1',
-            'function': {
-                'name': 'PandasInterpreter',
-                'arguments': json.dumps({
-                    "pandas_code": "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]"
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'PandasInterpreter',
+                    'arguments': json.dumps({
+                        "pandas_code": "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_1',
@@ -493,16 +510,18 @@ messages_formula = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_0',
-            'function': {
-                'name': 'LoadDB',
-                'arguments': json.dumps({
-                    "target_db": "hupd", "duration": "2015-2017", "split": True
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LoadDB',
+                    'arguments': json.dumps({
+                        "target_db": "hupd", "duration": "2015-2017", "split": True
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_0',
@@ -512,16 +531,18 @@ messages_formula = [
     },
     {
         'role': 'assistant',
-        'tool_calls': [{
-            'id': 'call_1',
-            'function': {
-                'name': 'Classifier',
-                'arguments': json.dumps({
-                    "model_name": "logistic_regression", "section": "abstract", "target": "decision"
-                })
-            },
-            'type': 'function'
-        }]
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'Classifier',
+                    'arguments': json.dumps({
+                        "model_name": "logistic_regression", "section": "abstract", "target": "decision"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
         'tool_call_id': 'call_1',

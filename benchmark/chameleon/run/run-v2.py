@@ -83,7 +83,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "PandasInterpreter",
-            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter.",
+            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -100,7 +100,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "PythonInterpreter",
-            "description": "Interprets Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We don't use PythonInterpreter when the question requires data manipulation performed on a specific structured dataframe.",
+            "description": "Interprets Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We don't use PythonInterpreter when the question requires data manipulation performed on a specific structured dataframe. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -265,12 +265,11 @@ if __name__ == "__main__":
         question_type = example["question_type"]
         count[question_type] += 1
 
-        messages = [{"role": "system", "content": prompt_policy.prompt.strip()}] #+prompt_policy.messages
+        messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
         messages.append({"role": "user", "content": user_prompt})
-        logs = messages.copy()
+        logs = [{"role": "user", "content": user_prompt}]
         function_type = None
-        iterations = 0
-        while function_type!="Finish" and iterations<10:
+        while function_type!="Finish":
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
                 choice = response.choices[0]
@@ -280,7 +279,7 @@ if __name__ == "__main__":
                 if tool_calls:
                     tool_call = tool_calls[0]
                     
-                    messages.append({
+                    response_with_tools = {
                         "role": choice.message.role,
                         "content": choice.message.content,
                         "tool_calls": [
@@ -293,7 +292,9 @@ if __name__ == "__main__":
                                 }
                             }
                         ]
-                    }) # response_message
+                    }
+                    messages.append(response_with_tools) 
+                    logs.append(response_with_tools)
                                 
                     function_type = tool_call.function.name
                     function = ACTION_LIST[function_type]
@@ -301,6 +302,7 @@ if __name__ == "__main__":
                     cost[question_type] += calc_cost(function_type, function_arguments)
                     total_cost += calc_cost(function_type, function_arguments)
                     function_response = function(**function_arguments)
+                    
                     tool_call_response = {
                             "tool_call_id": tool_call.id,
                             "role": "tool",
@@ -309,25 +311,24 @@ if __name__ == "__main__":
                         }
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
-                    iterations += 1
+                    
             except Exception as e:
                 print(f"An error occurred: {e}")
                 logs.append(json.dumps(str(e)))
                 break
                 
-        # print("final", messages) ###
-        # llm_answer = messages[-1]["content"]
-        # # print("llm_answer", llm_answer) 
-        # gt_answer = str(example["answer"])
-        # # print("gt_answer", gt_answer) 
-        # if llm_answer==gt_answer:
-        #     correct[question_type] += 1
-        #     total_correct += 1
-        # elif gt_answer[0]=="[" and gt_answer[-1]=="]": # gt_answer is type list
-        #     correct[question_type] += int(llm_answer==gt_answer[1:-1])
-        #     total_correct += int(llm_answer==gt_answer[1:-1])
+        llm_answer = messages[-1]["content"]
+        print("llm_answer", llm_answer) 
+        gt_answer = str(example["answer"])
+        print("gt_answer", gt_answer) 
+        if llm_answer==gt_answer:
+            correct[question_type] += 1
+            total_correct += 1
+        elif gt_answer[0]=="[" and gt_answer[-1]=="]": # gt_answer is type list
+            correct[question_type] += int(llm_answer==gt_answer[1:-1])
+            total_correct += int(llm_answer==gt_answer[1:-1])
         
-        # logs.append({"Ground-Truth Answer": gt_answer})
+        logs.append({"Ground-Truth Answer": gt_answer})
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)): #<YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)) #<YOUR_OWN_PATH>
             logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version) #<YOUR_OWN_PATH>
