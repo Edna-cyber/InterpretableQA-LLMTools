@@ -29,7 +29,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # 
+from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -82,7 +82,7 @@ class table_toolkits():
             # print(df_raw.head())
             df.append(df_raw)
         df = pd.concat(df, ignore_index=True)
-        if split=="False":
+        if not split:
             self.data = df
             column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
             column_names_str = ', '.join(column_names)
@@ -126,16 +126,22 @@ class table_toolkits():
         Executes the provided Pandas code and updates the 'ans' in global_var from the loaded dataframe.
         """
         if self.data is None:
-            return "Error: Dataframe does not exist."
+            return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
         else:
-            global_var = {"df": self.data.copy(), "ans": 0}
+            global_var = {"df": self.data.copy(), "ans": None}
             try: 
                 exec(pandas_code, global_var)
+                if not global_var['ans']:
+                    return "Error: ans is None.\nThe final result must be assigned to ans variable."
                 return str(global_var['ans'])
             except KeyError as e:
                 column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
                 column_names_str = ', '.join(column_names)
-                return "Error: "+str(e)+"\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(self.data.head())
+                return "Error: "+str(e)+"column does not exist.\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(self.data.head())
+            except NameError as e:
+                if "'pd'" in str(e):
+                    return "Error: "+str(e)+"\nImport the pandas library using the pandas_interpreter."
+                return "Error: "+str(e)+"\nMake sure the dataframe is loaded with LoadDB first. If so, the dataframe is stored in variable df."
             except Exception as e:
                 return "Error: "+str(e)
             # other exceptions
@@ -640,9 +646,10 @@ if __name__ == "__main__":
     db = table_toolkits()
     db.db_loader('hupd', '2016-2016', False)
     pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
+    pandas_code = "num_examiners = df['examiner_id'].nunique()\nnum_examiners"
     print(db.pandas_interpreter(pandas_code))
 
-    # db.db_loader('hupd', '2016-2016', True)
+    # print(db.db_loader('hupd', '2016-2016', True))
     # db.classifier('logistic_regression', 'abstract', 'decision')
     
     

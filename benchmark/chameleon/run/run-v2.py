@@ -269,20 +269,22 @@ if __name__ == "__main__":
         messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
         # messages = [{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+prompt_policy.messages_formula
         # messages = prompt_policy.messages_formula
+        formula = False
+        
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
         llm_answer = None
         llm_cost = None
         iterations = 0
-        while function_type!="Finish" and iterations<15:
+        while iterations<15:
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
                 content = response_message.content
-                if content and iterations == 0: # only used for the formula prompt
+                if formula and iterations == 0: # only used for the formula prompt
                     start_ind = content.rfind("Cost is ")+len("Cost is ")
                     llm_cost = int(content[start_ind:])
                     content += "Execute the tools and arguments one by one, following the sequence specified after 'Best Modules: ' precisely."
@@ -304,7 +306,7 @@ if __name__ == "__main__":
                             }
                         ]
                     }
-                    print(response_with_tools) ###
+                    print(response_with_tools) 
                     messages.append(response_with_tools) 
                     logs.append(response_with_tools)
                                 
@@ -322,7 +324,7 @@ if __name__ == "__main__":
                         "name": function_type,
                         "content": function_response,
                     }
-                    print(tool_call_response) ###
+                    print(tool_call_response) 
                     if function_type!="Finish":
                         llm_answer = function_response
                     messages.append(tool_call_response)  
