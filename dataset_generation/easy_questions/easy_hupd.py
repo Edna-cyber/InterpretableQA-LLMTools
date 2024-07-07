@@ -40,15 +40,24 @@ def top_accepted_category(num, category, year):
     top_n = top_categories.index.tolist()
     return top_n
 
-# Template 2: How does the number of patent applications filed in {year1} compare proportionally to those filed in {year2}?
-def compare_applications(year_1, year_2):
-    df1 = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year_1))))
-    len_df1 = len(df1)
-    del df1
-    df2 = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year_2))))
-    len_df2 = len(df2)
-    del df2
-    return len_df1 / len_df2
+# Template 2: How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
+def compare_applications(quarter_1, quarter_2, year):
+    df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
+    def get_quarter(dt):
+        month = dt.month
+        if 1 <= month <= 3:
+            return 1
+        elif 4 <= month <= 6:
+            return 2
+        elif 7 <= month <= 9:
+            return 3
+        elif 10 <= month <= 12:
+            return 4
+    df['filing_date'] = pd.to_datetime(df['filing_date'])
+    df['quarter'] = df['filing_date'].apply(get_quarter)
+    quarter_counts = df['quarter'].value_counts()
+    del df
+    return quarter_counts.get(quarter_1, 0) / quarter_counts.get(quarter_2, 0)
 
 # Template 3: What is the title of the patent that took the longest time to be published after filing in {year}?
 def longest_time(year):
@@ -74,7 +83,7 @@ def common_examiners(start_year, end_year):
 questions = []
 question_id = 1
 while question_id<=1: #100
-    question_type = random.randint(1,1) #(0, 8)
+    question_type = random.randint(2,2) #(0, 8)
     if question_type == 0:
         # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
         start_year = random.randint(2015,2018)
@@ -96,14 +105,16 @@ while question_id<=1: #100
             question = "Which {} were among the top{} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category first, then return the top categories with the highest approval rates as a list.".format(category, num, year)
         answer = top_accepted_category(num, category, year)
     elif question_type == 2:
-        # How does the number of patent applications filed in {year1} compare proportionally to those filed in {year2}?
-        year_1 = random.randint(2015,2018)
-        year_2 = random.randint(2015,2018)
-        while year_2==year_1:
-            year_2 = random.randint(2015,2018)
-        question_phrasings = ["How does the number of patent applications filed in {} compare proportionally to those filed in {}?", "What's the ratio of patent applications filed in {} to those filed in {}?", "What is the ratio between the number of patent applications filed in {} and {}?"]
-        question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(year_1, year_2)
-        answer = compare_applications(year_1, year_2)
+        # How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
+        quarter_map = {1:"1st", 2:"2nd", 3:"3rd", 4:"4th"}
+        quarter_1 = random.randint(1,4)
+        quarter_2 = random.randint(1,4)
+        while quarter_2==quarter_1:
+            quarter_2 = random.randint(1,4)
+        year = random.randint(2015,2018)
+        question_phrasings = ["How does the number of patent applications filed in the {} quarter compare proportionally to those filed in the {} quarter in {}?", "What's the ratio of patent applications filed in the {} quarter to those filed in the {} quarter in {}?", "What is the ratio between the number of patent applications filed in the {} quarter and the {} quarter in {}?"]
+        question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(quarter_map[quarter_1], quarter_map[quarter_2], year)
+        answer = compare_applications(quarter_1, quarter_2, year)
     elif question_type == 3:
         # What is the title of the patent that took the longest time to be published after filing in {year}?
         year = random.randint(2015,2017) # not include 2018, as most applications are still pending

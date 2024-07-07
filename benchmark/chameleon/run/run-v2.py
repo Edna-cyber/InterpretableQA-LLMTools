@@ -83,7 +83,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "PandasInterpreter",
-            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes. The final result must be assigned to variable ans.",
+            "description": "Interpret Pandas code written in Python. The final result must be assigned to variable ans. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -281,17 +281,18 @@ if __name__ == "__main__":
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
-                if response_message.content and iterations == 0: # only used for the formula prompt
-                    thought = response_message.content
-                    start_ind = thought.rfind("Cost is ")+len("Cost is ")
-                    llm_cost = int(thought[start_ind:])
+                content = response_message.content
+                if content and iterations == 0: # only used for the formula prompt
+                    start_ind = content.rfind("Cost is ")+len("Cost is ")
+                    llm_cost = int(content[start_ind:])
+                    content += "Execute the tools and arguments one by one, following the sequence specified after 'Best Modules: ' precisely."
                                 
                 if tool_calls:
                     tool_call = tool_calls[0]
                     
                     response_with_tools = {
                         "role": choice.message.role,
-                        "content": choice.message.content,
+                        "content": content,
                         "tool_calls": [
                             {
                                 "id": tool_call.id,
@@ -339,9 +340,6 @@ if __name__ == "__main__":
         if llm_answer==gt_answer:
             correct[question_type] += 1
             total_correct += 1
-        elif gt_answer[0]=="[" and gt_answer[-1]=="]": # gt_answer is type list
-            correct[question_type] += int(llm_answer==gt_answer[1:-1])
-            total_correct += int(llm_answer==gt_answer[1:-1])
         if llm_cost==gt_cost:
             total_reliability += 1
         

@@ -24,13 +24,16 @@ def calculator(query: str):
             return round(operators[operator](calculator(left), calculator(right)),2)
 
 def WolframAlphaCalculator(input_query: str):
-    wolfram_alpha_appid = "4VPQ6Q-LP727W3PK9"
+    wolfram_alpha_appid = "4VPQ6Q-V2G3LHP862" #"4VPQ6Q-G5ERGK8RWP"
     wolfram_client = wolframalpha.Client(wolfram_alpha_appid)
-    res = wolfram_client.query(input_query)
-    assumption = next(res.pods).text
-    answer = next(res.results).text
-    # return f"Assumption: {assumption} \nAnswer: {answer}"
-    return answer
+    try:
+        res = wolfram_client.query(input_query)
+        assumption = next(res.pods).text
+        answer = next(res.results).text
+        # return f"Assumption: {assumption} \nAnswer: {answer}"
+        return answer
+    except Exception as e:
+        return "Error: "+str(e)
 
 if __name__ == "__main__":
     query = 'mean(247.0, 253.0, 230.0, 264.0, 254.0, 275.0, 227.0, 258.0, 245.0, 253.0, 242.0, 229.0, 259.0, 253.0)'
