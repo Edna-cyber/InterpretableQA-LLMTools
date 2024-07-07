@@ -265,16 +265,24 @@ if __name__ == "__main__":
         question_type = example["question_type"]
         count[question_type] += 1
 
-        messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
+        # messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
+        # messages = [{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+prompt_policy.messages_formula
+        messages = prompt_policy.messages_formula
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
+        llm_answer = None
+        iterations = 0
         while function_type!="Finish":
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
+                if iterations == 0: # only used for the formula prompt
+                    thought = response_message.content
+                    start_ind = thought.rfind("Cost is ")+len("Cost is ")
+                    llm_cost = int(thought[start_ind:])
                                 
                 if tool_calls:
                     tool_call = tool_calls[0]
@@ -293,6 +301,7 @@ if __name__ == "__main__":
                             }
                         ]
                     }
+                    print(response_with_tools) ###
                     messages.append(response_with_tools) 
                     logs.append(response_with_tools)
                                 
@@ -304,23 +313,27 @@ if __name__ == "__main__":
                     function_response = function(**function_arguments)
                     
                     tool_call_response = {
-                            "tool_call_id": tool_call.id,
-                            "role": "tool",
-                            "name": function_type,
-                            "content": function_response,
-                        }
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_type,
+                        "content": function_response,
+                    }
+                    print(tool_call_response) ###
+                    if function_type!="Finish":
+                        llm_answer = function_response
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
+                    iterations += 1
+                    time.sleep(30)
                     
             except Exception as e:
                 print(f"An error occurred: {e}")
                 logs.append(json.dumps(str(e)))
                 break
                 
-        llm_answer = messages[-1]["content"]
+        # llm_answer = messages[-1]["content"]
         print("llm_answer", llm_answer) 
         gt_answer = str(example["answer"])
-        print("gt_answer", gt_answer) 
         if llm_answer==gt_answer:
             correct[question_type] += 1
             total_correct += 1
