@@ -26,7 +26,7 @@ def average_pendency(start_year, end_year):
     
     return pedencies_sum / total_len
 
-# Template 1: What were the top{#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}?
+# Template 1: What were the top{#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
 def top_accepted_category(num, category, year):
     df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
     if category=="IPCR categories":
@@ -73,8 +73,8 @@ def common_examiners(start_year, end_year):
 
 questions = []
 question_id = 1
-while question_id<=10: #100
-    question_type = random.randint(0,0) #(0, 8)
+while question_id<=1: #100
+    question_type = random.randint(1,1) #(0, 8)
     if question_type == 0:
         # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
         start_year = random.randint(2015,2018)
@@ -85,15 +85,15 @@ while question_id<=10: #100
         question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
         answer = average_pendency(start_year, end_year)
     elif question_type == 1:
-        # What were the top{#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}?
+        # What were the top{#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
         num = random.randint(2,5)
         category = random.choice(["IPCR categories", "CPC categories"]) 
         year = random.randint(2015,2018) 
         question_choice = random.randint(0,1)
         if question_choice==0:
-            question = "What were the top{} {} with the highest percentage of patent acceptance in {}?".format(num, category, year)
+            question = "What were the top{} {} with the highest percentage of patent acceptance in {}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list.".format(num, category, year)
         else:
-            question = "Which {} were among the top{} with the highest percentage of patent approvals in {}?".format(category, num, year)
+            question = "Which {} were among the top{} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category first, then return the top categories with the highest approval rates as a list.".format(category, num, year)
         answer = top_accepted_category(num, category, year)
     elif question_type == 2:
         # How does the number of patent applications filed in {year1} compare proportionally to those filed in {year2}?

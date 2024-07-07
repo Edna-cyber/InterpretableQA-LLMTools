@@ -83,7 +83,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "PandasInterpreter",
-            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
+            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes. The final result must be assigned to variable ans.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -146,7 +146,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "Finish",
-            "description": "Return the final answer and finish the task.",
+            "description": "Return the final answer and finish the task. All solutions need to be terminated with Finish.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
     print("result_file", result_file)
 
-    total_count, total_correct, total_cost = 0, 0, 0
+    total_count, total_correct, total_cost, total_reliability = 0, 0, 0, 0
     count, correct, cost = defaultdict(int), defaultdict(int), defaultdict(int)
     pids = solver.pids
     
@@ -273,17 +273,18 @@ if __name__ == "__main__":
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
         llm_answer = None
+        llm_cost = None
         iterations = 0
-        while function_type!="Finish":
+        while function_type!="Finish" and iterations<15:
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
-                # if iterations == 0: # only used for the formula prompt
-                #     thought = response_message.content
-                #     start_ind = thought.rfind("Cost is ")+len("Cost is ")
-                #     llm_cost = int(thought[start_ind:])
+                if response_message.content and iterations == 0: # only used for the formula prompt
+                    thought = response_message.content
+                    start_ind = thought.rfind("Cost is ")+len("Cost is ")
+                    llm_cost = int(thought[start_ind:])
                                 
                 if tool_calls:
                     tool_call = tool_calls[0]
@@ -311,6 +312,7 @@ if __name__ == "__main__":
                     function_arguments = json.loads(tool_call.function.arguments)
                     cost[question_type] += calc_cost(function_type, function_arguments)
                     total_cost += calc_cost(function_type, function_arguments)
+                    gt_cost += calc_cost(function_type, function_arguments)
                     function_response = function(**function_arguments)
                     
                     tool_call_response = {
@@ -332,9 +334,7 @@ if __name__ == "__main__":
                 print(f"An error occurred: {e}")
                 logs.append(json.dumps(str(e)))
                 break
-                
-        # llm_answer = messages[-1]["content"]
-        print("llm_answer", llm_answer) 
+        
         gt_answer = str(example["answer"])
         if llm_answer==gt_answer:
             correct[question_type] += 1
@@ -342,7 +342,10 @@ if __name__ == "__main__":
         elif gt_answer[0]=="[" and gt_answer[-1]=="]": # gt_answer is type list
             correct[question_type] += int(llm_answer==gt_answer[1:-1])
             total_correct += int(llm_answer==gt_answer[1:-1])
+        if llm_cost==gt_cost:
+            total_reliability += 1
         
+        logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)): #<YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)) #<YOUR_OWN_PATH>
@@ -358,9 +361,12 @@ if __name__ == "__main__":
         else:
             acc[key] = correct[key] / count[key] * 100
     agg_acc = total_correct / total_count * 100
-    agg_cost = total_cost / total_count * 100
+    agg_cost = total_cost / total_count
+    agg_reliability = total_reliability / total_count * 100
+    if not llm_cost:
+        agg_reliability = "NA"
         
     # save the result
-    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'count': total_count, 'args': vars(args)}
+    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'agg_reliability': agg_reliability, 'count': total_count, 'args': vars(args)}
     with open(result_file, 'w') as f:
         json.dump(result, f, indent=4, separators=(',', ': '))
