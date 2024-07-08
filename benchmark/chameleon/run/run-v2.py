@@ -368,6 +368,9 @@ if __name__ == "__main__":
             acc[key] = 0
         else:
             acc[key] = correct[key] / count[key] * 100
+        cost[key] = cost[key] / count[key]
+    acc = dict(sorted(acc.items()))
+    cost = dict(sorted(cost.items()))
     agg_acc = total_correct / total_count * 100
     agg_cost = total_cost / total_count
     agg_reliability = total_reliability / total_count * 100
@@ -375,6 +378,6 @@ if __name__ == "__main__":
         agg_reliability = "NA"
         
     # save the result
-    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'agg_reliability': agg_reliability, 'count': total_count, 'args': vars(args)}
+    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'agg_reliability': agg_reliability, 'count': count, 'total_count': total_count, 'args': vars(args)}
     with open(result_file, 'w') as f:
         json.dump(result, f, indent=4, separators=(',', ': '))
