@@ -257,7 +257,7 @@ if __name__ == "__main__":
     count, correct, cost = defaultdict(int), defaultdict(int), defaultdict(int)
     pids = solver.pids
     
-    for pid in tqdm(pids):
+    for pid in tqdm(pids[:1]): # pids
         if total_count < 10:
             print("\n\n===================================\n")
             print(f"# [Pid]: {pid}\n") # problem id
@@ -269,10 +269,10 @@ if __name__ == "__main__":
         gt_cost = 0
         count[question_type] += 1
 
-        messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
-        # messages = [{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+prompt_policy.messages_formula
+        # messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
+        messages = [{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+prompt_policy.messages_formula
         # messages = prompt_policy.messages_formula
-        formula = False
+        formula = True # False
         
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
@@ -283,6 +283,7 @@ if __name__ == "__main__":
         while iterations<15:
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
+                print("response", response) ###
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
@@ -290,8 +291,8 @@ if __name__ == "__main__":
                 if formula and iterations == 0: # only used for the formula prompt
                     start_ind = content.rfind("Cost is ")+len("Cost is ")
                     llm_cost = int(content[start_ind:])
-                    content += "Execute the tools and arguments one by one, following the sequence specified after 'Best Modules: ' precisely."
-                                
+                    print("llm_cost", llm_cost) ###
+         
                 if tool_calls:
                     tool_call = tool_calls[0]
                     
@@ -309,7 +310,7 @@ if __name__ == "__main__":
                             }
                         ]
                     }
-                    # print(response_with_tools) 
+                    print(response_with_tools) 
                     messages.append(response_with_tools) 
                     logs.append(response_with_tools)
                                 
@@ -327,7 +328,7 @@ if __name__ == "__main__":
                         "name": function_type,
                         "content": function_response,
                     }
-                    # print(tool_call_response) 
+                    print(tool_call_response) 
                     if function_type!="Finish":
                         llm_answer = function_response
                     messages.append(tool_call_response)  
@@ -345,6 +346,7 @@ if __name__ == "__main__":
         if llm_answer==gt_answer:
             correct[question_type] += 1
             total_correct += 1
+        print("gt_cost", gt_cost) ###
         if llm_cost==gt_cost:
             total_reliability += 1
         

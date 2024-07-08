@@ -212,7 +212,7 @@ Therefore, Modules1 is selected because it has a lower total interpretability co
 
 Best Modules: ["LoadDB[hupd; 2015-2017; True]", "Classifier[logistic_regression; abstract; decision]", "Finish[ACCEPTED]"] {10}
 
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules1, Modules2, Thought, and Best Modules like the examples above and nothing else.
+Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules (including as many as necessary, e.g., Modules1, Modules2, etc.), Thought, and Best Modules like the examples above and nothing else. Then, execute the tools and arguments one by one, following the sequence specified after 'Best Modules: ' precisely.
 """ 
 
 prompt = prompt_header_clean+prompt_example_clean
@@ -412,10 +412,7 @@ messages_formula = [
     Total interpretability cost of Modules2 is calculated as follows: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4, Finish(4181): 1. Summing these costs: 4+1=5.
     Therefore, Modules2 is selected because it has a lower total interpretability cost of 5 compared to 41 for Modules1.
 
-    Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n), Finish(4181) Cost is 5"""
-    },
-    {
-        'role': 'assistant',
+    Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n), Finish(4181) Cost is 5""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -452,10 +449,7 @@ messages_formula = [
     Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2016-2016, False): 3, PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0]): 4 (the number of lines of pandas_code < 10) * 1.5 (the number of imported packages in pandas_code is between 2 and 5) = 6, Finish(12): 1. Summing these costs: 3+6+1=10.
     Therefore, Modules1 is selected because it has a lower total interpretability cost of 8 compared to 10 for Modules2.
 
-    Best Modules: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]), Finish(12) Cost is 8"""
-    },
-    {
-        'role': 'assistant',
+    Best Modules: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]), Finish(12) Cost is 8""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -513,10 +507,7 @@ messages_formula = [
         Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2015-2017, True): 3, Classifier(distilbert-base-uncased, abstract, decision): 10 (model_name is "logistic_regression"). Summing these costs: 3+10=13.
         Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2.
 
-        Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision), Finish(ACCEPTED) Cost is 10"""
-    },
-    {
-        'role': 'assistant',
+        Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision), Finish(ACCEPTED) Cost is 10""",
         'tool_calls': [
             {
                 'id': 'call_0',
