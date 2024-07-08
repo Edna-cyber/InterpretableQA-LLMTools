@@ -18,7 +18,6 @@ from model import solver
 from tools.code.python_interpreter import execute as python_interpreter
 from tools.math.calculator import calculator, WolframAlphaCalculator
 from tools.table.tabtools import table_toolkits
-from tools.finish import finish
 import datetime
 
 current_datetime = datetime.datetime.now()
@@ -30,8 +29,7 @@ ACTION_LIST = {
     'LoadDB': db.db_loader, 
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
-    'Classifier': db.classifier,
-    'Finish': finish
+    'Classifier': db.classifier
 }
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -142,23 +140,6 @@ tools = [
                 "required": ["model_name", "section", "target"], 
             },
         },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "Finish",
-            "description": "Return the final answer and finish the task. All solutions need to be terminated with Finish.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "argument": {
-                        "type": "string",
-                        "description": "The final answer to be returned",
-                    }
-                },
-                "required": ["argument"], 
-            },
-        },
     }
 ]
 
@@ -208,8 +189,6 @@ def calc_cost(function_type, function_arguments):
             return 7
         if function_arguments["model_name"]=="distilbert-base-uncased":
             return 10
-    if function_type=="Finish":
-        return 1
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -289,8 +268,8 @@ if __name__ == "__main__":
                 content = response_message.content
                 if formula and iterations == 0: # only used for the formula prompt
                     start_ind = content.rfind("Cost is ")+len("Cost is ")
-                    llm_cost = int(content[start_ind:])
-                    print("llm_cost", llm_cost) ###
+                    # llm_cost = int(content[start_ind:]) need to change
+                    #print("llm_cost", llm_cost) ### 
          
                 if tool_calls:
                     tool_call = tool_calls[0]
@@ -328,8 +307,7 @@ if __name__ == "__main__":
                         "content": function_response,
                     }
                     print(tool_call_response) 
-                    if function_type!="Finish":
-                        llm_answer = function_response
+                    llm_answer = function_response
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
                     iterations += 1
