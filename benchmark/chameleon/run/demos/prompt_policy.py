@@ -37,19 +37,19 @@ Below are some examples that map the problem to the tools. When addressing a que
 """
 
 prompt_header_formula = """
-You need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question.
+You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question.
 
-The tools are defined as follows, with the formulas used to calculate their interpretability costs defined in {}. Within these {}, each () contains a variable whose value is determined by the specific if condition it meets.
+The tools are defined as follows, with the formulas used to calculate their interpretability costs. Each () contains a variable whose value is determined by the specific if condition it meets.
 
-- Calculate(query) {2}: This tool conducts an arithmetic operation and returns the result. It takes in an arithmetic operation and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
+- Calculate(query) Cost is 2: This tool conducts an arithmetic operation and returns the result. It takes in an arithmetic operation and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
 
-- LoadDB(target_db, duration, split) {3}: This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
+- LoadDB(target_db, duration, split) Cost is 3: This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
 
-- PandasInterpreter(pandas_code) {(if the number of lines of pandas_code < 10, 4; if the number of lines of pandas_code is between 10 and 20, 7; if the number of lines of pandas_code is between 21 and 100, 9; if the number of lines of pandas_code > 100, 10.) * (if the number of imported packages in pandas_code < 2, 1; if the number of imported packages in pandas_code is between 2 and 5, 1.5; if the number of imported packages in pandas_code > 5, 2)}: This tool interprets Pandas code written in Python that involves operations on a DataFrame df, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. We can only use "PandasInterpreter" after loading the dataframe with "LoadDB".
+- PandasInterpreter(pandas_code) Cost is (if the number of lines of pandas_code < 10, 4; if the number of lines of pandas_code is between 10 and 20, 7; if the number of lines of pandas_code is between 21 and 100, 9; if the number of lines of pandas_code > 100, 10.) * (if the number of imported packages in pandas_code < 2, 1; if the number of imported packages in pandas_code is between 2 and 5, 1.5; if the number of imported packages in pandas_code > 5, 2): This tool interprets Pandas code written in Python that involves operations on a DataFrame df, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. We can only use "PandasInterpreter" after loading the dataframe with "LoadDB".
 
-- PythonInterpreter(python_code) {(if the number of lines of python_code < 10, 4; if the number of lines of python_code is between 10 and 20, 7; if the number of lines of python_code is between 21 and 100, 9; if the number of lines of python_code > 100, 10.) * (if the number of imported packages in python_code < 2, 1; if the number of imported packages in python_code is between 2 and 5, 1.5; if the number of imported packages in python_code > 5, 2)}: This tool interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+- PythonInterpreter(python_code) Cost is (if the number of lines of python_code < 10, 4; if the number of lines of python_code is between 10 and 20, 7; if the number of lines of python_code is between 21 and 100, 9; if the number of lines of python_code > 100, 10.) * (if the number of imported packages in python_code < 2, 1; if the number of imported packages in python_code is between 2 and 5, 1.5; if the number of imported packages in python_code > 5, 2): This tool interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
 
-- Classifier(model_name, section, target, num_classes) {(if model_name is "logistic_regression", 7; if model_name is "distilbert-base-uncased", 10)}: This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
+- Classifier(model_name, section, target, num_classes) Cost is (if model_name is "logistic_regression", 7; if model_name is "distilbert-base-uncased", 10): This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
 
 Below are some examples that map problems to tools. When addressing a question, first calculate the interpretability cost for each tool. The interpretability cost of a set of tools is the sum of the costs of each tool in that set. Choose the set of tools with the lowest total interpretability cost, as tools with lower costs are preferred over those with higher costs.
 """
@@ -70,7 +70,7 @@ Question: Predict whether the patent application described in the following abst
 
 Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision)
 
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules like the examples above and nothing else.
+Now, you need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules like the examples above and nothing else.
 """
 
 prompt_example_compare = """
@@ -101,7 +101,7 @@ Thought: Modules1 is selected because it's more interpretable.
 
 Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision)
 
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like the examples above and nothing else.
+Now, you need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like the examples above and nothing else.
 """
 
 prompt_example_compare_full = """
@@ -132,7 +132,7 @@ Thought: Modules1 is selected because it's more interpretable.
 
 Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision)
 
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
+Now, you need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question. Please provide the sequence of Modules1, Modules2, Best Modules, and Thought like the examples above and nothing else.
 """
 
 prompt_example_formula = """
@@ -169,7 +169,7 @@ Therefore, Modules1 is selected because it has a lower total interpretability co
 
 Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision) Cost is 10
 
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like those from the examples above and nothing else.
+Now, you need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Best Modules like those from the examples above and nothing else.
 """ 
 
 prompt_example_formula_full = """
@@ -206,7 +206,7 @@ Therefore, Modules1 is selected because it has a lower total interpretability co
 
 Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision) Cost is 10
 
-Now, you need to act as a policy model, that given a question and a modular set, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules (including as many as necessary, e.g., Modules1, Modules2, etc.), Thought, and Best Modules like the examples above and nothing else. Then, execute the tools and arguments one by one, following the sequence specified after 'Best Modules: ' precisely.
+Now, you need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules (including as many as necessary, e.g., Modules1, Modules2, etc.), Thought, and Best Modules like the examples above and nothing else. Then, execute the tools and arguments one by one, following the sequence specified after 'Best Modules: ' precisely.
 """ 
 
 prompt = prompt_header_clean+prompt_example_clean
