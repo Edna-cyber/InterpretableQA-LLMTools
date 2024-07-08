@@ -12,7 +12,7 @@ acc_dict = data["acc"]
 agg_acc = data["agg_acc"]
 cost_dict = data["cost"]
 agg_cost = data["agg_cost"]
-total_count = data["count"]
+total_count = data["total_count"]
 
 accuracy = list(acc_dict.values())
 cost = list(cost_dict.values())
@@ -44,11 +44,11 @@ for bar in bar2:
     ax.text(
         bar.get_x() + bar.get_width() / 2,  
         height,                             
-        f'{height}',                   
+        f'{height:.2f}',                   
         ha='center',                        
         va='bottom'                         
     )
 
-text = 'Aggregate Accuracy: {:.2f}% Aggregate Cost: {:.2f}'.format(agg_acc, agg_cost)
-plt.figtext(0.5, 0.7, text, ha="center", fontsize=9)
+text = 'Aggregate Accuracy: {:.2f}% \nAggregate Cost: {:.2f}'.format(agg_acc, agg_cost)
+plt.figtext(0.3, 0.8, text, ha="center", fontsize=9)
 plt.savefig(os.path.join(result_dir, "figures", fig_name))
