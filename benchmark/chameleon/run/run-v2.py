@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import json
+import jsonlines
 import argparse
 import random
 from tqdm import tqdm
@@ -249,6 +250,8 @@ if __name__ == "__main__":
     os.makedirs(result_root, exist_ok=True)
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
     print("result_file", result_file)
+    cache_file = f"{result_root}/{args.label}_{args.test_split}_cache.jsonl"
+    cache = []
 
     total_count, total_correct, total_cost, total_reliability = 0, 0, 0, 0
     count, correct, cost = defaultdict(int), defaultdict(int), defaultdict(int)
@@ -306,7 +309,7 @@ if __name__ == "__main__":
                             }
                         ]
                     }
-                    print(response_with_tools) 
+                    # print(response_with_tools) 
                     messages.append(response_with_tools) 
                     logs.append(response_with_tools)
                                 
@@ -324,7 +327,7 @@ if __name__ == "__main__":
                         "name": function_type,
                         "content": function_response,
                     }
-                    print(tool_call_response) 
+                    # print(tool_call_response) 
                     if function_type!="Finish":
                         llm_answer = function_response
                     messages.append(tool_call_response)  
@@ -347,12 +350,17 @@ if __name__ == "__main__":
         
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
+        cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)): #<YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)) #<YOUR_OWN_PATH>
             logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version) #<YOUR_OWN_PATH>
         with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
             for item in logs:
                 f.write(f"{item}\n")
+    
+    with jsonlines.open(cache_file, mode='w') as writer:
+        for row in cache:
+            writer.write(row)
 
     acc = {}
     for key in count:
