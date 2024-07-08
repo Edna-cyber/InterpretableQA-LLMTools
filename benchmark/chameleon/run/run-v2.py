@@ -271,7 +271,6 @@ if __name__ == "__main__":
 
         # messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
         messages = [{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+prompt_policy.messages_formula
-        # messages = prompt_policy.messages_formula
         formula = True # False
         
         messages.append({"role": "user", "content": user_prompt})
