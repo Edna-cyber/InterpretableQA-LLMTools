@@ -269,7 +269,7 @@ if __name__ == "__main__":
                 if formula and iterations == 0: # only used for the formula prompt
                     start_ind = content.rfind("Cost is ")+len("Cost is ")
                     # llm_cost = int(content[start_ind:]) need to change
-                    #print("llm_cost", llm_cost) ### 
+                    # print("llm_cost", llm_cost) ### 
          
                 if tool_calls:
                     tool_call = tool_calls[0]
@@ -312,6 +312,12 @@ if __name__ == "__main__":
                     logs.append(tool_call_response)
                     iterations += 1
                 else:
+                    response_without_tools = {
+                        "role": choice.message.role,
+                        "content": content
+                    }
+                    messages.append(response_without_tools) 
+                    logs.append(response_without_tools)
                     break
                     
             except Exception as e:

@@ -355,7 +355,9 @@ messages_formula = [
     1. Generate Solutions: First, list as many solutions as possible. Each solution should be a sequence of tools that can be used to solve the question.
 
     2. Calculate Interpretability Costs: Calculate the total interpretability cost for each solution. The interpretability cost of each tool in the solution is defined by the formulas below. Tools with lower interpretability costs are preferred over those with higher costs.
-
+    
+    3. Execute the solution with a lower total interpretability cost and calculate the cumulative cost at runtime. During each step of execution, add the cost to the cumulative cost. If the result of a tool call contains 'Error: ', do not add the cost to the cumulative cost.
+    
     Interpretability Cost Formulas:
 
     1. Calculate: Cost is 2
@@ -389,6 +391,8 @@ messages_formula = [
     5. Classifier: Cost is based on the model name:
         - If model name is "logistic_regression": 7
         - If model name is "distilbert-base-uncased": 10
+    
+    Initial Cumulative Cost per question is 0. 
     """
     },
     {
@@ -404,7 +408,9 @@ messages_formula = [
         Total interpretability cost of Modules2 is calculated as follows: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 4.
         Therefore, Modules2 is selected because it has a lower total interpretability cost of 4 compared to 40 for Modules1.
 
-        Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n) Cost is 4""",
+        Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+        
+        To execute: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n) Cost is 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Cumulative Cost is 4.""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -426,7 +432,7 @@ messages_formula = [
     },
     {
         'role': 'assistant',
-        'content': 'The 20th Fibonacci number is 4181.'
+        'content': 'The 20th Fibonacci number is 4181. Cumulative Cost is 4.'
     },
     {
         'role': 'user',
@@ -441,7 +447,9 @@ messages_formula = [
         Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2016-2016, False): 3, PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0]): 4 (the number of lines of pandas_code < 10) * 1.5 (the number of imported packages in pandas_code is between 2 and 5) = 6. Summing these costs: 3+6=9.
         Therefore, Modules1 is selected because it has a lower total interpretability cost of 7 compared to 9 for Modules2.
 
-        Best Modules: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]) Cost is 7""",
+        Best Modules: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0])
+        
+        To execute: LoadDB(hupd, 2016-2016, False) Cost is 3. Cumulative Cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -463,6 +471,7 @@ messages_formula = [
     },
     {
         'role': 'assistant',
+        'content': """To execute: PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]) Cost is 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4. Cumulative Cost is 7.""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -484,7 +493,7 @@ messages_formula = [
     },
     {
         'role': 'assistant',
-        'content': 'The month with the highest number of patent applications in 2016 was December.'
+        'content': 'The month with the highest number of patent applications in 2016 was December. Cumulative cost is 7.'
     },
     {
         'role': 'user',
@@ -499,7 +508,9 @@ messages_formula = [
         Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2015-2017, True): 3, Classifier(distilbert-base-uncased, abstract, decision): 10 (model_name is "logistic_regression"). Summing these costs: 3+10=13.
         Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2.
 
-        Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision) Cost is 10""",
+        Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision)
+        
+        To execute: LoadDB(hupd, 2015-2017, True) Cost is 3. Cumulative Cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -521,6 +532,7 @@ messages_formula = [
     },
     {
         'role': 'assistant',
+        'content': """To execute: Classifier(logistic_regression, abstract, decision) Cost is 7 (model_name is "logistic_regression"). Cumulative Cost is 10.""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -542,7 +554,7 @@ messages_formula = [
     },
     {
         'role': 'assistant',
-        'content': "The patent application described in the abstract is predicted to be accepted."
+        'content': "The patent application described in the abstract is predicted to be accepted. Cumulative Cost is 10."
     }
 ]
 
