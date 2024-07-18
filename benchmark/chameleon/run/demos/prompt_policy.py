@@ -223,7 +223,19 @@ messages = [
                 'function': {
                     'name': 'PythonInterpreter',
                     'arguments': json.dumps({
-                        "python_code": "def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n"
+                        "python_code": """
+def solution(n):
+    if n <= 0:
+        return 0
+    elif n == 1:
+        return 1
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+ans = solution(19)
+"""
                     })
                 },
                 'type': 'function'
@@ -414,7 +426,19 @@ messages_formula = [
                 'function': {
                     'name': 'PythonInterpreter',
                     'arguments': json.dumps({
-                        "python_code": "def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n"
+                        "python_code": """
+def solution(n):
+    if n <= 0:
+        return 0
+    elif n == 1:
+        return 1
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+ans = solution(19)
+"""
                     })
                 },
                 'type': 'function'
