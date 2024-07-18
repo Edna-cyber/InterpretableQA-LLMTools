@@ -1,6 +1,9 @@
 import json
 
-prompt_header_clean = """
+messages = [
+    {
+        'role': 'system',
+        'content': """
 You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question.
 
 The tools are defined as follows:
@@ -17,26 +20,7 @@ The tools are defined as follows:
 
 Below are some examples that map the problem to the tools.
 """
-
-prompt_example_clean = """
-Question: What is the 20th Fibonacci number?
-
-Modules: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
-
-Question: Which month had the highest number of patent applications in 2016?
-
-Modules: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0])
-
-Question: Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?
-
-Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision)
-
-Now, you need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question. Please provide only the sequence of Modules like the examples above and nothing else.
-"""
-
-prompt = prompt_header_clean+prompt_example_clean
-
-messages = [
+    },
     {
         'role': 'user',
         'content': 'What is the 20th Fibonacci number?'

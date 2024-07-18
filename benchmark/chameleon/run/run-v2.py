@@ -247,9 +247,9 @@ if __name__ == "__main__":
         gt_cost, llm_cost = 0, 0
         count[question_type] += 1
 
-        # messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
-        messages = prompt_policy.messages_formula #[{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+
-        formula = True # False
+        messages = prompt_policy.messages
+        # messages = prompt_policy.messages_formula 
+        formula = False # True 
         
         messages.append({"role": "user", "content": user_prompt})
         # print("messages", messages) ###
