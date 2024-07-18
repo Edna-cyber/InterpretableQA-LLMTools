@@ -198,7 +198,6 @@ def parse_args():
     parser.add_argument('--task_name', type=str, default='hupd') 
     parser.add_argument('--test_split', type=str, default='test1k', 
                         choices=['dev', 'dev1k', 'test', 'test1k'])
-    parser.add_argument('--test_number', type=int, default=100)
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument("--dataset", type=str, default="hupd")
     parser.add_argument("--hardness", type=str, default="easy")
@@ -233,10 +232,10 @@ if __name__ == "__main__":
     cache = []
 
     total_count, total_correct, total_cost, total_reliability = 0, 0, 0, 0
-    count, correct, cost = defaultdict(int), defaultdict(int), defaultdict(int)
+    count, correct, cost, cost_original = defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(list)
     pids = solver.pids
     
-    for pid in tqdm(pids[:1]): # pids
+    for pid in tqdm(pids[14:24]): # pids
         if total_count < 10:
             print("\n\n===================================\n")
             print(f"# [Pid]: {pid}\n") # problem id
@@ -261,7 +260,7 @@ if __name__ == "__main__":
         while iterations<15:
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
-                print("response", response) ###
+                # print("response", response) ###
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
@@ -288,7 +287,7 @@ if __name__ == "__main__":
                             }
                         ]
                     }
-                    print(response_with_tools) 
+                    # print(response_with_tools) 
                     messages.append(response_with_tools) 
                     logs.append(response_with_tools)
                                 
@@ -306,7 +305,7 @@ if __name__ == "__main__":
                         "name": function_type,
                         "content": function_response,
                     }
-                    print(tool_call_response) 
+                    # print(tool_call_response) 
                     llm_answer = function_response
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
@@ -329,7 +328,8 @@ if __name__ == "__main__":
         if llm_answer==gt_answer:
             correct[question_type] += 1
             total_correct += 1
-        print("gt_cost", gt_cost) ###
+        # print("gt_cost", gt_cost) ###
+        cost_original[question_type].append(gt_cost)
         if llm_cost==gt_cost:
             total_reliability += 1
         
@@ -356,6 +356,8 @@ if __name__ == "__main__":
         cost[key] = cost[key] / count[key]
     acc = dict(sorted(acc.items()))
     cost = dict(sorted(cost.items()))
+    cost_original = dict(sorted(cost_original.items()))
+    count = dict(sorted(count.items()))
     agg_acc = total_correct / total_count * 100
     agg_cost = total_cost / total_count
     agg_reliability = total_reliability / total_count * 100
@@ -363,6 +365,6 @@ if __name__ == "__main__":
         agg_reliability = "NA"
         
     # save the result
-    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'agg_reliability': agg_reliability, 'count': count, 'total_count': total_count, 'args': vars(args)}
+    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'agg_reliability': agg_reliability, 'count': count, 'total_count': total_count, 'args': vars(args)}
     with open(result_file, 'w') as f:
         json.dump(result, f, indent=4, separators=(',', ': '))
