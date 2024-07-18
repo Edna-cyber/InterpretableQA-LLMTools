@@ -6,19 +6,43 @@ messages = [
         'content': """
 You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question.
 
-The tools are defined as follows:
+Then calculate the cumulative cost at runtime. During each step of execution, add the cost to the cumulative cost. If the result of a tool call contains 'Error: ', do not add this cost to the cumulative cost. The cumulative cost stays the same.
+    
+Interpretability Cost Formulas:
 
-- Calculate(query): This tool conducts an arithmetic operation and returns the result. It takes in an arithmetic operation and returns the calculated result. Normally, we only consider using "Calculate" when the question involves mathematical computations.
+1. Calculate: Cost is 2
 
-- LoadDB(target_db, duration, split): This tool loads a database specified by the target_db, duration, and a boolean value split, and returns the loaded dataframe or dataset dictionary. The target_db can be "hupd". The duration is in the format of startYear-endYear. When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. Normally, we only use "LoadDB" when the question requires data from a specific structured database.
+2. LoadDB: Cost is 3
 
-- PandasInterpreter(pandas_code): This tool interprets Pandas code written in Python that involves operations on a DataFrame df, and returns the result. Normally, we only use "PandasInterpreter" when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter.
+3. PandasInterpreter: Cost is based on the number of lines of Python code and the number of imported packages:
+    - Number of Lines of Python Code:
+        - If less than 10 lines: 4
+        - If between 10 and 20 lines: 7
+        - If between 21 and 100 lines: 9
+        - If more than 100 lines: 10
+    - Number of Imported Packages:
+        - If fewer than 2 packages: 1
+        - If between 2 and 5 packages: 1.5
+        - If more than 5 packages: 2
+    - Formula: (Cost based on number of lines) * (Cost based on number of packages)
 
-- PythonInterpreter(python_code): This tool interprets Python code and returns the result. It takes in Python code and returns the result of the code execution. Normally, we only use "PythonInterpreter" when the question requires complex computations. We don't use "PythonInterpreter" when the question requires data manipulation performed on a specific structured dataframe.
+4. PythonInterpreter: Cost is similar to PandasInterpreter, based on the number of lines of Python code and the number of imported packages:
+    - Number of Lines of Python Code:
+        - If less than 10 lines: 4
+        - If between 10 and 20 lines: 7
+        - If between 21 and 100 lines: 9
+        - If more than 100 lines: 10
+    - Number of Imported Packages:
+        - If fewer than 2 packages: 1
+        - If between 2 and 5 packages: 1.5
+        - If more than 5 packages: 2
+    - Formula: (Cost based on number of lines) * (Cost based on number of packages)
 
-- Classifier(model_name, section, target, num_classes): This tool runs a specified classifier model on the given section to predict the target, which has num_classes number of classes. The model_name can be "logistic_regression" or "distilbert-base-uncased". The section is a predictor variable of the classifier model, which is natural language requiring tokenization. The default value of num_classes is 2 for binary classification. Normally, we use the "Classifier" tool for binary or multi-class classification tasks.
+5. Classifier: Cost is based on the model name:
+    - If model name is "logistic_regression": 7
+    - If model name is "distilbert-base-uncased": 10
 
-Below are some examples that map the problem to the tools.
+Initial Cumulative Cost per question is 0. Below are some examples that map the problem to the tools.
 """
     },
     {
@@ -27,7 +51,7 @@ Below are some examples that map the problem to the tools.
     },
     {
         'role': 'assistant',
-        'content': "",
+        'content': """To execute: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n) Cost is 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Cumulative Cost is 4.""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -61,7 +85,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': 'The 20th Fibonacci number is 4181.'
+        'content': 'The 20th Fibonacci number is 4181. Cumulative Cost is 4.'
     },
     {
         'role': 'user',
@@ -69,6 +93,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
+        'content': """To execute: LoadDB(hupd, 2016-2016, False) Cost is 3. Cumulative Cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -90,6 +115,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
+        'content': """To execute: PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]) Cost is 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4. Cumulative Cost is 7.""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -111,7 +137,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': 'The month with the highest number of patent applications in 2016 was December.'
+        'content': 'The month with the highest number of patent applications in 2016 was December. Cumulative cost is 7.'
     },
     {
         'role': 'user',
@@ -119,6 +145,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
+        'content': """To execute: LoadDB(hupd, 2015-2017, True) Cost is 3. Cumulative Cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -140,6 +167,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
+        'content': """To execute: Classifier(logistic_regression, abstract, decision) Cost is 7 (model_name is "logistic_regression"). Cumulative Cost is 10.""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -161,7 +189,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': "The patent application described in the abstract is predicted to be accepted."
+        'content': "The patent application described in the abstract is predicted to be accepted. Cumulative Cost is 10."
     }
 ]
 
@@ -170,49 +198,49 @@ messages_formula = [
     {
         'role': 'system',
         'content': """
-    You need to act as a policy model that determines the sequence of tools with the lowest total interpretability cost that can be executed sequentially to solve the question. Follow these steps:
+You need to act as a policy model that determines the sequence of tools with the lowest total interpretability cost that can be executed sequentially to solve the question. Follow these steps:
 
-    1. Generate Solutions: First, list as many solutions as possible. Each solution should be a sequence of tools that can be used to solve the question.
+1. Generate Solutions: First, list as many solutions as possible. Each solution should be a sequence of tools that can be used to solve the question.
 
-    2. Calculate Interpretability Costs: Calculate the total interpretability cost for each solution. The interpretability cost of each tool in the solution is defined by the formulas below. Tools with lower interpretability costs are preferred over those with higher costs.
-    
-    3. Execute the solution with a lower total interpretability cost and calculate the cumulative cost at runtime. During each step of execution, add the cost to the cumulative cost. If the result of a tool call contains 'Error: ', do not add this cost to the cumulative cost. The cumulative cost stays the same.
-    
-    Interpretability Cost Formulas:
+2. Calculate Interpretability Costs: Calculate the total interpretability cost for each solution. The interpretability cost of each tool in the solution is defined by the formulas below. Tools with lower interpretability costs are preferred over those with higher costs.
 
-    1. Calculate: Cost is 2
+3. Execute the solution with a lower total interpretability cost and calculate the cumulative cost at runtime. During each step of execution, add the cost to the cumulative cost. If the result of a tool call contains 'Error: ', do not add this cost to the cumulative cost. The cumulative cost stays the same.
 
-    2. LoadDB: Cost is 3
+Interpretability Cost Formulas:
 
-    3. PandasInterpreter: Cost is based on the number of lines of Python code and the number of imported packages:
-        - Number of Lines of Python Code:
-            - If less than 10 lines: 4
-            - If between 10 and 20 lines: 7
-            - If between 21 and 100 lines: 9
-            - If more than 100 lines: 10
-        - Number of Imported Packages:
-            - If fewer than 2 packages: 1
-            - If between 2 and 5 packages: 1.5
-            - If more than 5 packages: 2
-        - Formula: (Cost based on number of lines) * (Cost based on number of packages)
+1. Calculate: Cost is 2
 
-    4. PythonInterpreter: Cost is similar to PandasInterpreter, based on the number of lines of Python code and the number of imported packages:
-        - Number of Lines of Python Code:
-            - If less than 10 lines: 4
-            - If between 10 and 20 lines: 7
-            - If between 21 and 100 lines: 9
-            - If more than 100 lines: 10
-        - Number of Imported Packages:
-            - If fewer than 2 packages: 1
-            - If between 2 and 5 packages: 1.5
-            - If more than 5 packages: 2
-        - Formula: (Cost based on number of lines) * (Cost based on number of packages)
+2. LoadDB: Cost is 3
 
-    5. Classifier: Cost is based on the model name:
-        - If model name is "logistic_regression": 7
-        - If model name is "distilbert-base-uncased": 10
-    
-    Initial Cumulative Cost per question is 0. 
+3. PandasInterpreter: Cost is based on the number of lines of Python code and the number of imported packages:
+    - Number of Lines of Python Code:
+        - If less than 10 lines: 4
+        - If between 10 and 20 lines: 7
+        - If between 21 and 100 lines: 9
+        - If more than 100 lines: 10
+    - Number of Imported Packages:
+        - If fewer than 2 packages: 1
+        - If between 2 and 5 packages: 1.5
+        - If more than 5 packages: 2
+    - Formula: (Cost based on number of lines) * (Cost based on number of packages)
+
+4. PythonInterpreter: Cost is similar to PandasInterpreter, based on the number of lines of Python code and the number of imported packages:
+    - Number of Lines of Python Code:
+        - If less than 10 lines: 4
+        - If between 10 and 20 lines: 7
+        - If between 21 and 100 lines: 9
+        - If more than 100 lines: 10
+    - Number of Imported Packages:
+        - If fewer than 2 packages: 1
+        - If between 2 and 5 packages: 1.5
+        - If more than 5 packages: 2
+    - Formula: (Cost based on number of lines) * (Cost based on number of packages)
+
+5. Classifier: Cost is based on the model name:
+    - If model name is "logistic_regression": 7
+    - If model name is "distilbert-base-uncased": 10
+
+Initial Cumulative Cost per question is 0. Below are some examples that map the problem to the tools.
     """
     },
     {

@@ -235,7 +235,7 @@ if __name__ == "__main__":
     count, correct, cost, cost_original = defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(list)
     pids = solver.pids
     
-    for pid in tqdm(pids[13:16]): # pids
+    for pid in tqdm(pids): # pids
         if total_count < 10:
             print("\n\n===================================\n")
             print(f"# [Pid]: {pid}\n") # problem id
@@ -247,9 +247,8 @@ if __name__ == "__main__":
         gt_cost, llm_cost = 0, 0
         count[question_type] += 1
 
-        messages = prompt_policy.messages
-        # messages = prompt_policy.messages_formula 
-        formula = False # True 
+        # messages = prompt_policy.messages
+        messages = prompt_policy.messages_formula 
         
         messages.append({"role": "user", "content": user_prompt})
         # print("messages", messages) ###
@@ -361,11 +360,9 @@ if __name__ == "__main__":
     cost_original = dict(sorted(cost_original.items()))
     count = dict(sorted(count.items()))
     agg_acc = format(total_correct / total_count * 100, ".2f")+"%"
-    agg_cost = format(total_cost / total_count, ".2f")
+    agg_cost = round(total_cost / total_count, 2)
     agg_reliability = format(total_reliability / total_count * 100, ".2f")+"%"
-    if not formula:
-        agg_reliability = "NA"
-    reliability_MSE = format(reliability_MSE / total_count, ".2f")
+    reliability_MSE = round(reliability_MSE / total_count, 2)
         
     # save the result
     result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'agg_reliability': agg_reliability, 'reliability_MSE': reliability_MSE, 'count': count, 'total_count': total_count, 'args': vars(args)}

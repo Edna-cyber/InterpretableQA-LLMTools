@@ -85,8 +85,8 @@ def common_examiners(start_year, end_year):
 questions = []
 question_id = 1
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy/hupd-easy.jsonl', mode='w') as writer:
-    while question_id<=300: 
-        question_type = random.randint(0,4) #(0, 8)
+    while question_id<=100: 
+        question_type = random.randint(0,4) 
         if question_type == 0:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2015,2018)
@@ -100,12 +100,13 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             # What were the top{#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
             num = random.randint(2,5)
             category = random.choice(["IPCR categories", "CPC categories"]) 
+            category_to_col = {"IPCR categories": "ipcr_category", "CPC categories": "cpc_category"}
             year = random.randint(2015,2018) 
             question_choice = random.randint(0,1)
             if question_choice==0:
-                question = "What were the top{} {} with the highest percentage of patent acceptance in {}? First, calculate the approval percentage for each category in the {} column, then identify the categories with the highest approval rates and return them as a list.".format(num, category, year, category.replace("ies","y"))
+                question = "What were the top{} {} with the highest percentage of patent acceptance in {}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. Use the '{}' column.".format(num, category, year, category_to_col[category])
             else:
-                question = "Which {} were among the top{} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category in the {} column first, then return the top categories with the highest approval rates as a list.".format(category, num, year, category.replace("ies","y"))
+                question = "Which {} were among the top{} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category, then return the top categories with the highest approval rates as a list. Use the '{}' column.".format(category, num, year, category_to_col[category])
             answer = top_accepted_category(num, category, year)
         elif question_type == 2:
             # How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
