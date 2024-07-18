@@ -54,13 +54,10 @@ The tools are defined as follows, with the formulas used to calculate their inte
 Below are some examples that map problems to tools. When addressing a question, first calculate the interpretability cost for each tool. The interpretability cost of a set of tools is the sum of the costs of each tool in that set. Choose the set of tools with the lowest total interpretability cost, as tools with lower costs are preferred over those with higher costs.
 """
 
-# If got more than 1 argument, need to separate with ;
-# Needs an example with dbloader where the question doesn't involve specific years
-
 prompt_example_clean = """
 Question: What is the 20th Fibonacci number?
 
-Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+Modules: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
 Question: Which month had the highest number of patent applications in 2016?
 
@@ -77,11 +74,11 @@ prompt_example_compare = """
 Question: What is the 20th Fibonacci number?
 
 Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584)
-Modules2: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+Modules2: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
 Thought: Modules2 is selected because it's more interpretable. 
 
-Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+Best Modules: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
 Question: Which month had the highest number of patent applications in 2016?
 
@@ -108,11 +105,11 @@ prompt_example_compare_full = """
 Question: What is the 20th Fibonacci number?
 
 Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584)
-Modules2: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+Modules2: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
 Thought: Modules2 is selected because it's more interpretable. 
 
-Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+Best Modules: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
 Question: Which month had the highest number of patent applications in 2016?
 
@@ -139,13 +136,13 @@ prompt_example_formula = """
 Question: What is the 20th Fibonacci number?
 
 Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584)
-Modules2: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+Modules2: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
 Thought: Total interpretability cost of Modules1 is calculated as follows: Calculate(0+0): 2, Calculate(0+1): 2, Calculate(0+1): 2, Calculate(1+1): 2, Calculate(1+2): 2, Calculate(2+3): 2, Calculate(3+5): 2, Calculate(5+8): 2, Calculate(8+13): 2, Calculate(13+21): 2, Calculate(21+34): 2, Calculate(34+55): 2, Calculate(55+89): 2, Calculate(89+144): 2, Calculate(144+233): 2, Calculate(233+377): 2, Calculate(377+610): 2, Calculate(610+987): 2, Calculate(987+1597): 2, Calculate(1597+2584): 2. Summing these costs: 2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+1=40.
-Total interpretability cost of Modules2 is calculated as follows: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 4.
+Total interpretability cost of Modules2 is calculated as follows: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 4.
 Therefore, Modules2 is selected because it has a lower total interpretability cost of 4 compared to 40 for Modules1.
 
-Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n) Cost is 4
+Best Modules: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n) Cost is 4
 
 Question: Which month had the highest number of patent applications in 2016?
 
@@ -176,13 +173,13 @@ prompt_example_formula_full = """
 Question: What is the 20th Fibonacci number?
 
 Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584)
-Modules2: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+Modules2: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
 Thought: Total interpretability cost of Modules1 is calculated as follows: Calculate(0+0): 2, Calculate(0+1): 2, Calculate(0+1): 2, Calculate(1+1): 2, Calculate(1+2): 2, Calculate(2+3): 2, Calculate(3+5): 2, Calculate(5+8): 2, Calculate(8+13): 2, Calculate(13+21): 2, Calculate(21+34): 2, Calculate(34+55): 2, Calculate(55+89): 2, Calculate(89+144): 2, Calculate(144+233): 2, Calculate(233+377): 2, Calculate(377+610): 2, Calculate(610+987): 2, Calculate(987+1597): 2, Calculate(1597+2584): 2. Summing these costs: 2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+1=40.
-Total interpretability cost of Modules2 is calculated as follows: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 4.
+Total interpretability cost of Modules2 is calculated as follows: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 4.
 Therefore, Modules2 is selected because it has a lower total interpretability cost of 4 compared to 40 for Modules1.
 
-Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n) Cost is 4
+Best Modules: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n) Cost is 4
 
 Question: Which month had the highest number of patent applications in 2016?
 
@@ -226,7 +223,7 @@ messages = [
                 'function': {
                     'name': 'PythonInterpreter',
                     'arguments': json.dumps({
-                        "python_code": "# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n"
+                        "python_code": "def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n"
                     })
                 },
                 'type': 'function'
@@ -402,22 +399,22 @@ messages_formula = [
     {
         'role': 'assistant',
         'content': """Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584)
-        Modules2: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+        Modules2: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
         Thought: Total interpretability cost of Modules1 is calculated as follows: Calculate(0+0): 2, Calculate(0+1): 2, Calculate(0+1): 2, Calculate(1+1): 2, Calculate(1+2): 2, Calculate(2+3): 2, Calculate(3+5): 2, Calculate(5+8): 2, Calculate(8+13): 2, Calculate(13+21): 2, Calculate(21+34): 2, Calculate(34+55): 2, Calculate(55+89): 2, Calculate(89+144): 2, Calculate(144+233): 2, Calculate(233+377): 2, Calculate(377+610): 2, Calculate(610+987): 2, Calculate(987+1597): 2, Calculate(1597+2584): 2. Summing these costs: 2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2+1=40.
-        Total interpretability cost of Modules2 is calculated as follows: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 4.
+        Total interpretability cost of Modules2 is calculated as follows: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 4.
         Therefore, Modules2 is selected because it has a lower total interpretability cost of 4 compared to 40 for Modules1.
 
-        Best Modules: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n)
+        Best Modules: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
         
-        To execute: PythonInterpreter(# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n) Cost is 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Cumulative Cost is 4.""",
+        To execute: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n) Cost is 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Cumulative Cost is 4.""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'PythonInterpreter',
                     'arguments': json.dumps({
-                        "python_code": "# solution in Python:\n\ndef solution(n):\n    # Calculate the nth Fibonacci number\n    # Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(20)\n"
+                        "python_code": "def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n"
                     })
                 },
                 'type': 'function'
