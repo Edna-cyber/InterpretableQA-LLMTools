@@ -198,9 +198,12 @@ class table_toolkits():
             arr = []
             for i in range(input.shape[0]):
                 query = input[i]
-                features = [0] * vocab_size
+                if num_classes==2:
+                    features = [0] * vocab_size
+                else:
+                    features = [1] * vocab_size
                 for j in range(query.shape[0]):
-                    features[query[j]] += 1 # todo: for Multinomial (initially +1)
+                    features[query[j]] += 1 
                 arr.append(features)
             return np.array(arr)
 
@@ -310,7 +313,7 @@ class table_toolkits():
             else:
                 print(model)
             return tokenizer, dataset, model, vocab_size
-
+        
         # For filtering out CONT-apps and pending apps
         decision_to_str = {
             'REJECTED': 0, 
@@ -644,9 +647,8 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    db.db_loader('hupd', '2016-2016', False)
+    db.db_loader('hupd', '2017-2018', False)
     pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    pandas_code = "num_examiners = df['examiner_id'].nunique()\nnum_examiners"
     print(db.pandas_interpreter(pandas_code))
 
     # print(db.db_loader('hupd', '2016-2016', True))

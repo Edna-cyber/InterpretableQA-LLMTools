@@ -231,11 +231,11 @@ if __name__ == "__main__":
     cache_file = f"{result_root}/{args.label}_{args.test_split}_cache.jsonl"
     cache = []
 
-    total_count, total_correct, total_cost, total_reliability = 0, 0, 0, 0
+    total_count, total_correct, total_cost, total_reliability, reliability_MSE = 0, 0, 0, 0, 0
     count, correct, cost, cost_original = defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(list)
     pids = solver.pids
     
-    for pid in tqdm(pids[14:24]): # pids
+    for pid in tqdm(pids[13:16]): # pids
         if total_count < 10:
             print("\n\n===================================\n")
             print(f"# [Pid]: {pid}\n") # problem id
@@ -244,18 +244,18 @@ if __name__ == "__main__":
         example = solver.examples[pid] # get one example 
         user_prompt = example["question"] 
         question_type = example["question_type"]
-        gt_cost = 0
+        gt_cost, llm_cost = 0, 0
         count[question_type] += 1
 
         # messages = [{"role": "system", "content": prompt_policy.prompt.strip()}]+prompt_policy.messages
-        messages = [{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+prompt_policy.messages_formula
+        messages = prompt_policy.messages_formula #[{"role": "system", "content": prompt_policy.prompt_formula.strip()}]+
         formula = True # False
         
         messages.append({"role": "user", "content": user_prompt})
+        # print("messages", messages) ###
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
         llm_answer = None
-        llm_cost = None
         iterations = 0
         while iterations<15:
             try:
@@ -265,10 +265,6 @@ if __name__ == "__main__":
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
                 content = response_message.content
-                if formula and iterations == 0: # only used for the formula prompt
-                    start_ind = content.rfind("Cost is ")+len("Cost is ")
-                    # llm_cost = int(content[start_ind:]) need to change
-                    # print("llm_cost", llm_cost) ### 
          
                 if tool_calls:
                     tool_call = tool_calls[0]
@@ -315,6 +311,10 @@ if __name__ == "__main__":
                         "role": choice.message.role,
                         "content": content
                     }
+                    if "Cumulative cost" in content:
+                        begin_ind = content.rfind("Cumulative")+len("Cumulative cost is ")
+                        end_ind = content.rfind(".")
+                        llm_cost = int(content[begin_ind:end_ind])
                     messages.append(response_without_tools) 
                     logs.append(response_without_tools)
                     break
@@ -328,10 +328,12 @@ if __name__ == "__main__":
         if llm_answer==gt_answer:
             correct[question_type] += 1
             total_correct += 1
-        # print("gt_cost", gt_cost) ###
         cost_original[question_type].append(gt_cost)
         if llm_cost==gt_cost:
             total_reliability += 1
+        print("gt_cost", gt_cost) ###
+        print("llm_cost", llm_cost) ###
+        reliability_MSE += (llm_cost-gt_cost)**2
         
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
@@ -352,19 +354,20 @@ if __name__ == "__main__":
         if key not in correct:
             acc[key] = 0
         else:
-            acc[key] = correct[key] / count[key] * 100
+            acc[key] = format(correct[key] / count[key] * 100,".2f")+"%"
         cost[key] = cost[key] / count[key]
     acc = dict(sorted(acc.items()))
     cost = dict(sorted(cost.items()))
     cost_original = dict(sorted(cost_original.items()))
     count = dict(sorted(count.items()))
-    agg_acc = total_correct / total_count * 100
-    agg_cost = total_cost / total_count
-    agg_reliability = total_reliability / total_count * 100
-    if not llm_cost:
+    agg_acc = format(total_correct / total_count * 100, ".2f")+"%"
+    agg_cost = format(total_cost / total_count, ".2f")
+    agg_reliability = format(total_reliability / total_count * 100, ".2f")+"%"
+    if not formula:
         agg_reliability = "NA"
+    reliability_MSE = format(reliability_MSE / total_count, ".2f")
         
     # save the result
-    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'agg_reliability': agg_reliability, 'count': count, 'total_count': total_count, 'args': vars(args)}
+    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'agg_reliability': agg_reliability, 'reliability_MSE': reliability_MSE, 'count': count, 'total_count': total_count, 'args': vars(args)}
     with open(result_file, 'w') as f:
         json.dump(result, f, indent=4, separators=(',', ': '))
