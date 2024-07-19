@@ -180,9 +180,9 @@ class table_toolkits():
         else:
             label = ipc_label
             
-        tokenizer_save_path = "models/"+model_name+"_"+label+"_"+self.duration+"_tokenizer" ### might need to change for different tasks
-        save_path = "models/"+model_name+"_"+label+"_"+self.duration ### might need to change for different tasks
-        filename = model_name+"_"+label+"_"+self.duration+".txt" ### might need to change for different tasks
+        tokenizer_save_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/table/models/"+model_name+"_"+label+"_"+self.duration+"_tokenizer" ### might need to change for different tasks
+        save_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/table/models/"+model_name+"_"+label+"_"+self.duration ### might need to change for different tasks
+        filename = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/table/"+model_name+"_"+label+"_"+self.duration+".txt" ### might need to change for different tasks
                 
         # Subject area code label
         cat_label = ''
@@ -284,11 +284,11 @@ class table_toolkits():
                         if model_name != 'naive_bayes': # CHANGE 'naive_bayes' (shannon)
                             tokenizer.model_max_length = max_length
                             tokenizer.max_length = max_length
-                        tokenizer.save("temp_tokenizer.json") 
+                        tokenizer.save("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/table/temp_tokenizer.json")  # <YOUR_OWN_PATH>
                         if tokenizer_save_path:
                             print('*** Saving the tokenizer...')
                             tokenizer.save(f"{tokenizer_save_path}")
-                        tokenizer = PreTrainedTokenizerFast(tokenizer_file="temp_tokenizer.json")
+                        tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/table/temp_tokenizer.json") # <YOUR_OWN_PATH>
 
                         if model_name != 'naive_bayes': # CHANGE 'naive_bayes'
                             tokenizer.model_max_length = max_length
@@ -647,12 +647,13 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    db.db_loader('hupd', '2017-2018', False)
-    pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    print(db.pandas_interpreter(pandas_code))
+    # db.db_loader('hupd', '2016-2016', False)
+    # # pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
+    # pandas_code = "import pandas as pd\napproval_rates = df.groupby('ipcr_category')['decision'].apply(lambda x: (x == 'ACCEPTED').mean() * 100).reset_index(name='approval_rate')\ntop_categories = approval_rates.nlargest(2, 'approval_rate')['ipcr_category'].tolist()\nans = top_categories"
+    # print(db.pandas_interpreter(pandas_code))
 
-    # print(db.db_loader('hupd', '2016-2016', True))
-    # db.classifier('logistic_regression', 'abstract', 'decision')
+    print(db.db_loader('hupd', '2016-2016', True))
+    db.classifier('logistic_regression', 'abstract', 'decision')
     
     
     
