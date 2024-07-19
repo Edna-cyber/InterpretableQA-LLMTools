@@ -235,7 +235,7 @@ if __name__ == "__main__":
     count, correct, cost, cost_original = defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(list)
     pids = solver.pids
     
-    for pid in tqdm(pids): # pids
+    for pid in tqdm(pids[:20]): # pids
         if total_count < 10:
             print("\n\n===================================\n")
             print(f"# [Pid]: {pid}\n") # problem id
@@ -247,8 +247,8 @@ if __name__ == "__main__":
         gt_cost, llm_cost = 0, 0
         count[question_type] += 1
 
-        # messages = prompt_policy.messages
-        messages = prompt_policy.messages_formula 
+        messages = prompt_policy.messages
+        # messages = prompt_policy.messages_formula 
         
         messages.append({"role": "user", "content": user_prompt})
         # print("messages", messages) ###
@@ -256,7 +256,9 @@ if __name__ == "__main__":
         function_type = None
         llm_answer = None
         iterations = 0
-        while iterations<15:
+        if total_count==99:
+            print("messages", messages) ###
+        while iterations<6:
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
                 # print("response", response) ###
@@ -351,7 +353,7 @@ if __name__ == "__main__":
     acc = {}
     for key in count:
         if key not in correct:
-            acc[key] = 0
+            acc[key] = "0%"
         else:
             acc[key] = format(correct[key] / count[key] * 100,".2f")+"%"
         cost[key] = cost[key] / count[key]

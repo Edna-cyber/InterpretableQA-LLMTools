@@ -16,7 +16,7 @@ cost_original_dict = data["cost_original"]
 agg_cost = data["agg_cost"]
 total_count = data["total_count"]
 
-accuracy = list(acc_dict.values())
+accuracy = [float(x[:-1]) for x in list(acc_dict.values())]
 cost = list(cost_dict.values())
 cost_std_errors = []
 for key in list(cost_original_dict.keys()):
@@ -43,7 +43,7 @@ for bar in bar1:
         ha='center',                        # horizontal alignment
         va='bottom'                         # vertical alignment
     )
-text = 'Aggregate Accuracy: {:.2f}%'.format(agg_acc)
+text = 'Aggregate Accuracy: {}'.format(agg_acc)
 plt.figtext(0.3, 0.8, text, ha="center", fontsize=9)
 plt.savefig(os.path.join(result_dir, "figures", plot1_name))
 
@@ -63,6 +63,6 @@ for bar in bar2:
         va='bottom'                         
     )
 
-text = 'Aggregate Cost: {:.2f}'.format(agg_cost)
+text = 'Aggregate Cost: {}'.format(agg_cost) 
 plt.figtext(0.3, 0.8, text, ha="center", fontsize=9)
 plt.savefig(os.path.join(result_dir, "figures", plot2_name))
