@@ -5,16 +5,17 @@ import json
 import random
 import tqdm
 import jsonlines
+import ast
 
-corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/hupd/"
+corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
 
-# Template 0: What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
+# Template 1: What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
 def average_pendency(start_year, end_year):
     total_len = 0
     pedencies_sum = 0
     
     for year in range(start_year, end_year+1):
-        df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
+        df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
         df = df[df["decision"] == "ACCEPTED"]
         total_len += len(df)
         df["filing_date"] = pd.to_datetime(df['filing_date'])
@@ -26,9 +27,9 @@ def average_pendency(start_year, end_year):
     
     return pedencies_sum / total_len
 
-# Template 1: What were the top{#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
+# Template 2: What were the top {#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
 def top_accepted_category(num, category, year):
-    df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
+    df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
     if category=="IPCR categories":
         cat = "main_ipcr_label"
     else:
@@ -41,9 +42,9 @@ def top_accepted_category(num, category, year):
     top_n = top_categories.index.tolist()
     return top_n
 
-# Template 2: How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
+# Template 3: How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
 def compare_applications(quarter_1, quarter_2, year):
-    df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
+    df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
     def get_quarter(dt):
         month = dt.month
         if 1 <= month <= 3:
@@ -60,36 +61,46 @@ def compare_applications(quarter_1, quarter_2, year):
     del df
     return quarter_counts.get(quarter_1, 0) / quarter_counts.get(quarter_2, 0)
 
-# Template 3: What is the title of the patent that took the longest time to be published after filing in {year}?
-def longest_time(year):
-    df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
+# Template 4: What is the title of the patent filed between {start_year} and {end_year} that took the longest time to be published?
+def longest_time(start_year, end_year):
+    df_lst = []
+    for year in range(start_year, end_year+1):
+        df_year = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
+        df_lst.append(df_year)
+    df = pd.concat(df_lst, axis=0, ignore_index=True)
+    del df_lst
     df["date_published"] = pd.to_datetime(df["date_published"])
     df["filing_date"] = pd.to_datetime(df["filing_date"])
     df["duration"] = df["date_published"]-df["filing_date"]
     sorted_df = df.sort_values(by="duration", ascending=False).reset_index()  
     del df  
     return sorted_df.at[0,"title"]
-    
-# Template 4: How many examiners reviewed patent applications in every single year between {start_year} and {end_year}?
-def common_examiners(start_year, end_year):
-    examiners = set()
-    for year in range(start_year, end_year+1):
-        df = pd.read_csv(os.path.join(corpus_dir, "hupd_{}.csv".format(str(year))))
-        if not examiners:
-            examiners = set(df["examiner_id"].unique())
-        else:
-            examiners = examiners & set(df["examiner_id"].unique())
-        del df
-    return len(examiners)
 
-questions = []
+# Template 5: Who were the top {#} authors with the most publications at NeurIPS 2023?
+def top_authors(num, llm_keyword):
+    df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
+    if llm_keyword:
+        df["keyword"] = df["Title"].str.contains("Large Language Models") 
+        df = df[df["keyword"]==True]
+    df['Authors'] = df['Authors'].apply(ast.literal_eval)
+    # df['Authors'] = df['Authors'].str.split(' · ')
+    exploded_df = df.explode('Authors')
+    del df
+    author_counts = exploded_df['Authors'].value_counts()
+    author_df = author_counts.reset_index()
+    del exploded_df
+    author_df.columns = ['Author', 'Number of Papers']
+    sorted_author_df = author_df.sort_values(by=['Number of Papers', 'Author'], ascending=[False, True])
+    del author_df
+    return sorted_author_df.head(num)['Author'].tolist()
+
 question_id = 1
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy/hupd-easy.jsonl', mode='w') as writer:
-    while question_id<=100: 
-        question_type = random.randint(0,4) 
+    while question_id<=1: # 500 
+        question_type = random.randint(4,4) 
         if question_type == 0:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
-            start_year = random.randint(2015,2018)
+            start_year = random.randint(2014,2018)
             end_year = random.randint(start_year,2018)
             question_phrasings = ["What was the average time between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
                                 "What was the average duration between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
@@ -97,16 +108,16 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
             answer = average_pendency(start_year, end_year)
         elif question_type == 1:
-            # What were the top{#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
+            # What were the top {#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
             num = random.randint(2,5)
             category = random.choice(["IPCR categories", "CPC categories"]) 
             category_to_col = {"IPCR categories": "ipcr_category", "CPC categories": "cpc_category"}
-            year = random.randint(2015,2018) 
+            year = random.randint(2014,2018) 
             question_choice = random.randint(0,1)
             if question_choice==0:
-                question = "What were the top{} {} with the highest percentage of patent acceptance in {}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. Use the '{}' column.".format(num, category, year, category_to_col[category])
+                question = "What were the top {} {} with the highest percentage of patent acceptance in {}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. Use the '{}' column.".format(num, category, year, category_to_col[category])
             else:
-                question = "Which {} were among the top{} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category, then return the top categories with the highest approval rates as a list. Use the '{}' column.".format(category, num, year, category_to_col[category])
+                question = "Which {} were among the top {} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category, then return the top categories with the highest approval rates as a list. Use the '{}' column.".format(category, num, year, category_to_col[category])
             answer = top_accepted_category(num, category, year)
         elif question_type == 2:
             # How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
@@ -115,23 +126,27 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             quarter_2 = random.randint(1,4)
             while quarter_2==quarter_1:
                 quarter_2 = random.randint(1,4)
-            year = random.randint(2015,2017)
+            year = random.randint(2014,2017)
             question_phrasings = ["How does the number of patent applications filed in the {} quarter compare proportionally to those filed in the {} quarter in {}?", "What's the ratio of patent applications filed in the {} quarter to those filed in the {} quarter in {}?", "What is the ratio between the number of patent applications filed in the {} quarter and the {} quarter in {}?"]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(quarter_map[quarter_1], quarter_map[quarter_2], year)
             answer = compare_applications(quarter_1, quarter_2, year)
         elif question_type == 3:
-            # What is the title of the patent that took the longest time to be published after filing in {year}?
-            year = random.randint(2015,2017) # not include 2018, as most applications are still pending
-            question_phrasings = ["What is the title of the patent that took the longest time to be published after filing in {}?", "What is the title of the patent that had the longest publication delay after filing in {}?", "What is the title of the patent with the longest time elapsed between filing and publication in {}?"]
-            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(year)
-            answer = longest_time(year)
-        elif question_type == 4:
-            # How many examiners reviewed patent applications in every single year between {start_year} and {end_year}?
-            start_year = random.randint(2015,2017)
-            end_year = random.randint(start_year+1,2018)
-            question_phrasings = ["How many examiners reviewed patent applications between {} and {}? Each examiner needs to have reviewed applications in all the years in this range. Return a number.", "How many examiners reviewed patent applications consistently in all the years between {} and {}? Each examiner needs to have reviewed applications in all the years in this range. Return a number.", "What's the number of common examiners who reviewed patent applications in all the years from {} to {}? Each examiner needs to have reviewed applications in all the years in this range. Return a number."]
+            # What is the title of the patent filed between {start_year} and {end_year} that took the longest time to be published?
+            start_year = random.randint(2014,2017) # not include 2018, as most applications are still pending
+            end_year = random.randint(start_year,2017)
+            question_phrasings = ["What is the title of the patent filed between {} and {} that took the longest time to be published?", "What is the title of the patent filed between {} and {} that had the longest publication delay?", "What is the title of the patent filed between {} and {} with the longest time elapsed between filing and publication?"]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
-            answer = common_examiners(start_year, end_year)
+            answer = longest_time(start_year, end_year)
+        elif question_type == 4:
+            # Who were the top {#} authors with the most publications at NeurIPS 2023?
+            num = random.randint(2,10)
+            llm_keyword = random.choice([True, False])
+            question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS 2023? Break ties alphabetically, return as a list.", "Who were the top {} authors with the highest number of publications at NeurIPS 2023? Break ties alphabetically, return as a list.", "Which {} authors had the most publications at NeurIPS 2023? Break ties alphabetically, return as a list."]
+            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(num)
+            if llm_keyword:
+                insert_pos = question.find("publications")+len("publications")
+                question = question[:insert_pos]+" containing 'Large Language Models' in the title"+question[insert_pos:]
+            answer = top_authors(num, llm_keyword)
         # use None to signify not adding to the questions / answers
         if answer:
             writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
