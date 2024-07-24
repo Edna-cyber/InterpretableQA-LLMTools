@@ -1,11 +1,17 @@
-import requests
-from bs4 import BeautifulSoup
+import requests 
 import pandas as pd
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 
 url = 'https://neurips.cc/virtual/2023/papers.html?filter=titles&search=#tab-browse'
 
 # Send a GET request to the webpage
-response = requests.get(url)
+ua = UserAgent()
+headers = {
+    'User-Agent': ua.random
+}
+response = requests.get(url, headers=headers)
+print(response.text)
 html_content = response.content
 # Parse the webpage content with BeautifulSoup
 soup = BeautifulSoup(response.content, 'html.parser')
@@ -48,6 +54,6 @@ data = {
 df = pd.DataFrame(data)
 
 # Save the DataFrame to a CSV file
-df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv', index=False)
+# df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv', index=False)
 
 
