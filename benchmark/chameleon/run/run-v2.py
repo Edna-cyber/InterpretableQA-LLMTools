@@ -195,11 +195,9 @@ def parse_args():
     parser.add_argument('--output_root', type=str, default='../results')
     parser.add_argument('--model', type=str, default='chameleon')
     parser.add_argument('--label', type=str, default='chameleon_chatgpt')
-    parser.add_argument('--task_name', type=str, default='hupd') 
     parser.add_argument('--test_split', type=str, default='test1k', 
                         choices=['dev', 'dev1k', 'test', 'test1k'])
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument("--dataset", type=str, default="hupd")
     parser.add_argument("--hardness", type=str, default="easy")
     parser.add_argument("--version", type=str, default="v3")
     parser.add_argument("--gpt", type=str, default="gpt3")
@@ -224,7 +222,7 @@ if __name__ == "__main__":
     print(f"# Number of test examples: {len(solver.examples)}\n") 
 
     # Get the result file
-    result_root = f"{args.output_root}/{args.task_name}" 
+    result_root = f"{args.output_root}" 
     os.makedirs(result_root, exist_ok=True)
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
     print("result_file", result_file)
@@ -247,8 +245,8 @@ if __name__ == "__main__":
         gt_cost, llm_cost = 0, 0
         count[question_type] += 1
 
-        messages = prompt_policy.messages.copy()
-        # messages = prompt_policy.messages_formula.copy()
+        # messages = prompt_policy.messages.copy()
+        messages = prompt_policy.messages_formula.copy()
         
         messages.append({"role": "user", "content": user_prompt})
         # print("messages", messages) ###
@@ -257,10 +255,10 @@ if __name__ == "__main__":
         llm_answer = None
         iterations = 0
 
-        while iterations<6:
+        while iterations<10:
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
-                # print("response", response) ###
+                # print("response", response) 
                 choice = response.choices[0]
                 response_message = choice.message
                 tool_calls = response_message.tool_calls
@@ -343,9 +341,9 @@ if __name__ == "__main__":
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
-        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)): #<YOUR_OWN_PATH>
-            os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version)) #<YOUR_OWN_PATH>
-            logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}-{}'.format(args.gpt, datetime_string, args.dataset, args.hardness, args.version) #<YOUR_OWN_PATH>
+        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.gpt, datetime_string, args.hardness, args.version)): #<YOUR_OWN_PATH>
+            os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.gpt, datetime_string, args.hardness, args.version)) #<YOUR_OWN_PATH>
+            logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.gpt, datetime_string, args.hardness, args.version) #<YOUR_OWN_PATH>
         with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
             for item in logs:
                 f.write(f"{item}\n")

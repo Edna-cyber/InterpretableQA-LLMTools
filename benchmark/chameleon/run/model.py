@@ -19,7 +19,7 @@ class solver:
     def load_data(self):
         examples = ''
         pids = []
-        file_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/{}/{}-{}.jsonl".format(self.args.hardness, self.args.dataset, self.args.hardness) #<YOUR_OWN_PATH>
+        file_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/{}.jsonl".format(self.args.hardness) #<YOUR_OWN_PATH>
         with open(file_path, 'r') as f:
             contents = []
             for item in jsonlines.Reader(f):

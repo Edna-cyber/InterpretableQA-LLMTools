@@ -1,0 +1,1 @@
+{"qid": "easy-hupd-0001", "question_type": "4", "question": "Who were the top 6 authors with the highest number of publications containing 'Large Language Models' in the title at NeurIPS 2023? Break ties alphabetically, return as a list.", "answer": "['Karthik Valmeekam', 'Sarath Sreedharan', 'Subbarao Kambhampati', 'William Yang Wang', 'Baolin Peng', 'Christopher Ré']"}
