@@ -56,71 +56,80 @@ class table_toolkits():
     def __init__(self):
         self.data = None
         self.dataset_dict = None
-        self.duration = None
+        self.train_duration = None
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
 
-    def db_loader(self, target_db, duration, split=False): # change examples and description in prompt policy # todo: for forecasting tasks, different loading
-        self.duration = duration
-        df = []
-        hyphen_ind = duration.index("-")
-        start_year = int(duration[:hyphen_ind])
-        end_year = int(duration[hyphen_ind+1:])
-        for sub in range(start_year, end_year+1):
-            file_path = "{}/data/external_corpus/{}/{}_{}.csv".format(self.path, target_db, target_db, sub)
-            df_raw = pd.read_csv(file_path)
-            if target_db=="hupd":
-                df_raw['patent_number'] = pd.to_numeric(df_raw['patent_number'], errors='coerce').astype('Int64').replace(0, pd.NA) # so that the LLM is aware of which patent numbers are invalid 
-                df_raw['examiner_id'] = pd.to_numeric(df_raw['examiner_id'], errors='coerce').astype('Int64') 
-                
-                df_raw['filing_date'] = pd.to_datetime(df_raw['filing_date'])
-                df_raw['patent_issue_date'] = pd.to_datetime(df_raw['patent_issue_date'])
-                df_raw['date_published'] = pd.to_datetime(df_raw['date_published'])
-                
-                df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
-                df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
-            # print(df_raw.dtypes)
-            # print(df_raw.head())
-            df.append(df_raw)
-        df = pd.concat(df, ignore_index=True)
-        if not split:
-            self.data = df
+    def db_loader(self, target_db, train_duration="None", test_duration="None", outcome_col="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
+        self.train_duration = train_duration
+        self.test_duration = test_duration
+        def extract_start_end(duration):
+            if duration=="None":
+                return None, None
+            hyphen_ind = duration.index("-")
+            start = int(duration[:hyphen_ind])
+            end = int(duration[hyphen_ind+1:])
+            return start, end
+        train_start, train_end = extract_start_end(train_duration)
+        test_start, test_end = extract_start_end(test_duration)
+        def preprocess_hupd(start_year, end_year):
+            if not start_year and not end_year:
+                return None
+            df = []
+            for sub in range(start_year, end_year+1):
+                file_path = "{}/data/external_corpus/hupd/hupd_{}.csv".format(self.path, sub)
+                df_raw = pd.read_csv(file_path)
+                if target_db=="hupd":
+                    df_raw['patent_number'] = pd.to_numeric(df_raw['patent_number'], errors='coerce').astype('Int64').replace(0, pd.NA) # so that the LLM is aware of which patent numbers are invalid 
+                    df_raw['examiner_id'] = pd.to_numeric(df_raw['examiner_id'], errors='coerce').astype('Int64') 
+                    
+                    df_raw['filing_date'] = pd.to_datetime(df_raw['filing_date'])
+                    df_raw['patent_issue_date'] = pd.to_datetime(df_raw['patent_issue_date'])
+                    df_raw['date_published'] = pd.to_datetime(df_raw['date_published'])
+                    
+                    df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
+                    df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
+                # print(df_raw.dtypes)
+                # print(df_raw.head())
+                df.append(df_raw)
+            df = pd.concat(df, ignore_index=True)
+            return df
+        def preprocess_neurips(start_row, end_row):
+            if not start_row and not end_row:
+                return None
+            file_path = "{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv"
+            df = pd.read_csv(file_path)
+            # print(df.dtypes)
+            df = df.iloc[start_row:end_row+1]
+            return df            
+            
+        if target_db=="hupd":
+            train_df = preprocess_hupd(train_start, train_end)
+            test_df = preprocess_hupd(test_start, test_end)    
+        elif target_db=="neurips":
+            train_df = preprocess_neurips(train_start, train_end)
+            test_df = preprocess_neurips(test_start, test_end)   
+        else:
+            return "Error: the only possible choices for target_db are hupd (a patent dataset) and neurips (a papers dataset)."
+        
+        if not test_df:
+            self.data = train_df
             column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
             column_names_str = ', '.join(column_names)
             self.dataset_dict = None
-            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has the following structure: {}".format(self.data.head())
+            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has the following structure: {}".format(self.data.head()) 
         else:
-            train_df, validation_df = train_test_split(df, test_size=0.4, random_state=42)
             train_dataset = Dataset.from_pandas(train_df)
-            validation_dataset = Dataset.from_pandas(validation_df)
-            self.dataset_dict = DatasetDict({"train": train_dataset, "validation": validation_dataset})
+            try:
+                test_df.drop(columns=[outcome_col], inplace=True)
+            except:
+                column_names = ["'"+x+"'" for x in test_df.columns.tolist()]
+                column_names_str = ', '.join(column_names)
+                return "The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
+            test_dataset = Dataset.from_pandas(test_df)
+            self.dataset_dict = DatasetDict({"train": train_dataset, "test": test_dataset})
             self.data = None
             return "We have successfully loaded the {} dataset dict that has the following structure: {}".format(target_db, self.dataset_dict)
-    
-    # remove rows where the target column is NA or unwanted value
-    # condition can be e.g. "not NA", "keep ACCEPT,REJECT", "remove 0,1" etc.
-    def target_filter(self, target_col, condition):
-        [ins, vals] = condition.split()
-        val_lst = vals.split(",")
-        if self.data is not None:
-            self.data.dropna(subset=[target_col], inplace=True)
-            if condition=="not NA":
-                return 
-            if ins=="keep":
-                self.data = self.data[self.data[target_col].isin(val_lst)]
-            elif ins=="remove":
-                self.data = self.data[~self.data[target_col].isin(val_lst)]
- 
-        elif self.dataset_dict is not None:
-            def filter_dataset(dataset):
-                dataset = dataset.filter(lambda example: example[target_col] is not None)
-                if ins == "keep":
-                    dataset = dataset.filter(lambda example: example[target_col] in val_lst)
-                elif ins == "remove":
-                    dataset = dataset.filter(lambda example: example[target_col] not in val_lst)
-                return dataset
-            self.dataset_dict['train'] = filter_dataset(self.dataset_dict['train'])
-            self.dataset_dict['validation'] = filter_dataset(self.dataset_dict['validation'])
-    
+        
     def pandas_interpreter(self, pandas_code): 
         """
         Executes the provided Pandas code and updates the 'ans' in global_var from the loaded dataframe.
@@ -331,7 +340,7 @@ class table_toolkits():
         # Create dataset
         def create_dataset(tokenizer, section=section):
             data_loaders = []
-            for name in ['train', 'validation']:
+            for name in ['train', 'test']:
                 # Skip the training set if we are doing only inference
                 if val and name=='train':
                     data_loaders.append(None)
@@ -347,7 +356,6 @@ class table_toolkits():
                         columns=['input_ids', 'attention_mask', 'output'])
                     data_loaders.append(DataLoader(dataset, batch_size=batch_size, shuffle=(name=='train')))
             return data_loaders
-
 
         # Return label statistics of the dataset loader
         def dataset_statistics(dataset_loader, tokenizer):
@@ -371,7 +379,7 @@ class table_toolkits():
             return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
 
         # Evaluation procedure (for the neural models)
-        def validation(val_loader, model, criterion, device, name='validation', write_file=None):
+        def test(val_loader, model, criterion, device, name='test', write_file=None):
             model.eval()
             total_loss = 0.
             total_correct = 0
@@ -397,7 +405,7 @@ class table_toolkits():
                 total_correct += correct_n
                 total_sample += sample_n
             
-            # Print the performance of the model on the validation set 
+            # Print the performance of the model on the test set 
             print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
             print(f'*** Class-level accuracy on the {name} set: {total_correct_class_level/total_sample}')
             print(f'*** Confusion matrix:\n{total_confusion}')
@@ -416,7 +424,7 @@ class table_toolkits():
                 write_file.write(f'\n>>>Training starts...\n')
             # Training mode is on
             model.train()
-            # Best validation set accuracy so far.
+            # Best test set accuracy so far.
             best_val_acc = 0
             for epoch in range(epoch_n):
                 total_train_loss = 0.
@@ -447,8 +455,8 @@ class table_toolkits():
                         print(f'*** Input: {convert_ids_to_string(tokenizer, inputs[0])}')
                         if write_file:
                             write_file.write(f'\nEpoch: {epoch}, Step: {i}\n')
-                        # Get the performance of the model on the validation set
-                        _, val_acc = validation(data_loaders[1], model, criterion, device, write_file=write_file)
+                        # Get the performance of the model on the test set
+                        _, val_acc = test(data_loaders[1], model, criterion, device, write_file=write_file)
                         model.train()
                         if best_val_acc < val_acc:
                             best_val_acc = val_acc
@@ -466,8 +474,8 @@ class table_toolkits():
             if write_file:
                 write_file.write('\n ~ The End ~\n')
             
-            # Final evaluation on the validation set
-            _, val_acc = validation(data_loaders[1], model, criterion, device, name='validation', write_file=write_file)
+            # Final evaluation on the test set
+            _, val_acc = test(data_loaders[1], model, criterion, device, name='test', write_file=write_file)
             if best_val_acc < val_acc:
                 best_val_acc = val_acc
                 
@@ -479,20 +487,20 @@ class table_toolkits():
                         torch.save(model.state_dict(), save_path)
             
             # Additionally, print the performance of the model on the training set if we were not doing only inference
-            if not validation:
-                _, train_val_acc = validation(data_loaders[0], model, criterion, device, name='train')
+            if not test:
+                _, train_val_acc = test(data_loaders[0], model, criterion, device, name='train')
                 print(f'*** Accuracy on the training set: {train_val_acc}.')
                 if write_file:
                     write_file.write(f'\n*** Accuracy on the training set: {train_val_acc}.')
             
-            # Print the highest accuracy score obtained by the model on the validation set
-            print(f'*** Highest accuracy on the validation set: {best_val_acc}.')
+            # Print the highest accuracy score obtained by the model on the test set
+            print(f'*** Highest accuracy on the test set: {best_val_acc}.')
             if write_file:
-                write_file.write(f'\n*** Highest accuracy on the validation set: {best_val_acc}.')
+                write_file.write(f'\n*** Highest accuracy on the test set: {best_val_acc}.')
 
 
         # Evaluation procedure (for the Naive Bayes models)
-        def validation_naive_bayes(data_loader, model, vocab_size, name='validation', write_file=None, pad_id=-1):
+        def test_naive_bayes(data_loader, model, vocab_size, name='test', write_file=None, pad_id=-1):
             total_loss = 0.
             total_correct = 0
             total_sample = 0
@@ -540,9 +548,9 @@ class table_toolkits():
                 model.partial_fit(input, label, classes=CLASS_NAMES)
             
             print('\n*** Accuracy on the training set ***')
-            validation_naive_bayes(data_loaders[0], model, vocab_size, 'training', write_file, pad_id)
-            print('\n*** Accuracy on the validation set ***')
-            validation_naive_bayes(data_loaders[1], model, vocab_size, 'validation', write_file, pad_id)
+            test_naive_bayes(data_loaders[0], model, vocab_size, 'training', write_file, pad_id)
+            print('\n*** Accuracy on the test set ***')
+            test_naive_bayes(data_loaders[1], model, vocab_size, 'test', write_file, pad_id)
             
             # Save the log probabilities if np_filename is specified
             if np_filename:
@@ -562,7 +570,7 @@ class table_toolkits():
         if model_name == 'naive_bayes':
                 batch_size = 1
             
-        for name in ['train', 'validation']:
+        for name in ['train', 'test']:
             self.dataset_dict[name] = self.dataset_dict[name].map(map_decision_to_string)
             # Remove the pending and CONT-patent applications
             self.dataset_dict[name] = self.dataset_dict[name].filter(lambda e: e['output'] <= 1)
@@ -599,7 +607,7 @@ class table_toolkits():
             )
         del self.dataset_dict
 
-        if not validation:
+        if not test:
             # Print the statistics
             train_label_stats = dataset_statistics(data_loaders[0], tokenizer)
             print(f'*** Training set label statistics: {train_label_stats}')
@@ -620,7 +628,7 @@ class table_toolkits():
                 optim = torch.optim.Adam(params=model.parameters())
             else:
                 optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
-                total_steps = len(data_loaders[0]) * epoch_n if not validation else 0
+                total_steps = len(data_loaders[0]) * epoch_n if not test else 0
             # Scheduler
             scheduler = get_linear_schedule_with_warmup(optim, num_warmup_steps = 0, num_training_steps = total_steps) if use_scheduler else None
             # Class weights
@@ -653,7 +661,7 @@ if __name__ == "__main__":
     # print(db.pandas_interpreter(pandas_code))
 
     print(db.db_loader('hupd', '2016-2016', True))
-    db.classifier('logistic_regression', 'abstract', 'decision')
+    db.classifier('logistic_regression', 'summary', 'decision')
     
     
     

@@ -93,14 +93,14 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: LoadDB(hupd, 2016-2016, False) Cost is 3. Cumulative cost is 3.""",
+        'content': """To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "duration": "2016-2016", "split": False
+                        "target_db": "hupd", "train_duration": "2016-2016", "test_duration": "None", "outcome_col": "None"
                     })
                 },
                 'type': 'function'
@@ -145,14 +145,14 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: LoadDB(hupd, 2015-2017, True) Cost is 3. Cumulative cost is 3.""",
+        'content': """To execute: LoadDB(hupd, 2015-2017, 2018-2018, decision) Cost is 3. Cumulative cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "duration": "2015-2017", "split": True
+                        "target_db": "hupd", "train_duration": "2015-2017", "test_duration": "2018-2018", "outcome_col": "decision"
                     })
                 },
                 'type': 'function'
@@ -163,7 +163,7 @@ ans = solution(19)
         'tool_call_id': 'call_0',
         'role': 'tool',
         'name': 'LoadDB',
-        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 18011}) validation: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 12008})})"
+        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 18011}) test: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 12008})})"
     },
     {
         'role': 'assistant',
@@ -300,23 +300,23 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0])
-Modules2: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0])
+        'content': """Modules1: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0])
+Modules2: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0])
 
-Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(hupd, 2016-2016, False): 3, PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]): 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4. Summing these costs: 3+4=7.
-Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2016-2016, False): 3, PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0]): 4 (the number of lines of pandas_code < 10) * 1.5 (the number of imported packages in pandas_code is between 2 and 5) = 6. Summing these costs: 3+6=9.
+Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(hupd, 2016-2016, None, None): 3, PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0]): 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4. Summing these costs: 3+4=7.
+Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2016-2016, None, None): 3, PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\ncounter = Counter(df['filing_month'])\nans = counter.most_common()[0][0]): 4 (the number of lines of pandas_code < 10) * 1.5 (the number of imported packages in pandas_code is between 2 and 5) = 6. Summing these costs: 3+6=9.
 Therefore, Modules1 is selected because it has a lower total interpretability cost of 7 compared to 9 for Modules2.
 
-Best Modules: LoadDB(hupd, 2016-2016, False), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0])
+Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nans = df['filing_month'].mode()[0])
 
-To execute: LoadDB(hupd, 2016-2016, False) Cost is 3. Cumulative cost is 3.""",
+To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "duration": "2016-2016", "split": False
+                        "target_db": "hupd", "train_duration": "2016-2016", "test_duration": "None", "outcome_col": "None"
                     })
                 },
                 'type': 'function'
@@ -361,23 +361,23 @@ To execute: LoadDB(hupd, 2016-2016, False) Cost is 3. Cumulative cost is 3.""",
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision)
-Modules2: LoadDB(hupd, 2015-2017, True), Classifier(distilbert-base-uncased, abstract, decision)
+        'content': """Modules1: LoadDB(hupd, 2015-2017, 2018-2018, decision), Classifier(logistic_regression, abstract, decision)
+Modules2: LoadDB(hupd, 2015-2017, 2018-2018, decision), Classifier(distilbert-base-uncased, abstract, decision)
 
-Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(hupd, 2015-2017, True): 3, Classifier(logistic_regression, abstract, decision): 7 (model_name is "logistic_regression"). Summing these costs: 3+7=10.
-Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2015-2017, True): 3, Classifier(distilbert-base-uncased, abstract, decision): 10 (model_name is "logistic_regression"). Summing these costs: 3+10=13.
+Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(hupd, 2015-2017, 2018-2018, decision): 3, Classifier(logistic_regression, abstract, decision): 7 (model_name is "logistic_regression"). Summing these costs: 3+7=10.
+Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2015-2017, 2018-2018, decision): 3, Classifier(distilbert-base-uncased, abstract, decision): 10 (model_name is "logistic_regression"). Summing these costs: 3+10=13.
 Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2.
 
-Best Modules: LoadDB(hupd, 2015-2017, True), Classifier(logistic_regression, abstract, decision)
+Best Modules: LoadDB(hupd, 2015-2017, 2018-2018, decision), Classifier(logistic_regression, abstract, decision)
 
-To execute: LoadDB(hupd, 2015-2017, True) Cost is 3. Cumulative cost is 3.""",
+To execute: LoadDB(hupd, 2015-2017, 2018-2018, decision) Cost is 3. Cumulative cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "duration": "2015-2017", "split": True
+                        "target_db": "hupd", "train_duration": "2015-2017", "test_duration": "2018-2018", "outcome_col":"decision"
                     })
                 },
                 'type': 'function'

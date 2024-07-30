@@ -57,24 +57,28 @@ tools = [
         "type": "function",
         "function": {
             "name": "LoadDB",
-            "description": "Load a database specified by the DBName, subset, and a boolean value split. Normally, we only use LoadDB when the question requires data from a specific structured database.",
+            "description": "Load a database specified by the DBName, train and test subsets, and a column to be predicted. Normally, we only use LoadDB when the question requires data from a specific structured database.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "target_db": {
                         "type": "string",
-                        "description": "The name of the database to be loaded. The only choices for target_db are hupd (a patent dataset).",
+                        "description": "The name of the database to be loaded. The only choices for target_db are hupd (a patent dataset) and neurips (a papers dataset).",
                     },
-                    "duration": {
+                    "train_duration": {
                         "type": "string",
-                        "description": "The subset of the database is specified by the range of years in the format startYear-endYear, inclusive on both ends, e.g. 2016-2018.",
+                        "description": "The training subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2004-2006. When target_db is neurips, specify the range of rows in the format 0-endRow, e.g. 0-2000. When the task does not involve prediction and the target_db is neurips, use the default range 0-3585.",
                     },
-                    "split": {
-                        "type": "boolean",
-                        "description": "When split is False, it loads an entire dataframe; when split is True, it loads a dataset dictionary comprising training and validation datasets. The default value is False.",
+                    "test_duration": {
+                        "type": "string",
+                        "description": "The testing subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2016-2018. When target_db is neurips, specify the range of rows in the format startRow-3585, e.g. 2001-3585, where startRow must be one more than the endRow of train_duration. When the task does not involve prediction, set this value to None.",
+                    },
+                    "outcome_col": {
+                        "type": "string",
+                        "description": "The column to predict if the task involves making a prediction. If no prediction is required, set this value to None.",
                     }
                 },
-                "required": ["target_db", "duration"],
+                "required": ["target_db", "train_duration"],
             },
         },
     },
