@@ -48,48 +48,109 @@ url = 'https://neurips.cc/virtual/2023/papers.html?filter=titles&search=#tab-bro
 # }
 # df = pd.DataFrame(data)
 
-original_df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv')
-titles = original_df['Title']
-unvisited_titles = set(titles)
+# df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv')
+# titles = df['Title']
+# print(len(df)) ###
+# unvisited_titles = set(titles)
+# df['Topic'] = ['' for i in range(len(df))]
+# df['Oral'] = [False for i in range(len(df))]
+# df['Poster Session'] = ['' for i in range(len(df))]
 
-with sync_playwright() as p:
-    browser = p.chromium.launch()
-    page = browser.new_page()
-    page.goto(url)
-    # Click topic
-    page.wait_for_selector('#main > div.container > div > div.d-flex.justify-content-between > div > div > label.btn.btn-outline-secondary.topic-format')
-    page.click('#main > div.container > div > div.d-flex.justify-content-between > div > div > label.btn.btn-outline-secondary.topic-format')
-    iterations = 0
-    while len(unvisited_titles)>0:
-        # Click shuffle
-        page.wait_for_selector('#main > div.container > div > div.row.mt-3.mb-0 > div.col-auto.d-none.d-lg-inline > div > button')
-        page.click('#main > div.container > div > div.row.mt-3.mb-0 > div.col-auto.d-none.d-lg-inline > div > button')
-        page.wait_for_selector('div.cards.row') 
-        # page.wait_for_selector('h5.card-title')
-        title_handle = page.query_selector_all('h5.card-title') 
-        visited_titles = set([page.evaluate('(element) => element.innerHTML', query).strip() for query in title_handle])
-        unvisited_titles -= visited_titles
-        print(len(unvisited_titles))
-        iterations += 1
-        time.sleep(10)
-    print("iterations", iterations)
-    # divs = page.query_selector_all('#main > div.container > div > div.cards.row > div')
-    # num_divs = len(divs)
-    # print(num_divs)
-    # titles = page.query_selector_all('#main > div.container > div > div.cards.row > div > div > a')
-    # print(titles)
-    # content = page.inner_html('div.cards.row')
-    # for paper in content:
-    #     title = paper.text_content('h5.card-title')
-    #     print(title)
-    # content = page.content()
-    # main_handle = page.query_selector('main')
-    # main_content = page.evaluate('(element) => element.innerHTML', main_handle)
-    # print(content)
-    browser.close()
+# orals_url = 'https://nips.cc/virtual/2023/events/oral'
+# with sync_playwright() as p:
+#     browser = p.chromium.launch()
+#     page = browser.new_page()
+#     page.goto(orals_url)
+#     page.wait_for_selector('div.virtual-card > a')
+#     orals_handle = page.query_selector_all('div.virtual-card > a')
+#     for oral in orals_handle:
+#         which_oral = page.evaluate('(element) => element.innerHTML', oral).strip()
+#         try:
+#             ind = df.index[df['Title'] == which_oral][0]
+#             df.at[ind,'Oral'] = True
+#         except:
+#             continue
+#     browser.close()
 
+# def value_of_query(page, card, selector):
+#     query = card.query_selector(selector)
+#     if not query:
+#         return ''
+#     else:
+#         return page.evaluate('(element) => element.innerHTML', query).strip()
 
-# Save the DataFrame to a CSV file
+# with sync_playwright() as p:
+#     browser = p.chromium.launch()
+#     page = browser.new_page()
+#     page.goto(url)
+#     # Click topic
+#     page.wait_for_selector('#main > div.container > div > div.d-flex.justify-content-between > div > div > label.btn.btn-outline-secondary.topic-format')
+#     page.click('#main > div.container > div > div.d-flex.justify-content-between > div > div > label.btn.btn-outline-secondary.topic-format')
+#     iteration = 0
+#     while len(unvisited_titles)>10:
+#         # Click sort
+#         page.click('#main > div.container > div > div.row.mt-3.mb-0 > div.col-auto.d-none.d-lg-inline > div > button')
+#         page.wait_for_selector('div.myCard.col-sm-6.col-lg-4')  
+#         cards_handle = page.query_selector_all('div.myCard.col-sm-6.col-lg-4')
+#         for card in cards_handle:
+#             title_query = card.query_selector('h5.card-title')
+#             title = page.evaluate('(element) => element.innerHTML', title_query).strip()
+#             if title not in unvisited_titles:
+#                 repeat += 1
+#                 continue
+#             if '<' in title:
+#                 continue
+#             unvisited_titles.remove(title)
+#             ind = df.index[df['Title'] == title][0]
+#             topic = value_of_query(page, card, 'span.text-muted.card-topic > a.has_tippy')
+#             df.at[ind,'Topic'] = topic
+#             poster_session = value_of_query(page, card, 'div.card-subtitle.text-muted.mt-2 > a')
+#             if poster_session=='': 
+#                 df.at[ind,'Poster Session'] = poster_session 
+#             else:
+#                 start_ind = poster_session.find('Poster Session')+len('Poster Session')+1
+#                 df.at[ind,'Poster Session'] = poster_session[start_ind:]
+#         iteration += 1
+#         print("iteration", iteration)
+#         print("remaining", len(unvisited_titles))
+#         time.sleep(10)
+#     print("unvisited_titles", unvisited_titles)
+#     print("Total iterations:", iteration)
+#     browser.close()
+
+# # Save the DataFrame to a CSV file
 # df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_New_Papers.csv', index=False)
 
+df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_New_Papers.csv')
+print(df.dtypes)
+ind = df.index[df['Title'] == 'Minigrid & Miniworld: Modular & Customizable Reinforcement Learning Environments for Goal-Oriented Tasks'][0]
+df.at[ind,'Topic'] = 'Reinforcement Learning'
+df.at[ind,'Poster Session'] = float('6')
+ind = df.index[df['Title'] == 'Diversify \\& Conquer: Outcome-directed Curriculum RL via Out-of-Distribution Disagreement'][0]
+df.at[ind,'Topic'] = 'Reinforcement Learning/Everything Else'
+df.at[ind,'Poster Session'] = float('5')
+ind = df.index[df['Title'] == 'Masked Two-channel Decoupling Framework for Incomplete Multi-view Weak Multi-label Learning'][0]
+df.at[ind,'Topic'] = 'Deep Learning/Everything Else'
+ind = df.index[df['Title'] == 'Reproducibility Study of "Label-Free Explainability for Unsupervised Models"'][0]
+df.at[ind,'Topic'] = 'Social Aspects/Accountability, Transparency and Interpretability'
+df.at[ind,'Poster Session'] = float('6')
+ind = df.index[df['Title'] == 'Attentive Transfer Entropy to Exploit Transient Emergence of Coupling Effect'][0]
+df.at[ind,'Topic'] = 'Deep Learning/Attention Mechanisms'
+df.at[ind,'Poster Session'] = float('3')
+ind = df.index[df['Title'] == 'Robust Bayesian Satisficing'][0]
+df.at[ind,'Topic'] = 'Optimization/Zero-order and Black-box Optimization'
+df.at[ind,'Poster Session'] = float('6')
+ind = df.index[df['Title'] == 'Graph Clustering with Graph Neural Networks'][0]
+df.at[ind,'Topic'] = 'Deep Learning/Graph Neural Networks'
+df.at[ind,'Poster Session'] = float('6')
+ind = df.index[df['Title'] == 'Quantifying & Modeling Multimodal Interactions: An Information Decomposition Framework'][0]
+df.at[ind,'Topic'] = 'Deep Learning/Other Representation Learning'
+df.at[ind,'Poster Session'] = float('3')
+ind = df.index[df['Title'] == 'TopP&R: Robust Support Estimation Approach for Evaluating Fidelity and Diversity in Generative Models'][0]
+df.at[ind,'Topic'] = 'Deep Learning/Generative Models and Autoencoders'
+df.at[ind,'Poster Session'] = float('2')
+ind = df.index[df['Title'] == 'Marich: A Query-efficient Distributionally Equivalent Model Extraction Attack'][0]
+df.at[ind,'Topic'] = 'Social Aspects/Privacy-preserving Statistics and Machine Learning'
+df.at[ind,'Poster Session'] = float('4')
+# df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Newest_Papers.csv', index=False)
 
