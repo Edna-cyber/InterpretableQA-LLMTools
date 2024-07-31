@@ -5,7 +5,7 @@ import jsonlines
 
 corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
 
-# HUPD Template 5: Using the patent applications from {start_year} to {end_year}, forecast the percentage of accepted patents in {end_year+1}.
+# HUPD Template 5: Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents that will be accepted in the first {n} months of 2023.
 def forecast(year):
     df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))  
     total_len = len(df)
@@ -41,10 +41,10 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
     while question_id<=500: 
         question_type = random.randint(7,11) 
         if question_id==7:
-            # Using the patent applications from {start_year} to {end_year}, forecast the percentage of accepted patents in {end_year+1}.
-            start_year = random.randint(2014,2016)
-            end_year = random.randint(start_year,2016)
-            question_phrasings = ["Using the patent applications from {} to {}, forecast the percentage of accepted patents in {}.", "Based on the patent applications from {} to {}, estimate the percentage of patents that will be accepted in {}.", "Given the patent applications from {} to {}, predict the proportion of patents that will be accepted in {}."] 
+            # Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents that will be accepted in the first {n} months of 2023.
+            start_year = random.randint(2004,2012)
+            n = random.randint(1,12)
+            question_phrasings = ["Based on the patent applications per month from {} to 2012, estimate the percentage of patents that will be accepted in the first {} months of 2023.", "Given the patent applications per month from {} to 2012, predict the proportion of patents that will be accepted in the first {} months of 2023."] 
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year,end_year,end_year+1)
             answer = forecast(end_year+1)
         elif question_id==8:

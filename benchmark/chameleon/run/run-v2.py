@@ -16,6 +16,7 @@ from utilities import *
 from model import solver
 
 from tools.code.python_interpreter import execute as python_interpreter
+from tools.code.forecaster import forecast as forecaster
 from tools.math.calculator import calculator, WolframAlphaCalculator
 from tools.table.tabtools import table_toolkits
 import datetime
@@ -29,7 +30,8 @@ ACTION_LIST = {
     'LoadDB': db.db_loader, 
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
-    'Classifier': db.classifier
+    'Forecaster': forecaster,
+    'Classifier': db.classifier,
 }
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -103,7 +105,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "PythonInterpreter",
-            "description": "Interprets Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
+            "description": "Interpret Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -119,6 +121,31 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "Forecaster",
+            "description": "Run a specified forecast model on the previous data to predict the next forecast_len data points",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "model_name": {
+                        "type": "string",
+                        "description": "The model_name can be linear_regression or ARIMA",
+                    },
+                    "previous_data": {
+                        "type": "string",
+                        "description": "A list of past data points used to train the forecast model",
+                    },
+                    "forecast_len": {
+                        "type": "integer",
+                        "description": "The number of data points to be predicted by the forecast model",
+                    } 
+                },
+                "required": ["model_name", "previous_data", "forecast_len"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "Classifier",
             "description": "Run a specified classifier model on the given predictorSection to predict the target. Normally, we use the Classifier module for binary or multi-class classification tasks.",
             "parameters": {
@@ -126,7 +153,7 @@ tools = [
                 "properties": {
                     "model_name": {
                         "type": "string",
-                        "description": "The modelName can be logistic_regression or distilbert-base-uncased.",
+                        "description": "The model_name can be logistic_regression or distilbert-base-uncased.",
                     },
                     "section": {
                         "type": "string",
