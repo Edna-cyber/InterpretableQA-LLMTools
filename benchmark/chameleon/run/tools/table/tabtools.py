@@ -498,6 +498,7 @@ class table_toolkits():
         
         # Remove the rows where the section is None
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
+        self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
         self.dataset_dict['train'] = self.dataset_dict['train'].map(map_decision_to_string)
         # Remove the pending and CONT-patent applications
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e['output'] <= 1)
