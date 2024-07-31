@@ -52,7 +52,6 @@ np.random.seed(RANDOM_SEED)
 random.seed(RANDOM_SEED)
 
 class table_toolkits():
-    # init
     def __init__(self):
         self.data = None
         self.dataset_dict = None
@@ -60,8 +59,12 @@ class table_toolkits():
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
 
     def db_loader(self, target_db, train_duration="None", test_duration="None", outcome_col="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
+        """
+        Loads the needed dataframe(s).
+        """
         self.train_duration = train_duration
         self.test_duration = test_duration
+        
         def extract_start_end(duration):
             if duration=="None":
                 return None, None
@@ -71,6 +74,7 @@ class table_toolkits():
             return start, end
         train_start, train_end = extract_start_end(train_duration)
         test_start, test_end = extract_start_end(test_duration)
+        
         def preprocess_hupd(start_year, end_year):
             if not start_year and not end_year:
                 return None
@@ -93,6 +97,7 @@ class table_toolkits():
                 df.append(df_raw)
             df = pd.concat(df, ignore_index=True)
             return df
+        
         def preprocess_neurips(start_row, end_row):
             if not start_row and not end_row:
                 return None
@@ -156,6 +161,10 @@ class table_toolkits():
             # other exceptions
             
     def classifier(self, model_name, section, target, num_classes=2):
+        """
+        Runs a classificaiton prediction task.
+        """
+        
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
