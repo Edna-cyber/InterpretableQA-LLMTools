@@ -1,4 +1,5 @@
 import os
+import types
 import random
 import numpy as np
 import collections
@@ -29,7 +30,7 @@ from transformers import PreTrainedTokenizerFast
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Simple LSTM, CNN, and Logistic regression models
-from tools.table.pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
+from pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -141,17 +142,25 @@ class table_toolkits():
         
     def pandas_interpreter(self, pandas_code): 
         """
-        Executes the provided Pandas code and updates the 'ans' in global_var from the loaded dataframe.
+        Executes the provided Pandas code.
         """
         if self.data is None:
             return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
         else:
-            global_var = {"df": self.data.copy(), "ans": None}
+            global_var = {"df": self.data.copy()}
             try: 
                 exec(pandas_code, global_var)
-                if not global_var['ans']:
-                    return "Error: ans is None.\nThe final result must be assigned to ans variable."
-                return str(global_var['ans'])
+                variable_values = {}
+                for var_name, var_value in locals().items(): 
+                    if var_name in ["self", "pandas_code","variable_values"]:
+                        continue
+                    elif var_name=="global_var":
+                        for global_var_name, global_var_value in var_value.items(): 
+                            if global_var_name not in ["df", "__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, types.ModuleType) and not isinstance(global_var_value, types.FunctionType) and not isinstance(global_var_value, type):
+                                variable_values[global_var_name] = global_var_value
+                    elif not var_name.startswith('__') and not isinstance(var_value, types.ModuleType) and not isinstance(var_value, types.FunctionType):
+                        variable_values[var_name] = var_value
+                return variable_values
             except KeyError as e:
                 column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
                 column_names_str = ', '.join(column_names)
@@ -668,13 +677,14 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    # db.db_loader('hupd', '2016-2016', False)
+    db.db_loader('hupd', '2016-2016', 'None', 'None')
+    pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
     # # pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
     # pandas_code = "import pandas as pd\napproval_rates = df.groupby('ipcr_category')['decision'].apply(lambda x: (x == 'ACCEPTED').mean() * 100).reset_index(name='approval_rate')\ntop_categories = approval_rates.nlargest(2, 'approval_rate')['ipcr_category'].tolist()\nans = top_categories"
-    # print(db.pandas_interpreter(pandas_code))
+    print(db.pandas_interpreter(pandas_code))
 
-    print(db.db_loader('hupd', '2016-2016', True))
-    db.classifier('logistic_regression', 'summary', 'decision')
+    # print(db.db_loader('hupd', '2016-2016', True))
+    # db.classifier('logistic_regression', 'summary', 'decision')
     
     
     

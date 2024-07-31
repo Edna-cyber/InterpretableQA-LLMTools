@@ -86,7 +86,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "PandasInterpreter",
-            "description": "Interpret Pandas code written in Python. The final result must be assigned to variable ans. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
+            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -103,7 +103,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "PythonInterpreter",
-            "description": "Interprets Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We don't use PythonInterpreter when the question requires data manipulation performed on a specific structured dataframe. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
+            "description": "Interprets Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -338,8 +338,8 @@ if __name__ == "__main__":
         cost_original[question_type].append(gt_cost)
         if llm_cost==gt_cost:
             total_reliability += 1
-        print("gt_cost", gt_cost) ###
-        print("llm_cost", llm_cost) ###
+        # print("gt_cost", gt_cost) 
+        # print("llm_cost", llm_cost) 
         reliability_MSE += (llm_cost-gt_cost)**2
         
         logs.append({"LLM Answer": llm_answer})
