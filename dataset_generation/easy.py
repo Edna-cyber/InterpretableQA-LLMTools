@@ -118,7 +118,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
         question_type = random.randint(1,6) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
-            start_year = random.randint(2014,2018)
+            start_year = random.randint(2004,2018)
             end_year = random.randint(start_year,2018)
             question_phrasings = ["What was the average time between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
                                 "What was the average duration between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
@@ -130,7 +130,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             num = random.randint(2,5)
             category = random.choice(["IPCR categories", "CPC categories"]) 
             category_to_col = {"IPCR categories": "ipcr_category", "CPC categories": "cpc_category"}
-            year = random.randint(2014,2018) 
+            year = random.randint(2004,2018) 
             question_choice = random.randint(0,1)
             if question_choice==0:
                 question = "What were the top {} {} with the highest percentage of patent acceptance in {}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. Use the '{}' column.".format(num, category, year, category_to_col[category])
@@ -144,13 +144,13 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             quarter_2 = random.randint(1,4)
             while quarter_2==quarter_1:
                 quarter_2 = random.randint(1,4)
-            year = random.randint(2014,2017)
+            year = random.randint(2004,2017)
             question_phrasings = ["How does the number of patent applications filed in the {} quarter compare proportionally to those filed in the {} quarter in {}?", "What's the ratio of patent applications filed in the {} quarter to those filed in the {} quarter in {}?", "What is the ratio between the number of patent applications filed in the {} quarter and the {} quarter in {}?"]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(quarter_map[quarter_1], quarter_map[quarter_2], year)
             answer = compare_applications(quarter_1, quarter_2, year)
         elif question_type == 4:
             # What is the title of the patent filed between {start_year} and {end_year} that took the longest time to be published?
-            start_year = random.randint(2014,2017) # not include 2018, as most applications are still pending
+            start_year = random.randint(2004,2017) # not include 2018, as most applications are still pending
             end_year = random.randint(start_year,2017)
             question_phrasings = ["What is the title of the patent filed between {} and {} that took the longest time to be published?", "What is the title of the patent filed between {} and {} that had the longest publication delay?", "What is the title of the patent filed between {} and {} with the longest time elapsed between filing and publication?"]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)

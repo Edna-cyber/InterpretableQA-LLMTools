@@ -108,9 +108,13 @@ class table_toolkits():
             return df            
             
         if target_db=="hupd":
+            if train_end<2013:
+                return "Error: The end year of the training dataframe cannot be later than year 2012."
             train_df = preprocess_hupd(train_start, train_end)
             test_df = preprocess_hupd(test_start, test_end)    
         elif target_db=="neurips":
+            if train_end>3583 or test_end>3585:
+                return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
             train_df = preprocess_neurips(train_start, train_end)
             test_df = preprocess_neurips(test_start, test_end)   
         else:

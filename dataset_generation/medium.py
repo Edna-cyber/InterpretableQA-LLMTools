@@ -50,9 +50,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
         elif question_id==8:
             # Using the {section} of patent applications from {start_year} to {end_year} for training, what proportion of applications from {year_not_in_the_range} are predicted to be accepted if they fall into the CPC category of {A-H}?
             section = random.choice(["abstracts", "backgrounds", "summaries", "full descriptions"]) 
-            start_year = random.randint(2014,2016)
-            end_year = random.randint(start_year,2016)
-            year_not_in_the_range = random.choice(list(set([i for i in range(2014,2018)])-set([i for i in range(start_year, end_year+1)])))
+            start_year = random.randint(2004,2012)
+            end_year = random.randint(start_year,2012)
+            year_not_in_the_range = random.randint(2013,2018)
             label = random.choice() ### in the format of e.g. A01 Technology
             question = "Using the {} of patent applications from {} to {} for training, what proportion of applications from {} are predicted to be accepted if they fall into the CPC category of {}?".format(section, start_year, end_year, year_not_in_the_range, label)
             answer = predict_decision(year_not_in_the_range, label)
