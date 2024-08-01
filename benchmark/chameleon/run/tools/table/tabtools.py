@@ -55,6 +55,7 @@ class table_toolkits():
         self.dataset_dict = None
         self.train_duration = None
         self.test_duration = None
+        self.test_groundtruth = None # pandas series
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
 
     def db_loader(self, target_db, train_duration="None", test_duration="None", outcome_col="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
@@ -81,6 +82,10 @@ class table_toolkits():
             for sub in range(start_year, end_year+1):
                 file_path = "{}/data/external_corpus/hupd/hupd_{}.csv".format(self.path, sub)
                 df_raw = pd.read_csv(file_path)
+                column_names = ["'"+x+"'" for x in df_raw.columns.tolist()]
+                column_names_str = ', '.join(column_names)
+                if outcome_col not in df_raw.columns:
+                    return "Error: The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
                 df_raw['patent_number'] = pd.to_numeric(df_raw['patent_number'], errors='coerce').astype('Int64').replace(0, pd.NA) # so that the LLM is aware of which patent numbers are invalid 
                 df_raw['examiner_id'] = pd.to_numeric(df_raw['examiner_id'], errors='coerce').astype('Int64') 
                 
@@ -91,8 +96,11 @@ class table_toolkits():
                 df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
                 df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
                 df_raw.drop(columns=["main_ipcr_label", "main_cpc_label"], inplace=True)
+                # remove rows where the predicted target is NA
                 if outcome_col!="None":
                     df_raw.dropna(subset=[outcome_col], inplace=True)
+                if outcome_col=="decision": # only use "ACCEPTED" and "REJECTED" column
+                    df_raw = df_raw[(df_raw["decision"]=="ACCEPTED") | (df_raw["decision"]=="REJECTED")]
                 # print(df_raw.dtypes)
                 # print(df_raw.head())
                 df.append(df_raw)
@@ -121,6 +129,12 @@ class table_toolkits():
         else:
             return "Error: the only possible choices for target_db are hupd (a patent dataset) and neurips (a papers dataset)."
         
+        # outcome_col not in columns error
+        if isinstance(train_df, str) and "Error:" in train_df:
+            return train_df
+        if isinstance(test_df, str) and "Error:" in test_df:
+            return test_df
+        
         if test_df is None:
             self.data = train_df
             column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
@@ -129,12 +143,9 @@ class table_toolkits():
             return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has the following structure: {}".format(self.data.head()) 
         else:
             train_dataset = Dataset.from_pandas(train_df)
-            try:
+            if outcome_col!="None":
+                self.test_groundtruth = test_df[outcome_col]
                 test_df.drop(columns=[outcome_col], inplace=True)
-            except:
-                column_names = ["'"+x+"'" for x in test_df.columns.tolist()]
-                column_names_str = ', '.join(column_names)
-                return "The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
             test_dataset = Dataset.from_pandas(test_df)
             print("test_df['summary']", test_df['summary'])
             self.dataset_dict = DatasetDict({"train": train_dataset, "test": test_dataset})
@@ -185,7 +196,7 @@ class table_toolkits():
         
         vocab_size = 10000
         batch_size=64
-        val_every=500
+        test_every=500
         n_filters=25
         filter_sizes=[[3,4,5], [5,6,7], [7,9,11]]
         dropout=0.25
@@ -198,7 +209,6 @@ class table_toolkits():
         alpha_smooth_val=1.0
             
         save_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/table/models/"+model_name+"_"+self.train_duration+"_"+self.test_duration ### might need to change for different tasks
-        filename = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/table/"+model_name+"_"+self.train_duration+"_"+self.test_duration+".txt" ### might need to change for different tasks
                     
         # Create a BoW (Bag-of-Words) representation
         def text2bow(input, vocab_size):
@@ -284,11 +294,7 @@ class table_toolkits():
         # For filtering out CONT-apps and pending apps
         decision_to_str = {
             'REJECTED': 0, 
-            'ACCEPTED': 1, 
-            'PENDING': 2, 
-            'CONT-REJECTED': 3, 
-            'CONT-ACCEPTED': 4, 
-            'CONT-PENDING': 5
+            'ACCEPTED': 1
         }
 
         # Map decision2string
@@ -307,12 +313,13 @@ class table_toolkits():
                     lambda e: tokenizer(e[section], truncation=True, padding='max_length'),
                     batched=True)
                 # Set the dataset format
-                if name=="train":
-                    dataset.set_format(type='torch', 
-                        columns=['input_ids', 'attention_mask', 'output'])
-                else:
-                    dataset.set_format(type='torch', 
-                        columns=['input_ids', 'attention_mask'])
+                if name=="test":
+                    gt_list = self.test_groundtruth.to_list()
+                    if target=="decision":
+                        gt_list = [1 if gt=="ACCEPTED" else 0 for gt in gt_list]
+                    dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
+                dataset.set_format(type='torch', 
+                    columns=['input_ids', 'attention_mask', 'output'])
                 data_loaders.append(DataLoader(dataset, batch_size=batch_size, shuffle=(name=='train')))
             return data_loaders
 
@@ -329,9 +336,8 @@ class table_toolkits():
             return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
 
         # Evaluation procedure (for the neural models)
-        def test(val_loader, model, criterion, device, name='test', write_file=None):
+        def test(test_loader, model, criterion, device, name='test', write_file=None):
             model.eval()
-            return 100, 99 ###
             total_loss = 0.
             total_correct = 0
             total_correct_class_level = 0
@@ -339,10 +345,10 @@ class table_toolkits():
             total_confusion = np.zeros((CLASSES, CLASSES))
             
             # Loop over the examples in the evaluation set
-            for i, batch in enumerate(tqdm(val_loader)):
-                inputs = batch['input_ids']
+            for i, batch in enumerate(tqdm(test_loader)):
+                inputs, decisions = batch['input_ids'], batch['output']
                 inputs = inputs.to(device)
-                decisions = inputs.to(device) #### fix this with gt
+                decisions = decisions.to(device)
                 with torch.no_grad():
                     if model_name in ['lstm', 'cnn', 'big_cnn', 'naive_bayes', 'logistic_regression']:
                         outputs = model(input_ids=inputs)
@@ -372,7 +378,7 @@ class table_toolkits():
             # Training mode is on
             model.train()
             # Best test set accuracy so far.
-            best_val_acc = 0
+            best_test_acc = 0
             for epoch in range(epoch_n):
                 total_train_loss = 0.
                 # Loop over the examples in the training set.
@@ -394,17 +400,17 @@ class table_toolkits():
                     optim.step()
                     optim.zero_grad()
 
-                    # Print the loss every val_every step
-                    if i % val_every == 0:
+                    # Print the loss every test_every step
+                    if i % test_every == 0:
                         print(f'*** Loss: {loss}')
                         print(f'*** Input: {convert_ids_to_string(tokenizer, inputs[0])}')
                         if write_file:
                             write_file.write(f'\nEpoch: {epoch}, Step: {i}\n')
                         # Get the performance of the model on the test set
-                        _, val_acc = test(data_loaders[1], model, criterion, device)
+                        _, test_acc = test(data_loaders[1], model, criterion, device)
                         model.train()
-                        if best_val_acc < val_acc:
-                            best_val_acc = val_acc
+                        if best_test_acc < test_acc:
+                            best_test_acc = test_acc
                             # Save the model if a save directory is specified
                             if save_path:
                                 # If the model is a Transformer architecture, make sure to save the tokenizer as well
@@ -418,9 +424,9 @@ class table_toolkits():
             print(f'\n ~ The End ~')
             
             # Final evaluation on the test set
-            _, val_acc = test(data_loaders[1], model, criterion, device, name='test')
-            if best_val_acc < val_acc:
-                best_val_acc = val_acc
+            _, test_acc = test(data_loaders[1], model, criterion, device, name='test')
+            if best_test_acc < test_acc:
+                best_test_acc = test_acc
                 
                 # Save the best model so fare
                 if save_path:
@@ -435,7 +441,7 @@ class table_toolkits():
                 print(f'*** Accuracy on the training set: {train_val_acc}.')
                 
             # Print the highest accuracy score obtained by the model on the test set
-            print(f'*** Highest accuracy on the test set: {best_val_acc}.')
+            print(f'*** Highest accuracy on the test set: {best_test_acc}.')
 
         # Evaluation procedure (for the Naive Bayes models)
         def test_naive_bayes(data_loader, model, vocab_size, name='test', pad_id=-1):
@@ -485,13 +491,6 @@ class table_toolkits():
             test_naive_bayes(data_loaders[0], model, vocab_size, 'training', pad_id)
             print('\n*** Accuracy on the test set ***')
             test_naive_bayes(data_loaders[1], model, vocab_size, 'test', pad_id)
-
-        filename = filename
-        if filename is None:
-            if model_name == 'naive_bayes':
-                filename = f'./results/{model_name}/{naive_bayes_version}/{section}.txt'
-            else:
-                filename = f'./results/{model_name}/{section}_embdim{embed_dim}_maxlength{max_length}.txt'
         
         if model_name == 'naive_bayes':
                 batch_size = 1
@@ -499,9 +498,9 @@ class table_toolkits():
         # Remove the rows where the section is None
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
         self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
-        self.dataset_dict['train'] = self.dataset_dict['train'].map(map_decision_to_string)
-        # Remove the pending and CONT-patent applications
-        self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e['output'] <= 1)
+        if target=="decision":
+            self.dataset_dict['train'] = self.dataset_dict['train'].map(map_decision_to_string)
+            
     
         # Create a model and an appropriate tokenizer
         tokenizer, self.dataset_dict, model, vocab_size = create_model_and_tokenizer(
@@ -554,8 +553,8 @@ if __name__ == "__main__":
     # pandas_code = "import pandas as pd\napproval_rates = df.groupby('ipcr_category')['decision'].apply(lambda x: (x == 'ACCEPTED').mean() * 100).reset_index(name='approval_rate')\ntop_categories = approval_rates.nlargest(2, 'approval_rate')['ipcr_category'].tolist()\nans = top_categories"
     # print(db.pandas_interpreter(pandas_code))
 
-    print(db.db_loader('hupd', '2011-2012', '2013-2013', 'decision'))
-    db.classifier('logistic_regression', 'summary', 'decision') # summary
+    print(db.db_loader('hupd', '2004-2012', '2013-2013', 'decision'))
+    db.classifier('logistic_regression', 'abstract', 'decision') # summary
     
     
     
