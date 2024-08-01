@@ -207,9 +207,7 @@ class table_toolkits():
         embed_dim=200
         max_length=256
         alpha_smooth_val=1.0
-            
-        save_path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/table/models/"+model_name+"_"+self.train_duration+"_"+self.test_duration ### might need to change for different tasks
-                    
+                                
         # Create a BoW (Bag-of-Words) representation
         def text2bow(input, vocab_size):
             arr = []
@@ -411,14 +409,6 @@ class table_toolkits():
                         model.train()
                         if best_test_acc < test_acc:
                             best_test_acc = test_acc
-                            # Save the model if a save directory is specified
-                            if save_path:
-                                # If the model is a Transformer architecture, make sure to save the tokenizer as well
-                                if model_name in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2', 'allenai/longformer-base-4096']:
-                                    model.save_pretrained(save_path)
-                                    tokenizer.save_pretrained(save_path + '_tokenizer')
-                                else:
-                                    torch.save(model.state_dict(), save_path)
 
             # Training is complete!
             print(f'\n ~ The End ~')
@@ -427,13 +417,6 @@ class table_toolkits():
             _, test_acc = test(data_loaders[1], model, criterion, device, name='test')
             if best_test_acc < test_acc:
                 best_test_acc = test_acc
-                
-                # Save the best model so fare
-                if save_path:
-                    if model_name in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2', 'allenai/longformer-base-4096']:
-                        model.save_pretrained(save_path)
-                    else:
-                        torch.save(model.state_dict(), save_path)
             
             # Additionally, print the performance of the model on the training set if we were not doing only inference
             if not test:
@@ -539,10 +522,6 @@ class table_toolkits():
             
             # Train and validate
             train(data_loaders, epoch_n, model, optim, None, criterion, device)
-
-            # Save the model
-            if save_path:
-                tokenizer.save_pretrained(save_path + '_tokenizer')
     
 
 if __name__ == "__main__":
@@ -554,7 +533,7 @@ if __name__ == "__main__":
     # print(db.pandas_interpreter(pandas_code))
 
     print(db.db_loader('hupd', '2004-2012', '2013-2013', 'decision'))
-    db.classifier('logistic_regression', 'abstract', 'decision') # summary
+    db.classifier('logistic_regression', 'summary', 'decision') # summary
     
     
     
