@@ -5,13 +5,16 @@ import jsonlines
 
 corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
 
-# HUPD Template 5: Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents that will be accepted in the first {n} months of 2023.
-def forecast(year):
-    df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))  
-    total_len = len(df)
-    accepted_len = len(df[df["decision"]=="ACCEPTED"])
+# HUPD Template 5: Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents that will be accepted in the first {n} months of 2013. Return a list of numbers between 0 and 100. 
+def forecast(n):
+    df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_2013.csv"))
+    df["filing_date"] = pd.to_datetime(df['filing_date'])
+    df["month"] = df["filing_date"].dt.month
+    df["acceptance"] = df["decision"].apply(lambda x: 100 if x =="ACCEPTED" else 0)
+    first_few_months = df.groupby("month")['acceptance'].mean().sort_index()
     del df
-    return accepted_len / total_len
+    first_n = first_few_months.head(n).tolist()
+    return first_n
 
 # HUPD Template 6: Using the {section} of patent applications from {start_year} to {end_year} for training, what proportion of applications from {year_not_in_the_range} are predicted to be accepted if they fall into the {IPCR/CPC} category of {A-H}?
 def predict_decision(year_not_in_the_range, label):
@@ -41,12 +44,12 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
     while question_id<=500: 
         question_type = random.randint(7,11) 
         if question_id==7:
-            # Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents that will be accepted in the first {n} months of 2023.
+            # Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents that will be accepted in the first {n} months of 2013. Return a list of numbers between 0 and 100. 
             start_year = random.randint(2004,2012)
             n = random.randint(1,12)
-            question_phrasings = ["Based on the patent applications per month from {} to 2012, estimate the percentage of patents that will be accepted in the first {} months of 2023.", "Given the patent applications per month from {} to 2012, predict the proportion of patents that will be accepted in the first {} months of 2023."] 
-            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year,end_year,end_year+1)
-            answer = forecast(end_year+1)
+            question_phrasings = ["Based on the patent applications per month from {} to 2012, estimate the percentage of patents that will be accepted in the first {} months of 2013. Return a list of numbers between 0 and 100.", "Given the patent applications per month from {} to 2012, predict the proportion of patents that will be accepted in the first {} months of 2013. Return a list of numbers between 0 and 100."] 
+            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year,n)
+            answer = forecast(n)
         elif question_id==8:
             # Using the {section} of patent applications from {start_year} to {end_year} for training, what proportion of applications from {year_not_in_the_range} are predicted to be accepted if they fall into the CPC category of {A-H}?
             section = random.choice(["abstracts", "backgrounds", "summaries", "full descriptions"]) 
