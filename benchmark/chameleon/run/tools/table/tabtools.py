@@ -223,10 +223,10 @@ class table_toolkits():
             return np.array(arr)
 
         # Create model and tokenizer
-        def create_model_and_tokenizer(model_name='bert-base-uncased', dataset=None, section=section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512):
+        def create_model_and_tokenizer(model_name=model_name, dataset=None, section=section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512): #'bert-base-uncased'
             special_tokens = ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"]
             # Finetune
-            if model_name in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2', 'allenai/longformer-base-4096']:
+            if model_name in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2']:
                 config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
                 tokenizer = AutoTokenizer.from_pretrained(model_name)
                 if model_name == 'gpt2':
@@ -234,7 +234,7 @@ class table_toolkits():
                 tokenizer.max_length = max_length
                 tokenizer.model_max_length = max_length
                 model = AutoModelForSequenceClassification.from_config(config=config)
-            elif model_name in ['lstm', 'cnn', 'big_cnn', 'naive_bayes', 'logistic_regression']:
+            elif model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
                 # Word-level tokenizer
                 tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))
                 # Normalizers
@@ -278,12 +278,10 @@ class table_toolkits():
                     model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=n_classes, pad_idx=pad_idx)
                 elif model_name == 'cnn':
                     model = BasicCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=n_classes, n_filters=n_filters, filter_sizes=filter_sizes[0], dropout=dropout)
-                elif model_name == 'big_cnn':
-                    model = BigCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=n_classes, n_filters=n_filters, filter_sizes=filter_sizes, dropout=dropout)
             else:
                 raise NotImplementedError()
                     
-            if model in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2', 'allenai/longformer-base-4096']:
+            if model == 'distilbert-base-uncased':
                 print(f'Model name: {model_name} \nModel params: {model.num_parameters()}')
             else:
                 print(model)
@@ -334,7 +332,7 @@ class table_toolkits():
             return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
 
         # Evaluation procedure (for the neural models)
-        def test(test_loader, model, criterion, device, name='test', write_file=None):
+        def test(test_loader, model, criterion, device, name='test'):
             model.eval()
             total_loss = 0.
             total_correct = 0
@@ -348,7 +346,7 @@ class table_toolkits():
                 inputs = inputs.to(device)
                 decisions = decisions.to(device)
                 with torch.no_grad():
-                    if model_name in ['lstm', 'cnn', 'big_cnn', 'naive_bayes', 'logistic_regression']:
+                    if model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
                         outputs = model(input_ids=inputs)
                     else:
                         outputs = model(input_ids=inputs, labels=decisions).logits
@@ -369,10 +367,8 @@ class table_toolkits():
 
 
         # Training procedure (for the neural models)
-        def train(data_loaders, epoch_n, model, optim, scheduler, criterion, device, write_file=None):
+        def train(data_loaders, epoch_n, model, optim, criterion, device):
             print('\n>>>Training starts...')
-            if write_file:
-                write_file.write(f'\n>>>Training starts...\n')
             # Training mode is on
             model.train()
             # Best test set accuracy so far.
@@ -386,7 +382,7 @@ class table_toolkits():
                     decisions = decisions.to(device, non_blocking=True)
                     
                     # Forward pass
-                    if model_name in ['lstm', 'cnn', 'big_cnn', 'logistic_regression']:
+                    if model_name in ['cnn', 'logistic_regression']:
                         outputs = model (input_ids=inputs)
                     else:
                         outputs = model(input_ids=inputs, labels=decisions).logits
@@ -402,8 +398,6 @@ class table_toolkits():
                     if i % test_every == 0:
                         print(f'*** Loss: {loss}')
                         print(f'*** Input: {convert_ids_to_string(tokenizer, inputs[0])}')
-                        if write_file:
-                            write_file.write(f'\nEpoch: {epoch}, Step: {i}\n')
                         # Get the performance of the model on the test set
                         _, test_acc = test(data_loaders[1], model, criterion, device)
                         model.train()
@@ -508,12 +502,12 @@ class table_toolkits():
         del self.dataset_dict
             
         if model_name == 'naive_bayes': 
-            tokenizer.save("multilabel_ipc_nb_abstract.json") ## GET RID OF THIS
+            # tokenizer.save("multilabel_ipc_nb_abstract.json") ## GET RID OF THIS
             print('Here we are!')
             train_naive_bayes(data_loaders, tokenizer, vocab_size, naive_bayes_version, alpha_smooth_val)
         else:
             # Optimizer
-            if model_name in ['logistic_regression', 'cnn', 'big_cnn', 'lstm']:
+            if model_name in ['logistic_regression', 'cnn']:
                 optim = torch.optim.Adam(params=model.parameters())
             else:
                 optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
@@ -521,7 +515,7 @@ class table_toolkits():
             criterion = torch.nn.CrossEntropyLoss()
             
             # Train and validate
-            train(data_loaders, epoch_n, model, optim, None, criterion, device)
+            train(data_loaders, epoch_n, model, optim, criterion, device)
     
 
 if __name__ == "__main__":
@@ -533,7 +527,8 @@ if __name__ == "__main__":
     # print(db.pandas_interpreter(pandas_code))
 
     print(db.db_loader('hupd', '2004-2012', '2013-2013', 'decision'))
-    db.classifier('logistic_regression', 'summary', 'decision') # summary
+    db.classifier('naive_bayes', 'summary', 'decision') 
+    # logistic_regression, distilbert-base-uncased, cnn, naive_bayes # abstract, summary
     
     
     
