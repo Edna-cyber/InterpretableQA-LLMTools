@@ -17,6 +17,7 @@ from model import solver
 
 from tools.code.python_interpreter import execute as python_interpreter
 from tools.code.forecaster import forecast as forecaster
+from tools.llm.llm_inferencer import llm_inferencer 
 from tools.math.calculator import calculator, WolframAlphaCalculator
 from tools.table.tabtools import table_toolkits
 import datetime
@@ -32,6 +33,7 @@ ACTION_LIST = {
     'PythonInterpreter': python_interpreter,
     'Forecaster': forecaster,
     'Classifier': db.classifier,
+    'LLMInterpreter': llm_inferencer
 }
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -162,14 +164,17 @@ tools = [
                     "target": {
                         "type": "string",
                         "description": "The target variable of the classifier model.",
-                    }, 
-                    "num_classes": {
-                        "type": "integer",
-                        "description": "The number of classes in the classification task. The default value is 2.",
                     }
                 },
                 "required": ["model_name", "section", "target"], 
             },
+        },
+    }, 
+    {
+        "type": "function",
+        "function": {
+            "name": "LLMInterpreter",
+            "description": "Use the current LLM to generate an answer."
         },
     }
 ]
@@ -359,6 +364,15 @@ if __name__ == "__main__":
                 break
         
         gt_answer = str(example["answer"])
+        
+        # Calculate performance metric
+        if question_type in ["1"]: ###
+            pass
+        elif question_type in ["1"]: ###
+            pass
+        elif question_type in ["1"]: ###
+            pass
+        
         if llm_answer==gt_answer:
             correct[question_type] += 1
             total_correct += 1

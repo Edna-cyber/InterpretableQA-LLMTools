@@ -16,8 +16,8 @@ from datasets import Dataset, DatasetDict
 
 # Good old Transformer models
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
-from transformers import BertForSequenceClassification, BertTokenizer, BertConfig
-from transformers import DistilBertForSequenceClassification, DistilBertTokenizer, DistilBertConfig
+# from transformers import BertForSequenceClassification, BertTokenizer, BertConfig
+# from transformers import DistilBertForSequenceClassification, DistilBertTokenizer, DistilBertConfig
 from transformers import PreTrainedTokenizerFast
 
 # Import the sklearn Multinomial Naive Bayes
@@ -107,6 +107,7 @@ class table_toolkits():
         self.train_duration = None
         self.test_duration = None
         self.test_groundtruth = None # pandas series
+        self.unique_classes = None
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
 
     def db_loader(self, target_db, train_duration="None", test_duration="None", outcome_col="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
@@ -133,10 +134,6 @@ class table_toolkits():
             for sub in range(start_year, end_year+1):
                 file_path = "{}/data/external_corpus/hupd/hupd_{}.csv".format(self.path, sub)
                 df_raw = pd.read_csv(file_path)
-                column_names = ["'"+x+"'" for x in df_raw.columns.tolist()]
-                column_names_str = ', '.join(column_names)
-                if outcome_col not in df_raw.columns:
-                    return "Error: The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
                 df_raw['patent_number'] = pd.to_numeric(df_raw['patent_number'], errors='coerce').astype('Int64').replace(0, pd.NA) # so that the LLM is aware of which patent numbers are invalid 
                 df_raw['examiner_id'] = pd.to_numeric(df_raw['examiner_id'], errors='coerce').astype('Int64') 
                 
@@ -147,11 +144,15 @@ class table_toolkits():
                 df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
                 df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
                 df_raw.drop(columns=["main_ipcr_label", "main_cpc_label"], inplace=True)
+                column_names = ["'"+x+"'" for x in df_raw.columns.tolist()]
+                column_names_str = ', '.join(column_names)
+                if outcome_col not in df_raw.columns:
+                    return "Error: The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
                 # remove rows where the predicted target is NA
                 if outcome_col!="None":
                     df_raw.dropna(subset=[outcome_col], inplace=True)
                 if outcome_col=="decision": # only use "ACCEPTED" and "REJECTED" column
-                    df_raw = df_raw[(df_raw["decision"]=="ACCEPTED") | (df_raw["decision"]=="REJECTED")]
+                    df_raw = df_raw[(df_raw[outcome_col]=="ACCEPTED") | (df_raw[outcome_col]=="REJECTED")]
                 # print(df_raw.dtypes)
                 # print(df_raw.head())
                 df.append(df_raw)
@@ -193,10 +194,11 @@ class table_toolkits():
             self.dataset_dict = None
             return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has the following structure: {}".format(self.data.head()) 
         else:
+            combined_series = pd.concat([train_df[outcome_col], test_df[outcome_col]])
+            self.unique_classes = combined_series.unique().tolist()
             train_dataset = Dataset.from_pandas(train_df)
             if outcome_col!="None":
                 self.test_groundtruth = test_df[outcome_col]
-                print("num_classes", self.test_groundtruth.nunique()) ###
                 test_df.drop(columns=[outcome_col], inplace=True)
             test_dataset = Dataset.from_pandas(test_df)
             print("test_df['summary']", test_df['summary'])
@@ -237,12 +239,13 @@ class table_toolkits():
                 return "Error: "+str(e)
             # other exceptions
             
-    def classifier(self, model_name, section, target, num_classes=2):
+    def classifier(self, model_name, section, target):
         """
         Runs a classificaiton prediction task.
         """
         
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        num_classes = len(self.unique_classes)
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
         
@@ -339,14 +342,16 @@ class table_toolkits():
                 print(model)
             return tokenizer, dataset, model, vocab_size
         
-        decision_to_str = {
-            'REJECTED': 0, 
-            'ACCEPTED': 1
-        }
-
-        # Map decision2string
-        def map_decision_to_string(example):
-            return {'output': decision_to_str[example[target]]}
+        target_to_label = {} 
+        for ind in range(num_classes):
+            target_to_label[self.unique_classes[ind]] = ind
+            
+        # Map target2string
+        def map_target_to_label(example):
+            return {'output': target_to_label[example[target]]}
+        
+        def map_groundtruth_to_label(lst):
+            return [target_to_label[x] for x in lst]
         
         # Create dataset
         def create_dataset(tokenizer, section=section):
@@ -362,8 +367,7 @@ class table_toolkits():
                 # Set the dataset format
                 if name=="test":
                     gt_list = self.test_groundtruth.to_list()
-                    if target=="decision":
-                        gt_list = [1 if gt=="ACCEPTED" else 0 for gt in gt_list]
+                    gt_list = map_groundtruth_to_label(gt_list)
                     dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
                 dataset.set_format(type='torch', 
                     columns=['input_ids', 'attention_mask', 'output'])
@@ -521,8 +525,7 @@ class table_toolkits():
         # Remove the rows where the section is None
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
         self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
-        if target=="decision":
-            self.dataset_dict['train'] = self.dataset_dict['train'].map(map_decision_to_string) 
+        self.dataset_dict['train'] = self.dataset_dict['train'].map(map_target_to_label) 
     
         # Create a model and an appropriate tokenizer
         tokenizer, self.dataset_dict, model, vocab_size = create_model_and_tokenizer(
@@ -570,8 +573,8 @@ if __name__ == "__main__":
     # pandas_code = "import pandas as pd\napproval_rates = df.groupby('ipcr_category')['decision'].apply(lambda x: (x == 'ACCEPTED').mean() * 100).reset_index(name='approval_rate')\ntop_categories = approval_rates.nlargest(2, 'approval_rate')['ipcr_category'].tolist()\nans = top_categories"
     # print(db.pandas_interpreter(pandas_code))
 
-    print(db.db_loader('hupd', '2004-2012', '2013-2013', 'decision'))
-    db.classifier('cnn', 'summary', 'decision') 
+    print(db.db_loader('hupd', '2004-2012', '2013-2013', 'icpr_category'))
+    db.classifier('distilbert-base-uncased', 'summary', 'icpr_category') # icpr_category
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes # abstract, summary
     
     
