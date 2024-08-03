@@ -2,35 +2,26 @@ import os
 import types
 import random
 import numpy as np
-import collections
 from tqdm import tqdm
 import pandas as pd
-import jsonlines
-import json
-import re
 
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 # Hugging Face datasets
-from datasets import load_dataset, DatasetDict
-from sklearn.model_selection import train_test_split
+from datasets import DatasetDict
 from datasets import Dataset, DatasetDict
 
 # Good old Transformer models
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
 from transformers import BertForSequenceClassification, BertTokenizer, BertConfig
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer, DistilBertConfig
-from transformers import RobertaForSequenceClassification, RobertaTokenizer, RobertaConfig
-from transformers import GPT2ForSequenceClassification, GPT2Tokenizer, GPT2Config
-from transformers import LongformerForSequenceClassification, LongformerTokenizer, LongformerConfig
 from transformers import PreTrainedTokenizerFast
 
 # Import the sklearn Multinomial Naive Bayes
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
-
-# Simple LSTM, CNN, and Logistic regression models
-from pred_models import BasicCNNModel, BigCNNModel, LogisticRegression # tools.table.
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -48,6 +39,66 @@ RANDOM_SEED = 1729
 torch.manual_seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
 random.seed(RANDOM_SEED)
+
+class LogisticRegression (nn.Module):
+    """ Simple logistic regression model """
+
+    def __init__ (self, vocab_size, embed_dim, n_classes, pad_idx):
+        super (LogisticRegression, self).__init__ ()
+        # Embedding layer
+        self.embedding = nn.Embedding(
+            num_embeddings = vocab_size,
+            embedding_dim = embed_dim, 
+            padding_idx = pad_idx)
+        # Linear layer
+        self.fc = nn.Linear (embed_dim, n_classes)
+        
+    def forward (self, input_ids):
+        # Apply the embedding layer
+        embed = self.embedding(input_ids)
+        # Apply the linear layer
+        output = self.fc (embed)
+        # Take the sum of the overeall word embeddings for each sentence
+        output = output.sum (dim=1)
+        return output
+
+
+class BasicCNNModel (nn.Module):
+    """ Simple 2D-CNN model """
+    def __init__(self, vocab_size, embed_dim, n_classes, n_filters, filter_sizes, dropout, pad_idx):
+        super(BasicCNNModel, self).__init__()
+        # Embedding layer
+        self.embedding = nn.Embedding(
+            num_embeddings = vocab_size,
+            embedding_dim = embed_dim, 
+            padding_idx = pad_idx)
+        # Conv layer
+        self.convs = nn.ModuleList(
+            [nn.Conv2d(
+                in_channels = 1, 
+                out_channels = n_filters, 
+                kernel_size = (fs, embed_dim)) 
+            for fs in filter_sizes])
+        # Linear layer
+        self.fc = nn.Linear(
+            len(filter_sizes) * n_filters, 
+            n_classes)
+        # Dropout
+        self.dropout = nn.Dropout(dropout)
+        
+    def forward(self, input_ids):
+        embed = self.embedding(input_ids)
+        # embed = [batch size, sent len, emb dim]
+        embed = embed.unsqueeze(1)
+        # embed = [batch size, 1, sent len, emb dim]
+        conved = [F.relu(conv(embed)).squeeze(3) for conv in self.convs]    
+        # conved_n = [batch size, n_filters, sent len - filter_sizes[n] + 1]
+        pooled = [F.max_pool1d(conv, conv.shape[2]).squeeze(2) for conv in conved]
+        # pooled_n = [batch size, n_filters]
+        cat = self.dropout(torch.cat(pooled, dim = 1))
+        # cat = [batch size, n_filters * len(filter_sizes)]
+        output = self.fc(cat) #.sigmoid ().squeeze()
+        return output
 
 class table_toolkits():
     def __init__(self):
@@ -145,6 +196,7 @@ class table_toolkits():
             train_dataset = Dataset.from_pandas(train_df)
             if outcome_col!="None":
                 self.test_groundtruth = test_df[outcome_col]
+                print("num_classes", self.test_groundtruth.nunique()) ###
                 test_df.drop(columns=[outcome_col], inplace=True)
             test_dataset = Dataset.from_pandas(test_df)
             print("test_df['summary']", test_df['summary'])
@@ -203,10 +255,14 @@ class table_toolkits():
         epoch_n=5
         lr=2e-5
         eps=1e-8
-        naive_bayes_version='Bernoulli' ###
         embed_dim=200
         max_length=256
         alpha_smooth_val=1.0
+        
+        if num_classes==2:
+            naive_bayes_version='Bernoulli' 
+        else:
+            naive_bayes_version='Multinomial'
                                 
         # Create a BoW (Bag-of-Words) representation
         def text2bow(input, vocab_size):
@@ -251,10 +307,6 @@ class table_toolkits():
                 # [PAD] idx
                 pad_idx = tokenizer.encode('[PAD]').ids[0]
 
-                # Currently the call method for WordLevelTokenizer is not working.
-                # Using this temporary method until the tokenizers library is updated.
-                # Not a fan of this method, but this is the best we have right now (sad face).
-                # Based on https://github.com/huggingface/transformers/issues/7234#issuecomment-720092292
                 tokenizer.enable_padding(pad_type_id=pad_idx)
                 tokenizer.pad_token = '[PAD]'
                 vocab_size = vocab_size
@@ -287,7 +339,6 @@ class table_toolkits():
                 print(model)
             return tokenizer, dataset, model, vocab_size
         
-        # For filtering out CONT-apps and pending apps
         decision_to_str = {
             'REJECTED': 0, 
             'ACCEPTED': 1
@@ -319,7 +370,6 @@ class table_toolkits():
                 data_loaders.append(DataLoader(dataset, batch_size=batch_size, shuffle=(name=='train')))
             return data_loaders
 
-        # Calculate TOP1 accuracy
         def measure_accuracy(outputs, labels):
             preds = np.argmax(outputs, axis=1).flatten()
             labels = labels.flatten()
@@ -336,9 +386,9 @@ class table_toolkits():
             model.eval()
             total_loss = 0.
             total_correct = 0
-            total_correct_class_level = 0
             total_sample = 0
             total_confusion = np.zeros((CLASSES, CLASSES))
+            predictions = []
             
             # Loop over the examples in the evaluation set
             for i, batch in enumerate(tqdm(test_loader)):
@@ -350,6 +400,8 @@ class table_toolkits():
                         outputs = model(input_ids=inputs)
                     else:
                         outputs = model(input_ids=inputs, labels=decisions).logits
+                preds = torch.argmax(outputs, dim=1)
+                predictions.extend(preds.cpu().numpy().tolist())
                 loss = criterion(outputs, decisions) 
                 logits = outputs 
                 total_loss += loss.cpu().item()
@@ -360,10 +412,9 @@ class table_toolkits():
             
             # Print the performance of the model on the test set 
             print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
-            print(f'*** Class-level accuracy on the {name} set: {total_correct_class_level/total_sample}')
             print(f'*** Confusion matrix:\n{total_confusion}')
             
-            return total_loss, float(total_correct/total_sample) * 100.
+            return predictions, total_loss, float(total_correct/total_sample) * 100.
 
 
         # Training procedure (for the neural models)
@@ -371,8 +422,7 @@ class table_toolkits():
             print('\n>>>Training starts...')
             # Training mode is on
             model.train()
-            # Best test set accuracy so far.
-            best_test_acc = 0
+        
             for epoch in range(epoch_n):
                 total_train_loss = 0.
                 # Loop over the examples in the training set.
@@ -398,27 +448,18 @@ class table_toolkits():
                     if i % test_every == 0:
                         print(f'*** Loss: {loss}')
                         print(f'*** Input: {convert_ids_to_string(tokenizer, inputs[0])}')
-                        # Get the performance of the model on the test set
-                        _, test_acc = test(data_loaders[1], model, criterion, device)
                         model.train()
-                        if best_test_acc < test_acc:
-                            best_test_acc = test_acc
 
             # Training is complete!
             print(f'\n ~ The End ~')
             
             # Final evaluation on the test set
-            _, test_acc = test(data_loaders[1], model, criterion, device, name='test')
-            if best_test_acc < test_acc:
-                best_test_acc = test_acc
+            predictions, _, _ = test(data_loaders[1], model, criterion, device, name='test')
             
             # Additionally, print the performance of the model on the training set if we were not doing only inference
             if not test:
-                _, train_val_acc = test(data_loaders[0], model, criterion, device, name='train')
-                print(f'*** Accuracy on the training set: {train_val_acc}.')
-                
-            # Print the highest accuracy score obtained by the model on the test set
-            print(f'*** Highest accuracy on the test set: {best_test_acc}.')
+                test(data_loaders[0], model, criterion, device, name='train')
+            return predictions
 
         # Evaluation procedure (for the Naive Bayes models)
         def test_naive_bayes(data_loader, model, vocab_size, name='test', pad_id=-1):
@@ -426,6 +467,7 @@ class table_toolkits():
             total_correct = 0
             total_sample = 0
             total_confusion = np.zeros((CLASSES, CLASSES))
+            predictions = []
             
             # Loop over all the examples in the evaluation set
             for i, batch in enumerate(tqdm(data_loader)):
@@ -433,6 +475,10 @@ class table_toolkits():
                 input = text2bow(input, vocab_size)
                 input[:, pad_id] = 0
                 logit = model.predict_log_proba(input)
+                probs = np.exp(logit)
+                preds = np.argmax(probs, axis=1)
+                predictions.extend(preds.tolist())
+                
                 label = np.array(label.flatten()) 
                 correct_n, sample_n, c_matrix = measure_accuracy(logit, label)
                 total_confusion += c_matrix
@@ -440,15 +486,14 @@ class table_toolkits():
                 total_sample += sample_n
             print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
             print(f'*** Confusion matrix:\n{total_confusion}')
-            return total_loss, float(total_correct/total_sample) * 100.
+            return predictions, total_loss, float(total_correct/total_sample) * 100.
 
 
         # Training procedure (for the Naive Bayes models)
-        def train_naive_bayes(data_loaders, tokenizer, vocab_size, version='Bernoulli', alpha=1.0):
+        def train_naive_bayes(data_loaders, tokenizer, vocab_size, version=naive_bayes_version, alpha=1.0):
             pad_id = tokenizer.encode('[PAD]') # NEW
             print(f'Training a {version} Naive Bayes classifier (with alpha = {alpha})...')
 
-            # Bernoulli or Multinomial?
             if version == 'Bernoulli':
                 model = BernoulliNB(alpha=alpha) 
             elif version == 'Multinomial':
@@ -467,7 +512,8 @@ class table_toolkits():
             print('\n*** Accuracy on the training set ***')
             test_naive_bayes(data_loaders[0], model, vocab_size, 'training', pad_id)
             print('\n*** Accuracy on the test set ***')
-            test_naive_bayes(data_loaders[1], model, vocab_size, 'test', pad_id)
+            predictions, _, _ = test_naive_bayes(data_loaders[1], model, vocab_size, 'test', pad_id)
+            return predictions
         
         if model_name == 'naive_bayes':
                 batch_size = 1
@@ -476,8 +522,7 @@ class table_toolkits():
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
         self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
         if target=="decision":
-            self.dataset_dict['train'] = self.dataset_dict['train'].map(map_decision_to_string)
-            
+            self.dataset_dict['train'] = self.dataset_dict['train'].map(map_decision_to_string) 
     
         # Create a model and an appropriate tokenizer
         tokenizer, self.dataset_dict, model, vocab_size = create_model_and_tokenizer(
@@ -502,9 +547,8 @@ class table_toolkits():
         del self.dataset_dict
             
         if model_name == 'naive_bayes': 
-            # tokenizer.save("multilabel_ipc_nb_abstract.json") ## GET RID OF THIS
             print('Here we are!')
-            train_naive_bayes(data_loaders, tokenizer, vocab_size, naive_bayes_version, alpha_smooth_val)
+            predictions = train_naive_bayes(data_loaders, tokenizer, vocab_size, naive_bayes_version, alpha_smooth_val)
         else:
             # Optimizer
             if model_name in ['logistic_regression', 'cnn']:
@@ -515,8 +559,8 @@ class table_toolkits():
             criterion = torch.nn.CrossEntropyLoss()
             
             # Train and validate
-            train(data_loaders, epoch_n, model, optim, criterion, device)
-    
+            predictions = train(data_loaders, epoch_n, model, optim, criterion, device)
+        return predictions
 
 if __name__ == "__main__":
     db = table_toolkits()
@@ -527,7 +571,7 @@ if __name__ == "__main__":
     # print(db.pandas_interpreter(pandas_code))
 
     print(db.db_loader('hupd', '2004-2012', '2013-2013', 'decision'))
-    db.classifier('naive_bayes', 'summary', 'decision') 
+    db.classifier('cnn', 'summary', 'decision') 
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes # abstract, summary
     
     
