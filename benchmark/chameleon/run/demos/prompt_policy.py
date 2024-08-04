@@ -3,47 +3,7 @@ import json
 messages = [
     {
         'role': 'system',
-        'content': """
-You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question.
-
-Then calculate the cumulative cost at runtime. During each step of execution, add the cost to the cumulative cost. If the result of a tool call contains 'Error: ', do not add this cost to the cumulative cost. The cumulative cost stays the same.
-    
-Interpretability Cost Formulas:
-
-1. Calculate: Cost is 2
-
-2. LoadDB: Cost is 3
-
-3. PandasInterpreter: Cost is based on the number of lines of Python code and the number of imported packages:
-    - Number of Lines of Python Code:
-        - If less than 10 lines: 4
-        - If between 10 and 20 lines: 7
-        - If between 21 and 100 lines: 9
-        - If more than 100 lines: 10
-    - Number of Imported Packages:
-        - If fewer than 2 packages: 1
-        - If between 2 and 5 packages: 1.5
-        - If more than 5 packages: 2
-    - Formula: (Cost based on number of lines) * (Cost based on number of packages)
-
-4. PythonInterpreter: Cost is similar to PandasInterpreter, based on the number of lines of Python code and the number of imported packages:
-    - Number of Lines of Python Code:
-        - If less than 10 lines: 4
-        - If between 10 and 20 lines: 7
-        - If between 21 and 100 lines: 9
-        - If more than 100 lines: 10
-    - Number of Imported Packages:
-        - If fewer than 2 packages: 1
-        - If between 2 and 5 packages: 1.5
-        - If more than 5 packages: 2
-    - Formula: (Cost based on number of lines) * (Cost based on number of packages)
-
-5. Classifier: Cost is based on the model name:
-    - If model name is "logistic_regression": 7
-    - If model name is "distilbert-base-uncased": 10
-
-Initial Cumulative cost per question is 0. Below are some examples that map the problem to the tools.
-"""
+        'content': """You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question. Below are some examples that map the problem to the tools."""
     },
     {
         'role': 'user',
@@ -58,7 +18,7 @@ Initial Cumulative cost per question is 0. Below are some examples that map the 
                 'function': {
                     'name': 'PythonInterpreter',
                     'arguments': json.dumps({
-                        "python_code": """
+                        "variable_values": """
 def solution(n):
     if n <= 0:
         return 0
@@ -82,6 +42,28 @@ ans = solution(19)
         'role': 'tool',
         'name': 'PythonInterpreter',
         'content': "{'ans': 4181}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Finish({'ans': 4181}, ans) Cumulative Cost is 4.""",
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": {'ans': 4181}, "answer_variable": "ans"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "4181"
     },
     {
         'role': 'assistant',
@@ -137,22 +119,44 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
+        'content': """To execute: Finish({'month':12}, month). Cumulative cost is 7.""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": {'month':12}, "answer_variable": "month"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "12"
+    },
+    {
+        'role': 'assistant',
         'content': 'The month with the highest number of patent applications in 2016 was December. Cumulative cost is 7.'
     },
     {
         'role': 'user',
-        'content': "Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?"
+        'content': 'Train a model using patent applications from 2004 to 2006, and then use it to predict the decisions for patent applications filed in 2007.'
     },
     {
         'role': 'assistant',
-        'content': """To execute: LoadDB(hupd, 2015-2017, 2018-2018, decision) Cost is 3. Cumulative cost is 3.""",
+        'content': """To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2015-2017", "test_duration": "2018-2018", "outcome_col": "decision"
+                        "target_db": "hupd", "train_duration": "2004-2006", "test_duration": "2007-2007", "outcome_col": "decision"
                     })
                 },
                 'type': 'function'
@@ -167,12 +171,12 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Classifier(logistic_regression, abstract, decision) Cost is 7 (model_name is "logistic_regression"). Cumulative cost is 10.""",
+        'content': """To execute: TextualClassifier(logistic_regression, abstract, decision) Cost is 7 (model_name is "logistic_regression"). Cumulative cost is 10.""",
         'tool_calls': [
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'Classifier',
+                    'name': 'TextualClassifier',
                     'arguments': json.dumps({
                         "model_name": "logistic_regression", "section": "abstract", "target": "decision"
                     })
@@ -185,11 +189,33 @@ ans = solution(19)
         'tool_call_id': 'call_1',
         'role': 'tool',
         'name': 'Classifier',
-        'content': 'ACCEPTED'
+        'content': "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}"
     },
     {
         'role': 'assistant',
-        'content': "The patent application described in the abstract is predicted to be accepted. Cumulative cost is 10."
+        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions). Cumulative cost is 7.""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": {'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, "answer_variable": "predictions"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]"
+    },
+    {
+        'role': 'assistant',
+        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]. Cumulative cost is 10."
     }
 ]
 
@@ -200,7 +226,7 @@ messages_formula = [
         'content': """
 You need to act as a policy model that determines the sequence of tools with the lowest total interpretability cost that can be executed sequentially to solve the question. Follow these steps:
 
-1. Generate Solutions: First, list as many solutions as possible. Each solution should be a sequence of tools that can be used to solve the question.
+1. Generate Solutions: First, list AS MANY solutions AS POSSIBLE (at most 4). Each solution should be a sequence of tools that can be used to solve the question.
 
 2. Calculate Interpretability Costs: Calculate the total interpretability cost for each solution. The interpretability cost of each tool in the solution is defined by the formulas below. Tools with lower interpretability costs are preferred over those with higher costs.
 
@@ -292,6 +318,28 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
+        'content': """To execute: Finish({'ans': 4181}, ans) Cumulative Cost is 4.""",
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": {'ans': 4181}, "answer_variable": "ans"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "4181"
+    },
+    {
+        'role': 'assistant',
         'content': 'The 20th Fibonacci number is 4181. Cumulative cost is 4.'
     },
     {
@@ -353,31 +401,57 @@ To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.
     },
     {
         'role': 'assistant',
-        'content': 'The month with the highest number of patent applications in 2016 was December. Cumulative cost is 7.'
+        'content': """To execute: Finish({'month':12}, month). Cumulative cost is 7.""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": {'month':12}, "answer_variable": "month"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
     },
     {
-        'role': 'user',
-        'content': "Predict whether the patent application described in the following abstract will be accepted: 'A hydraulic control and/or safety device, particularly for utility apparatuses or systems or appliances, which is preferably able to carry out a flow shut-off and/or limitation, particularly in the event of fault of the utility apparatus or system or appliance, and/or one or more features that improve the device and/or the apparatus performance. In particular, the device can carry out the function of the fluid treatment, so as to be particularly reliable, as it prevents at least the formation of deposits on its mechanical components designed to limit the water flow.'?"
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "12"
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2015-2017, 2018-2018, decision), Classifier(logistic_regression, abstract, decision)
-Modules2: LoadDB(hupd, 2015-2017, 2018-2018, decision), Classifier(distilbert-base-uncased, abstract, decision)
+        'content': 'The month with the highest number of patent applications in 2016 was December. Cumulative cost is 7.'
+    },
+     {
+        'role': 'user',
+        'content': 'Train a model using patent applications from 2004 to 2006, and then use it to predict the decisions for patent applications filed in 2007.'
+    },
+    {
+        'role': 'assistant',
+        'content': """Modules1: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(logistic_regression, abstract, decision)
+Modules2: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(distilbert-base-uncased, title, decision)
+Modules3: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(naive_bayes, summary, decision)
+Modules4: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(cnn, full_description, decision)
 
-Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(hupd, 2015-2017, 2018-2018, decision): 3, Classifier(logistic_regression, abstract, decision): 7 (model_name is "logistic_regression"). Summing these costs: 3+7=10.
-Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2015-2017, 2018-2018, decision): 3, Classifier(distilbert-base-uncased, abstract, decision): 10 (model_name is "logistic_regression"). Summing these costs: 3+10=13.
-Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2.
+Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(hupd, 2004-2006, 2007-2007, decision): 3, Classifier(logistic_regression, abstract, decision): 7 (model_name is "logistic_regression"). Summing these costs: 3+7=10.
+Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2004-2006, 2007-2007, decision): 3, Classifier(distilbert-base-uncased, title, decision): 10 (model_name is "logistic_regression"). Summing these costs: 3+10=13.
+Total interpretability cost of Modules3 is calculated as follows: LoadDB(hupd, 2004-2006, 2007-2007, decision): 3, Classifier(naive_bayes, summary, decision): 
+Total interpretability cost of Modules4 is calculated as follows: LoadDB(hupd, 2004-2006, 2007-2007, decision): 3, Classifier(cnn, full_description, decision):
+Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2, for Modules 3, and for Modules 4. ###
 
-Best Modules: LoadDB(hupd, 2015-2017, 2018-2018, decision), Classifier(logistic_regression, abstract, decision)
+Best Modules: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(logistic_regression, abstract, decision)
 
-To execute: LoadDB(hupd, 2015-2017, 2018-2018, decision) Cost is 3. Cumulative cost is 3.""",
+To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative cost is 3.""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2015-2017", "test_duration": "2018-2018", "outcome_col":"decision"
+                        "target_db": "hupd", "train_duration": "2004-2006", "test_duration": "2007-2007", "outcome_col": "decision"
                     })
                 },
                 'type': 'function'
@@ -388,16 +462,16 @@ To execute: LoadDB(hupd, 2015-2017, 2018-2018, decision) Cost is 3. Cumulative c
         'tool_call_id': 'call_0',
         'role': 'tool',
         'name': 'LoadDB',
-        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 18011}) validation: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 12008})})"
+        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 18011}) test: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 12008})})"
     },
     {
         'role': 'assistant',
-        'content': """To execute: Classifier(logistic_regression, abstract, decision) Cost is 7 (model_name is "logistic_regression"). Cumulative cost is 10.""",
+        'content': """To execute: TextualClassifier(logistic_regression, abstract, decision) Cost is 7 (model_name is "logistic_regression"). Cumulative cost is 10.""",
         'tool_calls': [
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'Classifier',
+                    'name': 'TextualClassifier',
                     'arguments': json.dumps({
                         "model_name": "logistic_regression", "section": "abstract", "target": "decision"
                     })
@@ -410,11 +484,33 @@ To execute: LoadDB(hupd, 2015-2017, 2018-2018, decision) Cost is 3. Cumulative c
         'tool_call_id': 'call_1',
         'role': 'tool',
         'name': 'Classifier',
-        'content': 'ACCEPTED'
+        'content': "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}"
     },
     {
         'role': 'assistant',
-        'content': "The patent application described in the abstract is predicted to be accepted. Cumulative cost is 10."
+        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions). Cumulative cost is 7.""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": {'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, "answer_variable": "predictions"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]"
+    },
+    {
+        'role': 'assistant',
+        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]. Cumulative cost is 10."
     }
 ]
 

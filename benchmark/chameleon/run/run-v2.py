@@ -15,6 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utilities import *
 from model import solver
 
+from tools import finish
 from tools.code.python_interpreter import execute as python_interpreter
 from tools.code.forecaster import forecast as forecaster
 from tools.llm.llm_inferencer import llm_inferencer 
@@ -33,7 +34,8 @@ ACTION_LIST = {
     'PythonInterpreter': python_interpreter,
     'Forecaster': forecaster,
     'TextualClassifier': db.textual_classifier,
-    'LLMInterpreter': llm_inferencer
+    'LLMInterpreter': llm_inferencer,
+    'Finish': finish
 }
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -155,11 +157,11 @@ tools = [
                 "properties": {
                     "model_name": {
                         "type": "string",
-                        "description": "The model_name can be logistic_regression or distilbert-base-uncased.",
+                        "description": "The model_name can be logistic_regression, distilbert-base-uncased, cnn, or naive_bayes.",
                     },
                     "section": {
                         "type": "string",
-                        "description": "The predictor variable of the classifier model, which is natural language requiring tokenization.",
+                        "description": "The predictor variable of the classifier model, which is a column that consists of natural language requiring tokenization.",
                     },
                     "target": {
                         "type": "string",
@@ -176,6 +178,27 @@ tools = [
             "name": "LLMInterpreter",
             "description": "Use the current LLM to generate an answer."
         },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "Finish",
+            "description": "Terminate the task and return the final answer.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "variable_values": {
+                        "type": "dictionary",
+                        "description": "A dictionary of variables and their corresponding values.",
+                    },
+                    "answer_variable": {
+                        "type": "string",
+                        "description": "A key among the variable_values dictionary that corresponds to the variable which best addresses the question.",
+                    }
+                },
+                "required": ["variable_values", "answer_variable"], 
+            },
+        },
     }
 ]
 
@@ -185,7 +208,7 @@ def calc_cost(function_type, function_arguments):
     if function_type=="LoadDB":
         return 3
     if function_type=="PandasInterpreter":
-        num_lines = len(function_arguments["pandas_code"].split('\n'))
+        num_lines = len(function_arguments["pandas_code"].splitlines()) 
         num_packages = function_arguments["pandas_code"].count('import')
         if num_lines<10:
             lines_cost = 4
@@ -203,7 +226,7 @@ def calc_cost(function_type, function_arguments):
             packages_cost = 2
         return lines_cost*packages_cost
     if function_type=="PythonInterpreter":
-        num_lines = len(function_arguments["python_code"].split('\n'))
+        num_lines = len(function_arguments["python_code"].splitlines()) 
         num_packages = function_arguments["python_code"].count('import')
         if num_lines<10:
             lines_cost = 4
@@ -220,11 +243,22 @@ def calc_cost(function_type, function_arguments):
         else:
             packages_cost = 2
         return lines_cost*packages_cost
+    if function_type=="Forecaster":
+        pass
+        ###
     if function_type=="TextualClassifier":
         if function_arguments["model_name"]=="logistic_regression":
             return 7
-        if function_arguments["model_name"]=="distilbert-base-uncased":
-            return 10
+        elif function_arguments["model_name"]=="naive_bayes":
+            return 8
+        elif function_arguments["model_name"]=="cnn":
+            return 15
+        elif function_arguments["model_name"]=="distilbert-base-uncased":
+            return 20
+    if function_type=="LLMInterpreter":
+        return 30
+    if function_type=="Finish":
+        return 0
 
 def parse_args():
     parser = argparse.ArgumentParser()

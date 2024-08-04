@@ -582,11 +582,12 @@ class table_toolkits():
             else:
                 optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
             # Loss function 
-            criterion = torch.nn.CrossEntropyLoss(weight=CLASS_WEIGHTS.to(device)) 
+            criterion = torch.nn.CrossEntropyLoss(weight=CLASS_WEIGHTS.to(device))
             
             # Train and validate
             predictions = train(data_loaders, epoch_n, model, optim, criterion, device)
-        return predictions
+        predictions_to_categories = [unique_classes[x] for x in predictions]
+        return {"predictions": predictions_to_categories}
 
 if __name__ == "__main__":
     db = table_toolkits()
@@ -594,11 +595,11 @@ if __name__ == "__main__":
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
     # print(db.pandas_interpreter(pandas_code))
 
-    # print(db.db_loader('hupd', '2004-2012', '2013-2015', 'decision'))
-    # db.textual_classifier('naive_bayes', 'summary', 'decision') 
-    print(db.db_loader('neurips', '0-1000', '1001-3583', 'Oral'))
-    db.textual_classifier('cnn', 'Abstract', 'Oral') 
-    # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # abstract, summary # decision
+    print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
+    db.textual_classifier('cnn', 'full_description', 'decision')
+    # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Oral'))
+    # db.textual_classifier('cnn', 'Abstract', 'Oral') 
+    # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision
     
     
     
