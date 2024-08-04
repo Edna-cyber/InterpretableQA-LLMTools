@@ -11,8 +11,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 # Hugging Face datasets
-from datasets import DatasetDict
-from datasets import Dataset, DatasetDict
+from datasets import Dataset, DatasetDict, concatenate_datasets
 
 # Good old Transformer models
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
@@ -106,8 +105,8 @@ class table_toolkits():
         self.dataset_dict = None
         self.train_duration = None
         self.test_duration = None
+        self.train_groundtruth = None # pandas series
         self.test_groundtruth = None # pandas series
-        self.unique_classes = None
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
 
     def db_loader(self, target_db, train_duration="None", test_duration="None", outcome_col="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
@@ -162,7 +161,7 @@ class table_toolkits():
         def preprocess_neurips(start_row, end_row):
             if not start_row and not end_row:
                 return None
-            file_path = "{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv"
+            file_path = "{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv".format(self.path)
             df = pd.read_csv(file_path)
             # print(df.dtypes)
             df = df.iloc[start_row:end_row+1]
@@ -194,14 +193,12 @@ class table_toolkits():
             self.dataset_dict = None
             return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has the following structure: {}".format(self.data.head()) 
         else:
-            combined_series = pd.concat([train_df[outcome_col], test_df[outcome_col]])
-            self.unique_classes = combined_series.unique().tolist()
             train_dataset = Dataset.from_pandas(train_df)
             if outcome_col!="None":
+                self.train_groundtruth = train_df[outcome_col]
                 self.test_groundtruth = test_df[outcome_col]
                 test_df.drop(columns=[outcome_col], inplace=True)
             test_dataset = Dataset.from_pandas(test_df)
-            print("test_df['summary']", test_df['summary'])
             self.dataset_dict = DatasetDict({"train": train_dataset, "test": test_dataset})
             self.data = None
             return "We have successfully loaded the {} dataset dict that has the following structure: {}".format(target_db, self.dataset_dict)
@@ -239,15 +236,45 @@ class table_toolkits():
                 return "Error: "+str(e)
             # other exceptions
             
-    def classifier(self, model_name, section, target):
+    def textual_classifier(self, model_name, section, target):
         """
-        Runs a classificaiton prediction task.
+        Runs a classificaiton prediction task given a textual input.
         """
         
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        num_classes = len(self.unique_classes)
+        combined_series = pd.concat([self.train_groundtruth, self.test_groundtruth])
+        value_counts = combined_series.value_counts().to_dict()
+        unique_classes = combined_series.unique().tolist()
+        num_classes = len(unique_classes)
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
+        
+        class_weights = []
+        for ind in range(num_classes):
+            class_weights.append(1/value_counts[unique_classes[ind]])
+        class_weights = [x/sum(class_weights) for x in class_weights]
+            
+        target_to_label = {} 
+        for ind in range(num_classes):
+            target_to_label[unique_classes[ind]] = ind
+        
+        # address class imbalance by repeating minority class 5 times
+        max_occurrence = max(value_counts.values())
+        min_occurrence = min(value_counts.values())
+        if max_occurrence / min_occurrence>10:
+            for k in range(len(unique_classes)):
+                unique_class = unique_classes[k]
+                if class_weights[target_to_label[unique_class]]<1/20:
+                    train_dataset = self.dataset_dict["train"]
+                    df = train_dataset.to_pandas()
+                    subset_df = df[df[target] == unique_class]
+                    repeated_df = pd.concat([subset_df] * 5, ignore_index=True)
+                    class_weights[k] *= 6 
+                    repeated_dataset = Dataset.from_pandas(repeated_df)
+                    combined_dataset = concatenate_datasets([train_dataset, repeated_dataset])
+                    self.dataset_dict["train"] = combined_dataset.shuffle(seed=RANDOM_SEED)
+        class_weights = [x/sum(class_weights) for x in class_weights]
+        CLASS_WEIGHTS = torch.tensor(np.array(class_weights), dtype=torch.float32)
         
         vocab_size = 10000
         batch_size=64
@@ -341,11 +368,7 @@ class table_toolkits():
             else:
                 print(model)
             return tokenizer, dataset, model, vocab_size
-        
-        target_to_label = {} 
-        for ind in range(num_classes):
-            target_to_label[self.unique_classes[ind]] = ind
-            
+
         # Map target2string
         def map_target_to_label(example):
             return {'output': target_to_label[example[target]]}
@@ -559,7 +582,7 @@ class table_toolkits():
             else:
                 optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
             # Loss function 
-            criterion = torch.nn.CrossEntropyLoss()
+            criterion = torch.nn.CrossEntropyLoss(weight=CLASS_WEIGHTS.to(device)) 
             
             # Train and validate
             predictions = train(data_loaders, epoch_n, model, optim, criterion, device)
@@ -569,13 +592,13 @@ if __name__ == "__main__":
     db = table_toolkits()
     # db.db_loader('hupd', '2016-2016', 'None', 'None')
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
-    # # pandas_code = "import pandas as pd\naccepted_patents = df[df['decision'] == 'ACCEPTED'].shape[0]\ntotal_patents = df.shape[0]\npercentage_accepted = (accepted_patents / total_patents) * 100\nans=percentage_accepted"
-    # pandas_code = "import pandas as pd\napproval_rates = df.groupby('ipcr_category')['decision'].apply(lambda x: (x == 'ACCEPTED').mean() * 100).reset_index(name='approval_rate')\ntop_categories = approval_rates.nlargest(2, 'approval_rate')['ipcr_category'].tolist()\nans = top_categories"
     # print(db.pandas_interpreter(pandas_code))
 
-    print(db.db_loader('hupd', '2004-2012', '2013-2013', 'icpr_category'))
-    db.classifier('distilbert-base-uncased', 'summary', 'icpr_category') # icpr_category
-    # logistic_regression, distilbert-base-uncased, cnn, naive_bayes # abstract, summary
+    # print(db.db_loader('hupd', '2004-2012', '2013-2015', 'decision'))
+    # db.textual_classifier('naive_bayes', 'summary', 'decision') 
+    print(db.db_loader('neurips', '0-1000', '1001-3583', 'Oral'))
+    db.textual_classifier('cnn', 'Abstract', 'Oral') 
+    # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # abstract, summary # decision
     
     
     

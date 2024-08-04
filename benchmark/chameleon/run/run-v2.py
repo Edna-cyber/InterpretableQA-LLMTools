@@ -32,7 +32,7 @@ ACTION_LIST = {
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
     'Forecaster': forecaster,
-    'Classifier': db.classifier,
+    'TextualClassifier': db.textual_classifier,
     'LLMInterpreter': llm_inferencer
 }
 
@@ -148,8 +148,8 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": "Classifier",
-            "description": "Run a specified classifier model on the given predictorSection to predict the target. Normally, we use the Classifier module for binary or multi-class classification tasks.",
+            "name": "TextualClassifier",
+            "description": "Run a specified classifier model on the given textual predictorSection to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -220,7 +220,7 @@ def calc_cost(function_type, function_arguments):
         else:
             packages_cost = 2
         return lines_cost*packages_cost
-    if function_type=="Classifier":
+    if function_type=="TextualClassifier":
         if function_arguments["model_name"]=="logistic_regression":
             return 7
         if function_arguments["model_name"]=="distilbert-base-uncased":
@@ -285,7 +285,6 @@ if __name__ == "__main__":
         messages = prompt_policy.messages_formula.copy()
         
         messages.append({"role": "user", "content": user_prompt})
-        # print("messages", messages) ###
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
         llm_answer = None
