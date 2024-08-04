@@ -18,7 +18,7 @@ messages = [
                 'function': {
                     'name': 'PythonInterpreter',
                     'arguments': json.dumps({
-                        "variable_values": """
+                        "python_code": """
 def solution(n):
     if n <= 0:
         return 0
@@ -52,7 +52,7 @@ ans = solution(19)
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": {'ans': 4181}, "answer_variable": "ans"
+                        "variable_values": "{'ans': 4181}", "answer_variable": "ans"
                     })
                 },
                 'type': 'function'
@@ -126,7 +126,7 @@ ans = solution(19)
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": {'month':12}, "answer_variable": "month"
+                        "variable_values": "{'month':12}", "answer_variable": "month"
                     })
                 },
                 'type': 'function'
@@ -200,7 +200,7 @@ ans = solution(19)
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": {'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, "answer_variable": "predictions"
+                        "variable_values": "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']}", "answer_variable": "predictions"
                     })
                 },
                 'type': 'function'
@@ -211,11 +211,11 @@ ans = solution(19)
         'tool_call_id': 'call_2',
         'role': 'tool',
         'name': 'Finish',
-        'content': "['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]"
+        'content': "['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']"
     },
     {
         'role': 'assistant',
-        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]. Cumulative cost is 10."
+        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']. Cumulative cost is 10."
     }
 ]
 
@@ -325,7 +325,7 @@ ans = solution(19)
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": {'ans': 4181}, "answer_variable": "ans"
+                        "variable_values": "{'ans': 4181}", "answer_variable": "ans"
                     })
                 },
                 'type': 'function'
@@ -408,7 +408,7 @@ To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": {'month':12}, "answer_variable": "month"
+                        "variable_values": "{'month':12}", "answer_variable": "month"
                     })
                 },
                 'type': 'function'
@@ -495,7 +495,7 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative c
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": {'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, "answer_variable": "predictions"
+                        "variable_values": "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']}", "answer_variable": "predictions"
                     })
                 },
                 'type': 'function'
@@ -506,11 +506,11 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative c
         'tool_call_id': 'call_2',
         'role': 'tool',
         'name': 'Finish',
-        'content': "['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]"
+        'content': "['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']"
     },
     {
         'role': 'assistant',
-        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]. Cumulative cost is 10."
+        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']. Cumulative cost is 10."
     }
 ]
 

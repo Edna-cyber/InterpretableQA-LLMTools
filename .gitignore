@@ -1,6 +1,6 @@
-/data/external_corpus/
-/benchmark/chameleon/logs/
+data/external_corpus/
+benchmark/chameleon/logs/
 benchmark/chameleon/run/tools/table/models/
 benchmark/chameleon/run/tools/table/temp_tokenizer.json
 benchmark/chameleon/run/tools/table/logistic_regression_G06F_2016-2016.txt
-
+benchmark/chameleon/run/results/

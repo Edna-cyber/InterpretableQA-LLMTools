@@ -2,39 +2,11 @@
 input: formula strings
 output: the answer of the mathematical formula
 '''
-import os
-import re
-from operator import pow, truediv, mul, add, sub
-import wolframalpha
-query = '1+2*3'
+import sympy as sp
 
-def calculator(query: str):
-    operators = {
-        '+': add,
-        '-': sub,
-        '*': mul,
-        '/': truediv,
-    }
-    query = re.sub(r'\s+', '', query)
-    if query.isdigit():
-        return float(query)
-    for c in operators.keys():
-        left, operator, right = query.partition(c)
-        if operator in operators:
-            return round(operators[operator](calculator(left), calculator(right)),2)
-
-def WolframAlphaCalculator(input_query: str):
-    wolfram_alpha_appid = "4VPQ6Q-V2G3LHP862" #"4VPQ6Q-G5ERGK8RWP"
-    wolfram_client = wolframalpha.Client(wolfram_alpha_appid)
-    try:
-        res = wolfram_client.query(input_query)
-        assumption = next(res.pods).text
-        answer = next(res.results).text
-        # return f"Assumption: {assumption} \nAnswer: {answer}"
-        return answer
-    except Exception as e:
-        return "Error: "+str(e)
+def calculator(query):
+    return sp.sympify(query)
 
 if __name__ == "__main__":
-    query = 'mean(247.0, 253.0, 230.0, 264.0, 254.0, 275.0, 227.0, 258.0, 245.0, 253.0, 242.0, 229.0, 259.0, 253.0)'
-    print(WolframAlphaCalculator(query))
+    query = '3 + 5 * 8 - 9 * 4 - 6 / 1.5'
+    print(calculator(query)) 

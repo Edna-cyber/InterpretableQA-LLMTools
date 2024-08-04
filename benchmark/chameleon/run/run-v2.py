@@ -15,11 +15,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utilities import *
 from model import solver
 
-from tools import finish
+from tools.finish import finish
 from tools.code.python_interpreter import execute as python_interpreter
 from tools.code.forecaster import forecast as forecaster
 from tools.llm.llm_inferencer import llm_inferencer 
-from tools.math.calculator import calculator, WolframAlphaCalculator
+from tools.math.calculator import calculator
 from tools.table.tabtools import table_toolkits
 import datetime
 
@@ -28,7 +28,7 @@ datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
 db = table_toolkits()
 ACTION_LIST = {
-    'Calculate': WolframAlphaCalculator,
+    'Calculate': calculator,
     'LoadDB': db.db_loader, 
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
@@ -183,13 +183,13 @@ tools = [
         "type": "function",
         "function": {
             "name": "Finish",
-            "description": "Terminate the task and return the final answer.",
+            "description": "Terminate the task and return the final answer. You must use Finish as the final module for solving each question.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "variable_values": {
-                        "type": "dictionary",
-                        "description": "A dictionary of variables and their corresponding values.",
+                        "type": "string",
+                        "description": "A string that evaluates to a dictionary of variables and their corresponding values.",
                     },
                     "answer_variable": {
                         "type": "string",
@@ -315,8 +315,8 @@ if __name__ == "__main__":
         gt_cost, llm_cost = 0, 0
         count[question_type] += 1
 
-        # messages = prompt_policy.messages.copy()
-        messages = prompt_policy.messages_formula.copy()
+        messages = prompt_policy.messages.copy()
+        # messages = prompt_policy.messages_formula.copy()
         
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
@@ -355,12 +355,16 @@ if __name__ == "__main__":
                     logs.append(response_with_tools)
                                 
                     function_type = tool_call.function.name
+                    print("function_type", function_type) ###
                     function = ACTION_LIST[function_type]
+                    print("function", function) ###
                     function_arguments = json.loads(tool_call.function.arguments)
+                    print("function_arguments", function_arguments)
                     cost[question_type] += calc_cost(function_type, function_arguments)
                     total_cost += calc_cost(function_type, function_arguments)
                     gt_cost += calc_cost(function_type, function_arguments)
                     function_response = function(**function_arguments)
+                    print("function_response", function_response)
                     
                     if "Cumulative cost" in content:
                         begin_ind = content.rfind("Cumulative")+len("Cumulative cost is ")
@@ -371,8 +375,8 @@ if __name__ == "__main__":
                         "tool_call_id": tool_call.id,
                         "role": "tool",
                         "name": function_type,
-                        "content": function_response,
-                    }
+                        "content": str(function_response),
+                    } ###
                     # print(tool_call_response) 
                     llm_answer = function_response
                     messages.append(tool_call_response)  
@@ -396,7 +400,7 @@ if __name__ == "__main__":
                 logs.append(json.dumps(str(e)))
                 break
         
-        gt_answer = str(example["answer"])
+        gt_answer = example["answer"]
         
         # Calculate performance metric
         if question_type in ["1"]: ###
