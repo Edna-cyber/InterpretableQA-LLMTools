@@ -27,7 +27,7 @@ def average_pendency(start_year, end_year):
     
     return pedencies_sum / total_len
 
-# HUPD Template 2: What were the top {#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
+# HUPD Template 2: What were the top {#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list of {IPCR/CPC categories}. 
 def top_accepted_category(num, category, year):
     df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
     if category=="IPCR categories":
@@ -114,8 +114,8 @@ def author_num(compare,n):
 
 question_id = 1
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
-    while question_id<=1: # 600 
-        question_type = random.randint(1,6) 
+    while question_id<=10: # 600 
+        question_type = random.randint(2,2) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)
@@ -125,18 +125,24 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                                 "What was the typical time span between the submission and approval of patents from {} to {}? Return a float representing the number of days."]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
             answer = average_pendency(start_year, end_year)
+            # use None to signify not adding to the questions / answers
+            if answer:
+                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_id += 1
         elif question_type == 2:
-            # What were the top {#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. 
+            # What were the top {#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list of {IPCR/CPC categories}.
             num = random.randint(2,5)
             category = random.choice(["IPCR categories", "CPC categories"]) 
-            category_to_col = {"IPCR categories": "ipcr_category", "CPC categories": "cpc_category"}
             year = random.randint(2004,2018) 
             question_choice = random.randint(0,1)
             if question_choice==0:
-                question = "What were the top {} {} with the highest percentage of patent acceptance in {}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list. Use the '{}' column.".format(num, category, year, category_to_col[category])
+                question = "What were the top {} {} with the highest percentage of patent acceptance in {}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list of {}.".format(num, category, year, category)
             else:
-                question = "Which {} were among the top {} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category, then return the top categories with the highest approval rates as a list. Use the '{}' column.".format(category, num, year, category_to_col[category])
+                question = "Which {} were among the top {} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category, then return the top categories with the highest approval rates as a list of {}.".format(category, num, year, category)
             answer = top_accepted_category(num, category, year)
+            if answer and len(answer)==num: # deal with some datasets with missing values
+                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_id += 1
         elif question_type == 3:
             # How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
             quarter_map = {1:"1st", 2:"2nd", 3:"3rd", 4:"4th"}
@@ -148,6 +154,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question_phrasings = ["How does the number of patent applications filed in the {} quarter compare proportionally to those filed in the {} quarter in {}?", "What's the ratio of patent applications filed in the {} quarter to those filed in the {} quarter in {}?", "What is the ratio between the number of patent applications filed in the {} quarter and the {} quarter in {}?"]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(quarter_map[quarter_1], quarter_map[quarter_2], year)
             answer = compare_applications(quarter_1, quarter_2, year)
+            if answer:
+                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_id += 1
         elif question_type == 4:
             # What is the title of the patent filed between {start_year} and {end_year} that took the longest time to be published?
             start_year = random.randint(2004,2017) # not include 2018, as most applications are still pending
@@ -155,6 +164,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question_phrasings = ["What is the title of the patent filed between {} and {} that took the longest time to be published?", "What is the title of the patent filed between {} and {} that had the longest publication delay?", "What is the title of the patent filed between {} and {} with the longest time elapsed between filing and publication?"]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
             answer = longest_time(start_year, end_year)
+            if answer:
+                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_id += 1
         elif question_type == 5:
             # Who were the top {#} authors with the most publications at NeurIPS 2023?
             num = random.randint(2,10)
@@ -165,6 +177,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 insert_pos = question.find("publications")+len("publications")
                 question = question[:insert_pos]+" containing 'Large Language Models' in the title"+question[insert_pos:]
             answer = top_authors(num, llm_keyword)
+            if answer:
+                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_id += 1
         else:
             # What proportion of papers have {compare} {n} authors? Return a value between 0 and 1.
             compare = random.choice(["more than", "fewer than", "exactly", "greater than or equal to", "fewer than or equal to"]) 
@@ -172,8 +187,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question_phrasings = ["What proportion of papers have {} {} authors? Return a value between 0 and 1.", "What percentage of papers have {} {} 5 authors? Return a value between 0 and 1.", "What's the ratio of papers that have {} {} 5 authors? Return a value between 0 and 1."] 
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(compare,n)
             answer = author_num(compare,n)
-        # use None to signify not adding to the questions / answers
-        if answer:
-            writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
-            question_id += 1
+            if answer:
+                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_id += 1
 
