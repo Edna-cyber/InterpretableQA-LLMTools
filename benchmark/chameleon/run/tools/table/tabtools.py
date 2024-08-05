@@ -103,18 +103,24 @@ class table_toolkits():
     def __init__(self):
         self.data = None
         self.dataset_dict = None
-        self.train_duration = None
-        self.test_duration = None
         self.train_groundtruth = None # pandas series
         self.test_groundtruth = None # pandas series
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
+    
+    def dataframe_to_json_in_chunks(self, df, chunk_size):
+        chunks = [df.iloc[i:i + chunk_size] for i in range(0, df.shape[0], chunk_size)]
+        json_chunks = []
+        for chunk in chunks:
+            json_chunk = chunk.to_dict(orient='records')
+            json_chunks.append(json_chunk)
+        return json_chunks
 
     def db_loader(self, target_db, train_duration="None", test_duration="None", outcome_col="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
         """
         Loads the needed dataframe(s).
-        """
-        self.train_duration = train_duration
-        self.test_duration = test_duration
+        """     
+        if test_duration=="None" and outcome_col!="None":
+            return "Error: outcome_col needs to be set to None when test_duration is None."
         
         def extract_start_end(duration):
             if duration=="None":
@@ -125,7 +131,7 @@ class table_toolkits():
             return start, end
         train_start, train_end = extract_start_end(train_duration)
         test_start, test_end = extract_start_end(test_duration)
-        
+    
         def preprocess_hupd(start_year, end_year):
             if not start_year and not end_year:
                 return None
@@ -145,7 +151,7 @@ class table_toolkits():
                 df_raw.drop(columns=["main_ipcr_label", "main_cpc_label"], inplace=True)
                 column_names = ["'"+x+"'" for x in df_raw.columns.tolist()]
                 column_names_str = ', '.join(column_names)
-                if outcome_col not in df_raw.columns:
+                if outcome_col not in df_raw.columns and outcome_col!="None":
                     return "Error: The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
                 # remove rows where the predicted target is NA
                 if outcome_col!="None":
@@ -165,10 +171,10 @@ class table_toolkits():
             df = pd.read_csv(file_path)
             # print(df.dtypes)
             df = df.iloc[start_row:end_row+1]
-            return df            
-            
+            return df   
+           
         if target_db=="hupd":
-            if train_end>=2013:
+            if train_end>=2013 and test_duration!="None":
                 return "Error: The end year of the training dataframe cannot be later than year 2012."
             train_df = preprocess_hupd(train_start, train_end)
             test_df = preprocess_hupd(test_start, test_end)   
@@ -183,7 +189,7 @@ class table_toolkits():
         # outcome_col not in columns error
         if isinstance(train_df, str) and "Error:" in train_df:
             return train_df
-        if isinstance(test_df, str) and "Error:" in test_df:
+        if test_df is not None and isinstance(test_df, str) and "Error:" in test_df:
             return test_df
         
         if test_df is None:
@@ -219,10 +225,21 @@ class table_toolkits():
                         continue
                     elif var_name=="global_var":
                         for global_var_name, global_var_value in var_value.items(): 
-                            if global_var_name not in ["df", "__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, types.ModuleType) and not isinstance(global_var_value, types.FunctionType) and not isinstance(global_var_value, type):
-                                variable_values[global_var_name] = global_var_value
-                    elif not var_name.startswith('__') and not isinstance(var_value, types.ModuleType) and not isinstance(var_value, types.FunctionType):
-                        variable_values[var_name] = var_value
+                            excluded_types = (types.ModuleType, types.FunctionType, type)
+                            if global_var_name not in ["df", "__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
+                                pd_types = (pd.DataFrame, pd.Series)
+                                if isinstance(global_var_value, pd_types):
+                                    if isinstance(global_var_value, pd.Series):
+                                        global_var_value = global_var_value.to_frame()
+                                    variable_values[global_var_name] = self.dataframe_to_json_in_chunks(global_var_value, 1000) ### iterate through?
+                                    # variable_values[global_var_name] = global_var_value.head().to_dict()
+                                else:
+                                    variable_values[global_var_name] = global_var_value
+                    elif not var_name.startswith('__') and not isinstance(var_value, excluded_types):
+                        if isinstance(var_value, pd_types):
+                            variable_values[var_name] = var_value.head().to_dict()
+                        else:
+                            variable_values[var_name] = var_value
                 return variable_values
             except KeyError as e:
                 column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
@@ -231,7 +248,6 @@ class table_toolkits():
             except NameError as e:
                 if "'pd'" in str(e):
                     return "Error: "+str(e)+"\nImport the pandas library using the pandas_interpreter."
-                return "Error: "+str(e)+"\nMake sure the dataframe is loaded with LoadDB first. If so, the dataframe is stored in variable df."
             except Exception as e:
                 return "Error: "+str(e)
             # other exceptions
@@ -595,11 +611,9 @@ if __name__ == "__main__":
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
     # print(db.pandas_interpreter(pandas_code))
 
-    print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
-    db.textual_classifier('cnn', 'full_description', 'decision')
+    # print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
+    # db.textual_classifier('cnn', 'full_description', 'decision')
     # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Oral'))
     # db.textual_classifier('cnn', 'Abstract', 'Oral') 
-    # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision
-    
-    
+    # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
     
