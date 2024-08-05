@@ -106,14 +106,6 @@ class table_toolkits():
         self.train_groundtruth = None # pandas series
         self.test_groundtruth = None # pandas series
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
-    
-    def dataframe_to_json_in_chunks(self, df, chunk_size):
-        chunks = [df.iloc[i:i + chunk_size] for i in range(0, df.shape[0], chunk_size)]
-        json_chunks = []
-        for chunk in chunks:
-            json_chunk = chunk.to_dict(orient='records')
-            json_chunks.append(json_chunk)
-        return json_chunks
 
     def db_loader(self, target_db, train_duration="None", test_duration="None", outcome_col="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
         """
@@ -229,10 +221,7 @@ class table_toolkits():
                             if global_var_name not in ["df", "__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
                                 pd_types = (pd.DataFrame, pd.Series)
                                 if isinstance(global_var_value, pd_types):
-                                    if isinstance(global_var_value, pd.Series):
-                                        global_var_value = global_var_value.to_frame()
-                                    variable_values[global_var_name] = self.dataframe_to_json_in_chunks(global_var_value, 1000) ### iterate through?
-                                    # variable_values[global_var_name] = global_var_value.head().to_dict()
+                                    variable_values[global_var_name] = global_var_value.head().to_dict()
                                 else:
                                     variable_values[global_var_name] = global_var_value
                     elif not var_name.startswith('__') and not isinstance(var_value, excluded_types):

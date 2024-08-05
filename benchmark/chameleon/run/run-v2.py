@@ -194,6 +194,10 @@ tools = [
                     "answer_variable": {
                         "type": "string",
                         "description": "A key among the variable_values dictionary that corresponds to the variable which best addresses the question.",
+                    },
+                    "answer_type": {
+                        "type": "string",
+                        "description": "A string specifying the required type for the final answer. The only choices are list, float, integer, and string."
                     }
                 },
                 "required": ["variable_values", "answer_variable"], 
@@ -299,8 +303,8 @@ if __name__ == "__main__":
     cache_file = f"{result_root}/{args.label}_{args.test_split}_cache.jsonl"
     cache = []
 
-    total_count, total_correct, total_cost, total_reliability, reliability_MSE = 0, 0, 0, 0, 0
-    count, correct, cost, cost_original = defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(list)
+    total_count, total_cost = 0, 0
+    count, performance, cost, cost_original = defaultdict(int), {}, defaultdict(int), defaultdict(list)
     pids = solver.pids
     
     for pid in tqdm(pids): # pids
@@ -355,18 +359,14 @@ if __name__ == "__main__":
                     logs.append(response_with_tools)
                                 
                     function_type = tool_call.function.name
-                    print("function_type", function_type) ###
                     function = ACTION_LIST[function_type]
-                    print("function", function) ###
                     function_arguments = json.loads(tool_call.function.arguments)
-                    print("function_arguments", function_arguments)
                     cost[question_type] += calc_cost(function_type, function_arguments)
                     total_cost += calc_cost(function_type, function_arguments)
                     gt_cost += calc_cost(function_type, function_arguments)
                     function_response = function(**function_arguments)
-                    print("function_response", function_response)
                     
-                    if "Cumulative cost" in content:
+                    if content is not None and "Cumulative cost" in content:
                         begin_ind = content.rfind("Cumulative")+len("Cumulative cost is ")
                         end_ind = content.rfind(".")
                         llm_cost = int(content[begin_ind:end_ind])
@@ -375,7 +375,7 @@ if __name__ == "__main__":
                         "tool_call_id": tool_call.id,
                         "role": "tool",
                         "name": function_type,
-                        "content": str(function_response),
+                        "content": str(function_response) if function_response is not None else "",
                     } ###
                     # print(tool_call_response) 
                     llm_answer = function_response
@@ -402,24 +402,33 @@ if __name__ == "__main__":
         
         gt_answer = example["answer"]
         
-        # Calculate performance metric
-        if question_type in ["1"]: ###
-            pass
-        elif question_type in ["1"]: ###
-            pass
-        elif question_type in ["1"]: ###
-            pass
+        def is_json_serializable(obj):
+            try:
+                json.dumps(obj)
+                return True
+            except (TypeError, OverflowError):
+                return False
+        if not is_json_serializable(llm_answer):
+            llm_answer = None
+        else:
+            # Calculate performance metric
+            if question_type in ["1"]: # R2
+                if question_type not in performance:
+                    performance[question_type] = (0,[]) 
+                performance[question_type][0] += (llm_answer-gt_answer)**2
+                performance[question_type][1].append(gt_answer)
+            elif question_type in ["2"]: # set intersection
+                if question_type not in performance:
+                    performance[question_type] = 0
+                performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
+            elif question_type in []: # exact match
+                if question_type not in performance:
+                    performance[question_type] = 0
+                performance[question_type] += int(llm_answer==gt_answer)
+            elif question_type in []: # F1
+                pass
         
-        if llm_answer==gt_answer:
-            correct[question_type] += 1
-            total_correct += 1
-        cost_original[question_type].append(gt_cost)
-        if llm_cost==gt_cost:
-            total_reliability += 1
-        # print("gt_cost", gt_cost) 
-        # print("llm_cost", llm_cost) 
-        reliability_MSE += (llm_cost-gt_cost)**2
-        
+        cost_original[question_type].append(gt_cost) 
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
@@ -434,23 +443,24 @@ if __name__ == "__main__":
         for row in cache:
             writer.write(row)
 
-    acc = {}
-    for key in count:
-        if key not in correct:
-            acc[key] = "0%"
-        else:
-            acc[key] = format(correct[key] / count[key] * 100,".2f")+"%"
+    for key in performance.keys():
+        if key in ["1"]: ###
+            actual_mean = sum(performance[key][1]) / count[key]
+            sstot = sum((x-actual_mean)**2 for x in performance[key][1])
+            performance[key] = 1 - performance[key][0]/sstot
+        elif key in ["2"]: ###
+            performance[key] = performance[key] / count[key]
+        elif key in []: ###
+            pass
+    for key in cost.keys():
         cost[key] = cost[key] / count[key]
-    acc = dict(sorted(acc.items()))
+    performance = dict(sorted(performance.items())) # between 0 and 1
     cost = dict(sorted(cost.items()))
     cost_original = dict(sorted(cost_original.items()))
     count = dict(sorted(count.items()))
-    agg_acc = format(total_correct / total_count * 100, ".2f")+"%"
     agg_cost = round(total_cost / total_count, 2)
-    agg_reliability = format(total_reliability / total_count * 100, ".2f")+"%"
-    reliability_MSE = round(reliability_MSE / total_count, 2)
-        
+    
     # save the result
-    result = {'acc': acc, 'agg_acc': agg_acc, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'agg_reliability': agg_reliability, 'reliability_MSE': reliability_MSE, 'count': count, 'total_count': total_count, 'args': vars(args)}
+    result = {'performance': performance, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'count': count, 'total_count': total_count, 'args': vars(args)}
     with open(result_file, 'w') as f:
         json.dump(result, f, indent=4, separators=(',', ': '))

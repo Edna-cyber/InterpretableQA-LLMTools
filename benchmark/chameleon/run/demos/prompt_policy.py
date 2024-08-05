@@ -45,14 +45,14 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'ans': 4181}, ans) Cumulative Cost is 4.""",
+        'content': """To execute: Finish({'ans': 4181}, ans, integer) Cumulative Cost is 4.""",
         'tool_calls': [
             {
                 'id': 'call_1',
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'ans': 4181}", "answer_variable": "ans"
+                        "variable_values": "{'ans': 4181}", "answer_variable": "ans", "answer_type": "integer"
                     })
                 },
                 'type': 'function'
@@ -119,14 +119,14 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'month':12}, month). Cumulative cost is 7.""",
+        'content': """To execute: Finish({'month':12}, month, integer). Cumulative cost is 7.""",
         'tool_calls': [
             {
                 'id': 'call_2',
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'month':12}", "answer_variable": "month"
+                        "variable_values": "{'month':12}", "answer_variable": "month", "answer_type": "integer"
                     })
                 },
                 'type': 'function'
@@ -193,14 +193,14 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions). Cumulative cost is 7.""",
+        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions, list). Cumulative cost is 7.""",
         'tool_calls': [
             {
                 'id': 'call_2',
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']}", "answer_variable": "predictions"
+                        "variable_values": "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']}", "answer_variable": "predictions", "answer_type": "list"
                     })
                 },
                 'type': 'function'
@@ -318,14 +318,14 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'ans': 4181}, ans) Cumulative Cost is 4.""",
+        'content': """To execute: Finish({'ans': 4181}, ans, integer) Cumulative Cost is 4.""",
         'tool_calls': [
             {
                 'id': 'call_1',
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'ans': 4181}", "answer_variable": "ans"
+                        "variable_values": "{'ans': 4181}", "answer_variable": "ans", "answer_type": "integer"
                     })
                 },
                 'type': 'function'
@@ -401,14 +401,14 @@ To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'month':12}, month). Cumulative cost is 7.""",
+        'content': """To execute: Finish({'month':12}, month, integer). Cumulative cost is 7.""",
         'tool_calls': [
             {
                 'id': 'call_2',
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'month':12}", "answer_variable": "month"
+                        "variable_values": "{'month':12}", "answer_variable": "month", "answer_type":"integer"
                     })
                 },
                 'type': 'function'
@@ -488,14 +488,14 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative c
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions). Cumulative cost is 7.""",
+        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions, list). Cumulative cost is 7.""",
         'tool_calls': [
             {
                 'id': 'call_2',
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']}", "answer_variable": "predictions"
+                        "variable_values": "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']}", "answer_variable": "predictions", "answer_type": "list"
                     })
                 },
                 'type': 'function'

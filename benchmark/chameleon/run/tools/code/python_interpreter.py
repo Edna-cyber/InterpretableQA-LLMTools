@@ -1,4 +1,5 @@
 import types
+import pandas as pd
 
 def execute(python_code):
     """
@@ -8,8 +9,13 @@ def execute(python_code):
         exec(python_code)
         variable_values = {}
         for var_name, var_value in locals().items(): 
-            if not var_name.startswith('__') and var_name not in ["python_code","variable_values"] and not isinstance(var_value, types.ModuleType) and not isinstance(var_value, types.FunctionType):
-                variable_values[var_name] = var_value
+            excluded_types = (types.ModuleType, types.FunctionType)
+            if not var_name.startswith('__') and var_name not in ["python_code","variable_values"] and not isinstance(var_value, excluded_types):
+                pd_types = (pd.DataFrame, pd.Series)
+                if isinstance(var_value, pd_types):
+                    variable_values[var_name] = var_value.head().to_dict()
+                else:
+                    variable_values[var_name] = var_value
         return variable_values
     except Exception as e:
         if "'df'" in str(e):
