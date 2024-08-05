@@ -4,9 +4,10 @@ output: the answer of the mathematical formula
 '''
 import sympy as sp
 
-def calculator(query):
-    return {"calculator result": sp.sympify(query)}
+def calculator(input_query):
+    expr = sp.sympify(input_query)
+    return {"calculator result": expr.evalf()}
 
 if __name__ == "__main__":
-    query = '3 + 5 * 8 - 9 * 4 - 6 / 1.5'
-    print(calculator(query)) 
+    input_query = '3 + 5 * (8 - 9) * 4 - 6 / 20'
+    print(calculator(input_query))
