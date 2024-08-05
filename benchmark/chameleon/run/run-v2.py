@@ -361,15 +361,21 @@ if __name__ == "__main__":
                     function_type = tool_call.function.name
                     function = ACTION_LIST[function_type]
                     function_arguments = json.loads(tool_call.function.arguments)
+                    # print("function_type", function_type) ###
+                    # print("function_arguments", function_arguments) ###
                     cost[question_type] += calc_cost(function_type, function_arguments)
                     total_cost += calc_cost(function_type, function_arguments)
                     gt_cost += calc_cost(function_type, function_arguments)
                     function_response = function(**function_arguments)
                     
+                    # print("1") ###
+                    
                     if content is not None and "Cumulative cost" in content:
                         begin_ind = content.rfind("Cumulative")+len("Cumulative cost is ")
                         end_ind = content.rfind(".")
                         llm_cost = int(content[begin_ind:end_ind])
+                    
+                    # print("2") ###
                     
                     tool_call_response = {
                         "tool_call_id": tool_call.id,
@@ -382,6 +388,7 @@ if __name__ == "__main__":
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
                     iterations += 1
+                    # print("3") ###
                 else:
                     response_without_tools = {
                         "role": choice.message.role,
@@ -412,19 +419,28 @@ if __name__ == "__main__":
             llm_answer = None
         else:
             # Calculate performance metric
-            if question_type in ["1"]: # R2
+            if question_type in ["1", "3"]: # R2
                 if question_type not in performance:
-                    performance[question_type] = (0,[]) 
-                performance[question_type][0] += (llm_answer-gt_answer)**2
-                performance[question_type][1].append(gt_answer)
+                    performance[question_type] = [0,[]]
+                try:
+                    performance[question_type][0] += (llm_answer-gt_answer)**2
+                    performance[question_type][1].append(gt_answer)
+                except:
+                    continue
             elif question_type in ["2"]: # set intersection
                 if question_type not in performance:
                     performance[question_type] = 0
-                performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
+                try:
+                    performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
+                except:
+                    continue
             elif question_type in []: # exact match
                 if question_type not in performance:
                     performance[question_type] = 0
-                performance[question_type] += int(llm_answer==gt_answer)
+                try:
+                    performance[question_type] += int(llm_answer==gt_answer)
+                except:
+                    continue
             elif question_type in []: # F1
                 pass
         
@@ -444,10 +460,15 @@ if __name__ == "__main__":
             writer.write(row)
 
     for key in performance.keys():
-        if key in ["1"]: ###
-            actual_mean = sum(performance[key][1]) / count[key]
+        if key in ["1","3"]: ###
+            print("before", performance[key])
+            actual_mean = sum(performance[key][1]) / len(performance[key][1])
+            print("actual_mean", actual_mean)
             sstot = sum((x-actual_mean)**2 for x in performance[key][1])
+            print("sstot", sstot)
+            print("performance[key][0]", performance[key][0])
             performance[key] = 1 - performance[key][0]/sstot
+            print("after", performance[key])
         elif key in ["2"]: ###
             performance[key] = performance[key] / count[key]
         elif key in []: ###

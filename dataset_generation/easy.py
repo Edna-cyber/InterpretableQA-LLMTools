@@ -42,24 +42,15 @@ def top_accepted_category(num, category, year):
     top_n = top_categories.index.tolist()
     return top_n
 
-# HUPD Template 3: How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
-def compare_applications(quarter_1, quarter_2, year):
-    df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
-    def get_quarter(dt):
-        month = dt.month
-        if 1 <= month <= 3:
-            return 1
-        elif 4 <= month <= 6:
-            return 2
-        elif 7 <= month <= 9:
-            return 3
-        elif 10 <= month <= 12:
-            return 4
-    df['filing_date'] = pd.to_datetime(df['filing_date'])
-    df['quarter'] = df['filing_date'].apply(get_quarter)
-    quarter_counts = df['quarter'].value_counts()
-    del df
-    return quarter_counts.get(quarter_1, 0) / quarter_counts.get(quarter_2, 0)
+# HUPD Template 3: # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
+def compare_applications_year(year1, year2):
+    df1 = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year1))))
+    len_year1 = len(df1)
+    del df1
+    df2 = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year2))))
+    len_year2 = len(df2)
+    del df2
+    return len_year1 / len_year2
 
 # HUPD Template 4: What is the title of the patent filed between {start_year} and {end_year} that took the longest time to be published?
 def longest_time(start_year, end_year):
@@ -115,7 +106,7 @@ def author_num(compare,n):
 question_id = 1
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
     while question_id<=10: # 600 
-        question_type = random.randint(2,2) 
+        question_type = random.randint(3,3) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)
@@ -144,16 +135,13 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_id += 1
         elif question_type == 3:
-            # How does the number of patent applications filed in the {quarter1} quarter compare proportionally to those filed in the {quater2} quarter in {year}?
-            quarter_map = {1:"1st", 2:"2nd", 3:"3rd", 4:"4th"}
-            quarter_1 = random.randint(1,4)
-            quarter_2 = random.randint(1,4)
-            while quarter_2==quarter_1:
-                quarter_2 = random.randint(1,4)
-            year = random.randint(2004,2017)
-            question_phrasings = ["How does the number of patent applications filed in the {} quarter compare proportionally to those filed in the {} quarter in {}?", "What's the ratio of patent applications filed in the {} quarter to those filed in the {} quarter in {}?", "What is the ratio between the number of patent applications filed in the {} quarter and the {} quarter in {}?"]
-            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(quarter_map[quarter_1], quarter_map[quarter_2], year)
-            answer = compare_applications(quarter_1, quarter_2, year)
+            # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
+            year_1 = random.randint(2004,2018)
+            year_2 = random.randint(2004,2018)
+            while year_2==year_1:
+                year_2 = random.randint(2004,2018)
+            question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}?".format(year_1, year_2)
+            answer = compare_applications_year(year_1, year_2)
             if answer:
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_id += 1

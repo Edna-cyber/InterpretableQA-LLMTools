@@ -262,7 +262,7 @@ Interpretability Cost Formulas:
         - If more than 5 packages: 2
     - Formula: (Cost based on number of lines) * (Cost based on number of packages)
 
-5. Classifier: Cost is based on the model name:
+5. TextualClassifier: Cost is based on the model name:
     - If model name is "logistic_regression": 7
     - If model name is "distilbert-base-uncased": 10
 
