@@ -98,7 +98,7 @@ def top_authors(num, llm_keyword):
 def author_num(compare,n):
     df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv")) 
     total_papers = len(df)
-    df["author_num"] = df["Authors"].str.split("").apply(len)
+    df["author_num"] = df["Authors"].str.split(' · ').apply(len)
     if compare=="more than":
         papers = len(df[df["author_num"]>n])
     elif compare=="fewer than":
@@ -115,7 +115,7 @@ def author_num(compare,n):
 question_id = 1
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
     while question_id<=10: # 600 
-        question_type = random.randint(5,5) 
+        question_type = random.randint(6,6) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)
@@ -181,7 +181,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             # What proportion of papers have {compare} {n} authors? Return a value between 0 and 1.
             compare = random.choice(["more than", "fewer than", "exactly", "greater than or equal to", "fewer than or equal to"]) 
             n = random.randint(2,10)
-            question_phrasings = ["What proportion of papers have {} {} authors? Return a value between 0 and 1.", "What percentage of papers have {} {} 5 authors? Return a value between 0 and 1.", "What's the ratio of papers that have {} {} 5 authors? Return a value between 0 and 1."] 
+            question_phrasings = ["What proportion of papers have {} {} authors? Return a value between 0 and 1.", "What percentage of papers have {} {} authors? Return a value between 0 and 1.", "What's the ratio of papers that have {} {} authors? Return a value between 0 and 1."] 
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(compare,n)
             answer = author_num(compare,n)
             if answer:

@@ -416,7 +416,7 @@ if __name__ == "__main__":
             errors[question_type] += 1
         else:
             # Calculate performance metric
-            if question_type in ["1", "3"]: # R2 -> threshold correct / incorrect
+            if question_type in ["1", "3", "6"]: # R2 -> threshold correct / incorrect
                 # if question_type not in performance:
                 #     performance[question_type] = [0,[]]
                 # try:
@@ -465,7 +465,7 @@ if __name__ == "__main__":
             actual_mean = sum(performance[key][1]) / len(performance[key][1])
             sstot = sum((x-actual_mean)**2 for x in performance[key][1])
             performance[key] = 1 - performance[key][0]/sstot
-        elif key in ["1","2","3","4","5"]: 
+        elif key in ["1","2","3","4","5","6"]: 
             performance[key] = performance[key] / (count[key]-errors[key])
         elif key in []: 
             pass
