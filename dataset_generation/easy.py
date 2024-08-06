@@ -77,14 +77,13 @@ def longest_time(start_year, end_year):
     del df  
     return sorted_df.at[0,"title"]
 
-# NeurIPS Template 1: Who were the top {#} authors with the most publications at NeurIPS 2023?
+# NeurIPS Template 1: Who were the top {#} authors with the most publications {containing 'Large Language Models' in the title} at NeurIPS 2023?
 def top_authors(num, llm_keyword):
     df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
     if llm_keyword:
         df["keyword"] = df["Title"].str.contains("Large Language Models") 
         df = df[df["keyword"]==True]
-    df['Authors'] = df['Authors'].apply(ast.literal_eval)
-    # df['Authors'] = df['Authors'].str.split(' · ')
+    df['Authors'] = df['Authors'].str.split(' · ')
     exploded_df = df.explode('Authors')
     del df
     author_counts = exploded_df['Authors'].value_counts()
@@ -116,7 +115,7 @@ def author_num(compare,n):
 question_id = 1
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
     while question_id<=10: # 600 
-        question_type = random.randint(4,4) 
+        question_type = random.randint(5,5) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)

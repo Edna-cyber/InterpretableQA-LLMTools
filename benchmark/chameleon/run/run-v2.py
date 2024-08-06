@@ -200,7 +200,7 @@ tools = [
                         "description": "A string specifying the required type for the final answer. The only choices are list, float, integer, and string."
                     }
                 },
-                "required": ["variable_values", "answer_variable"], 
+                "required": ["variable_values", "answer_variable", "answer_type"], 
             },
         },
     }
@@ -428,7 +428,7 @@ if __name__ == "__main__":
                     performance[question_type] += int(abs(llm_answer-gt_answer)<=0.005*gt_answer)
                 except:
                     errors[question_type] += 1
-            elif question_type in ["2"]: # set intersection
+            elif question_type in ["2","5"]: # set intersection
                 if question_type not in performance:
                     performance[question_type] = 0
                 try:
@@ -465,7 +465,7 @@ if __name__ == "__main__":
             actual_mean = sum(performance[key][1]) / len(performance[key][1])
             sstot = sum((x-actual_mean)**2 for x in performance[key][1])
             performance[key] = 1 - performance[key][0]/sstot
-        elif key in ["1","2","3","4"]: 
+        elif key in ["1","2","3","4","5"]: 
             performance[key] = performance[key] / (count[key]-errors[key])
         elif key in []: 
             pass

@@ -145,18 +145,18 @@ ans = solution(19)
     },
     {
         'role': 'user',
-        'content': 'Train a model using patent applications from 2004 to 2006, and then use it to predict the decisions for patent applications filed in 2007.'
+        'content': 'Train a model using the first 2000 rows of NeurIPS papers dataset and then use it to predict the poster sessions for the remaining papers in the dataset.'
     },
     {
         'role': 'assistant',
-        'content': """To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision)""",
+        'content': """To execute: LoadDB(neurips, 0-2000, 2001-3585, Poster Session)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2004-2006", "test_duration": "2007-2007", "outcome_col": "decision"
+                        "target_db": "neurips", "train_duration": "0-2000", "test_duration": "2001-3585", "outcome_col": "Poster Session"
                     })
                 },
                 'type': 'function'
@@ -167,18 +167,18 @@ ans = solution(19)
         'tool_call_id': 'call_0',
         'role': 'tool',
         'name': 'LoadDB',
-        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 18011}) test: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 12008})})"
+        'content': "We have successfully loaded the neurips dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', 'Poster Session', '__index_level_0__'],num_rows: 1981}) test: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', '__index_level_0__'],num_rows: 1571})})"
     },
     {
         'role': 'assistant',
-        'content': """To execute: TextualClassifier(logistic_regression, abstract, decision)""",
+        'content': """To execute: TextualClassifier(logistic_regression, Abstract, Poster Session)""",
         'tool_calls': [
             {
                 'id': 'call_1',
                 'function': {
                     'name': 'TextualClassifier',
                     'arguments': json.dumps({
-                        "model_name": "logistic_regression", "section": "abstract", "target": "decision"
+                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session"
                     })
                 },
                 'type': 'function'
@@ -189,18 +189,18 @@ ans = solution(19)
         'tool_call_id': 'call_1',
         'role': 'tool',
         'name': 'Classifier',
-        'content': "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}"
+        'content': "{'predictions': [4.0, 2.0, 6.0, 1.0, 4.0,..., 2.0, 1.0, 1.0, 1.0, 3.0]}"
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions, list)""",
+        'content': """To execute: Finish({'predictions': [4.0, 2.0, 6.0, 1.0, 4.0,..., 2.0, 1.0, 1.0, 1.0, 3.0]}, predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_2',
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']}", "answer_variable": "predictions", "answer_type": "list"
+                        "variable_values": "{'predictions': [4.0, 2.0, 6.0, 1.0, 4.0, 2.0, 1.0, 1.0, 1.0, 3.0]}", "answer_variable": "predictions", "answer_type": "list"
                     })
                 },
                 'type': 'function'
@@ -211,11 +211,11 @@ ans = solution(19)
         'tool_call_id': 'call_2',
         'role': 'tool',
         'name': 'Finish',
-        'content': "['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']"
+        'content': "[4.0, 2.0, 6.0, 1.0, 4.0, 2.0, 1.0, 1.0, 1.0, 3.0]"
     },
     {
         'role': 'assistant',
-        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']."
+        'content': "The predicted poster sessions for the remaining papers in the dataset are: 4.0, 2.0, 6.0, 1.0, 4.0, 2.0, 1.0, 1.0, 1.0, and 3.0."
     }
 ]
 
@@ -264,7 +264,9 @@ Interpretability Cost Formulas:
 
 5. TextualClassifier: Cost is based on the model name:
     - If model name is "logistic_regression": 7
-    - If model name is "distilbert-base-uncased": 10
+    - If model name is "naive_bayes": 8
+    - If model name is "cnn": 15
+    - If model name is "distilbert-base-uncased": 20
 
 Below are some examples that map the problem to the tools.
     """
@@ -427,31 +429,31 @@ To execute: LoadDB(hupd, 2016-2016, None, None)""",
     },
      {
         'role': 'user',
-        'content': 'Train a model using patent applications from 2004 to 2006, and then use it to predict the decisions for patent applications filed in 2007.'
+        'content': 'Train a model using the first 2000 rows of NeurIPS papers dataset and then use it to predict the poster sessions for the remaining papers in the dataset.'
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(logistic_regression, abstract, decision)
-Modules2: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(distilbert-base-uncased, title, decision)
-Modules3: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(naive_bayes, summary, decision)
-Modules4: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(cnn, full_description, decision)
+        'content': """Modules1: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(logistic_regression, Abstract, Poster Session)
+Modules2: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(distilbert-base-uncased, Abstract, Poster Session)
+Modules3: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(naive_bayes, Title, Poster Session)
+Modules4: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(cnn, Topic, Poster Session)
 
-Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(hupd, 2004-2006, 2007-2007, decision): 3, Classifier(logistic_regression, abstract, decision): 7 (model_name is "logistic_regression"). Summing these costs: 3+7=10.
-Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2004-2006, 2007-2007, decision): 3, Classifier(distilbert-base-uncased, title, decision): 10 (model_name is "logistic_regression"). Summing these costs: 3+10=13.
-Total interpretability cost of Modules3 is calculated as follows: LoadDB(hupd, 2004-2006, 2007-2007, decision): 3, Classifier(naive_bayes, summary, decision): 
-Total interpretability cost of Modules4 is calculated as follows: LoadDB(hupd, 2004-2006, 2007-2007, decision): 3, Classifier(cnn, full_description, decision):
-Therefore, Modules1 is selected because it has a lower total interpretability cost of 10 compared to 13 for Modules2, for Modules 3, and for Modules 4. ###
+Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(logistic_regression, Abstract, Poster Session): 7 (model_name is "logistic_regression"). Summing these costs: 3+7=10.
+Total interpretability cost of Modules2 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(distilbert-base-uncased, Abstract, Poster Session): 20 (model_name is "distilbert-base-uncased"). Summing these costs: 3+20=23.
+Total interpretability cost of Modules3 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(naive_bayes, Title, Poster Session): 8 (model_name is "naive_bayes"). Summing these costs: 3+8=11.
+Total interpretability cost of Modules4 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(cnn, Topic, Poster Session): 15 (model_name is "cnn"). Summing these costs: 3+15=18.
+Therefore, Modules1 is selected because it has the lowest total interpretability cost of 10 compared to 23 for Modules2, 11 for Modules 3, and 18 for Modules 4. ###
 
-Best Modules: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(logistic_regression, abstract, decision)
+Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(logistic_regression, Abstract, Poster Session)
 
-To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision)""",
+To execute: LoadDB(neurips, 0-2000, 2001-3585, Poster Session)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2004-2006", "test_duration": "2007-2007", "outcome_col": "decision"
+                        "target_db": "neurips", "train_duration": "0-2000", "test_duration": "2001-3585", "outcome_col": "Poster Session"
                     })
                 },
                 'type': 'function'
@@ -462,18 +464,18 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision)""",
         'tool_call_id': 'call_0',
         'role': 'tool',
         'name': 'LoadDB',
-        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 18011}) test: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category', '__index_level_0__'], num_rows: 12008})})"
+        'content': "We have successfully loaded the neurips dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', 'Poster Session', '__index_level_0__'],num_rows: 1981}) test: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', '__index_level_0__'],num_rows: 1571})})"
     },
     {
         'role': 'assistant',
-        'content': """To execute: TextualClassifier(logistic_regression, abstract, decision)""",
+        'content': """To execute: TextualClassifier(logistic_regression, Abstract, Poster Session)""",
         'tool_calls': [
             {
                 'id': 'call_1',
                 'function': {
                     'name': 'TextualClassifier',
                     'arguments': json.dumps({
-                        "model_name": "logistic_regression", "section": "abstract", "target": "decision"
+                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session"
                     })
                 },
                 'type': 'function'
@@ -484,18 +486,18 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision)""",
         'tool_call_id': 'call_1',
         'role': 'tool',
         'name': 'Classifier',
-        'content': "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}"
+        'content': "{'predictions': [4.0, 2.0, 6.0, 1.0, 4.0,..., 2.0, 1.0, 1.0, 1.0, 3.0]}"
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions, list)""",
+        'content': """To execute: Finish({'predictions': [4.0, 2.0, 6.0, 1.0, 4.0,..., 2.0, 1.0, 1.0, 1.0, 3.0]}, predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_2',
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']}", "answer_variable": "predictions", "answer_type": "list"
+                        "variable_values": "{'predictions': [4.0, 2.0, 6.0, 1.0, 4.0, 2.0, 1.0, 1.0, 1.0, 3.0]}", "answer_variable": "predictions", "answer_type": "list"
                     })
                 },
                 'type': 'function'
@@ -506,11 +508,11 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision)""",
         'tool_call_id': 'call_2',
         'role': 'tool',
         'name': 'Finish',
-        'content': "['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']"
+        'content': "[4.0, 2.0, 6.0, 1.0, 4.0, 2.0, 1.0, 1.0, 1.0, 3.0]"
     },
     {
         'role': 'assistant',
-        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']."
+        'content': "The predicted poster sessions for the remaining papers in the dataset are: 4.0, 2.0, 6.0, 1.0, 4.0, 2.0, 1.0, 1.0, 1.0, and 3.0."
     }
 ]
 
