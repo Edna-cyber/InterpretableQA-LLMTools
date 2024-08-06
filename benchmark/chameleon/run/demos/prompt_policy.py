@@ -11,7 +11,7 @@ messages = [
     },
     {
         'role': 'assistant',
-        'content': """To execute: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n) Cost is 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Cumulative cost is 4.""",
+        'content': """To execute: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)""", 
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -45,7 +45,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'ans': 4181}, ans, integer) Cumulative Cost is 4.""",
+        'content': """To execute: Finish({'ans': 4181}, ans, integer)""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -67,7 +67,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': 'The 20th Fibonacci number is 4181. Cumulative cost is 4.'
+        'content': 'The 20th Fibonacci number is 4181.'
     },
     {
         'role': 'user',
@@ -75,7 +75,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.""",
+        'content': """To execute: LoadDB(hupd, 2016-2016, None, None)""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -97,7 +97,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]) Cost is 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4. Cumulative cost is 7.""",
+        'content': """To execute: PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0])""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -119,7 +119,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'month':12}, month, integer). Cumulative cost is 7.""",
+        'content': """To execute: Finish({'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_2',
@@ -141,7 +141,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': 'The month with the highest number of patent applications in 2016 was December. Cumulative cost is 7.'
+        'content': 'The month with the highest number of patent applications in 2016 was December.'
     },
     {
         'role': 'user',
@@ -149,7 +149,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative cost is 3.""",
+        'content': """To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision)""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -171,7 +171,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: TextualClassifier(logistic_regression, abstract, decision) Cost is 7 (model_name is "logistic_regression"). Cumulative cost is 10.""",
+        'content': """To execute: TextualClassifier(logistic_regression, abstract, decision)""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -193,7 +193,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions, list). Cumulative cost is 7.""",
+        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_2',
@@ -215,7 +215,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']. Cumulative cost is 10."
+        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']."
     }
 ]
 
@@ -230,7 +230,7 @@ You need to act as a policy model that determines the sequence of tools with the
 
 2. Calculate Interpretability Costs: Calculate the total interpretability cost for each solution. The interpretability cost of each tool in the solution is defined by the formulas below. Tools with lower interpretability costs are preferred over those with higher costs.
 
-3. Execute the solution with a lower total interpretability cost and calculate the cumulative cost at runtime. During each step of execution, add the cost to the cumulative cost. If the result of a tool call contains 'Error: ', do not add this cost to the cumulative cost. The cumulative cost stays the same.
+3. Execute the solution with the lowest total interpretability cost.
 
 Interpretability Cost Formulas:
 
@@ -266,7 +266,7 @@ Interpretability Cost Formulas:
     - If model name is "logistic_regression": 7
     - If model name is "distilbert-base-uncased": 10
 
-Initial Cumulative cost per question is 0. Below are some examples that map the problem to the tools.
+Below are some examples that map the problem to the tools.
     """
     },
     {
@@ -284,7 +284,7 @@ Therefore, Modules2 is selected because it has a lower total interpretability co
 
 Best Modules: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)
 
-To execute: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n) Cost is 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Cumulative cost is 4.""",
+To execute: PythonInterpreter(def solution(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n\nans = solution(19)\n)""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -318,7 +318,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'ans': 4181}, ans, integer) Cumulative Cost is 4.""",
+        'content': """To execute: Finish({'ans': 4181}, ans, integer)""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -340,7 +340,7 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': 'The 20th Fibonacci number is 4181. Cumulative cost is 4.'
+        'content': 'The 20th Fibonacci number is 4181.'
     },
     {
         'role': 'user',
@@ -357,7 +357,7 @@ Therefore, Modules1 is selected because it has a lower total interpretability co
 
 Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0])
 
-To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.""",
+To execute: LoadDB(hupd, 2016-2016, None, None)""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -379,7 +379,7 @@ To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.
     },
     {
         'role': 'assistant',
-        'content': """To execute: PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]) Cost is 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4. Cumulative cost is 7.""",
+        'content': """To execute: PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0])""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -401,7 +401,7 @@ To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'month':12}, month, integer). Cumulative cost is 7.""",
+        'content': """To execute: Finish({'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_2',
@@ -423,7 +423,7 @@ To execute: LoadDB(hupd, 2016-2016, None, None) Cost is 3. Cumulative cost is 3.
     },
     {
         'role': 'assistant',
-        'content': 'The month with the highest number of patent applications in 2016 was December. Cumulative cost is 7.'
+        'content': 'The month with the highest number of patent applications in 2016 was December.'
     },
      {
         'role': 'user',
@@ -444,7 +444,7 @@ Therefore, Modules1 is selected because it has a lower total interpretability co
 
 Best Modules: LoadDB(hupd, 2004-2006, 2007-2007, decision), Classifier(logistic_regression, abstract, decision)
 
-To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative cost is 3.""",
+To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision)""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -466,7 +466,7 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative c
     },
     {
         'role': 'assistant',
-        'content': """To execute: TextualClassifier(logistic_regression, abstract, decision) Cost is 7 (model_name is "logistic_regression"). Cumulative cost is 10.""",
+        'content': """To execute: TextualClassifier(logistic_regression, abstract, decision)""",
         'tool_calls': [
             {
                 'id': 'call_1',
@@ -488,7 +488,7 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative c
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions, list). Cumulative cost is 7.""",
+        'content': """To execute: Finish({'predictions': ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED',...]}, predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_2',
@@ -510,7 +510,7 @@ To execute: LoadDB(hupd, 2004-2006, 2007-2007, decision) Cost is 3. Cumulative c
     },
     {
         'role': 'assistant',
-        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']. Cumulative cost is 10."
+        'content': "The patent applications from 2007 are predicted to receive the following decisions: ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'ACCEPTED']."
     }
 ]
 

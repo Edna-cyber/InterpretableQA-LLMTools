@@ -320,7 +320,7 @@ if __name__ == "__main__":
         example = solver.examples[pid] # get one example 
         user_prompt = example["question"] 
         question_type = example["question_type"]
-        gt_cost, llm_cost = 0, 0
+        per_question_cost = 0
         count[question_type] += 1
 
         messages = prompt_policy.messages.copy() # Change with experiment
@@ -371,16 +371,9 @@ if __name__ == "__main__":
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
                         cost[question_type] += cost_function(function_type, function_arguments)
                         total_cost += cost_function(function_type, function_arguments)
-                        gt_cost += cost_function(function_type, function_arguments)
+                        per_question_cost += cost_function(function_type, function_arguments)
                     
                     # print("1") ###
-                    
-                    if content is not None and "Cumulative cost" in content:
-                        begin_ind = content.rfind("Cumulative")+len("Cumulative cost is ")
-                        end_ind = content.rfind(".")
-                        llm_cost = int(content[begin_ind:end_ind])
-                    
-                    # print("2") ###
                     
                     tool_call_response = {
                         "tool_call_id": tool_call.id,
@@ -399,10 +392,6 @@ if __name__ == "__main__":
                         "role": choice.message.role,
                         "content": content
                     }
-                    if "Cumulative cost" in content:
-                        begin_ind = content.rfind("Cumulative")+len("Cumulative cost is ")
-                        end_ind = content.rfind(".")
-                        llm_cost = int(content[begin_ind:end_ind])
                     messages.append(response_without_tools) 
                     logs.append(response_without_tools)
                     break
@@ -456,7 +445,7 @@ if __name__ == "__main__":
             elif question_type in []: # F1
                 pass
         
-        cost_original[question_type].append(gt_cost) 
+        cost_original[question_type].append(per_question_cost) 
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
