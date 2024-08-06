@@ -426,21 +426,21 @@ if __name__ == "__main__":
                     performance[question_type][0] += (llm_answer-gt_answer)**2
                     performance[question_type][1].append(gt_answer)
                 except:
-                    continue
+                    pass
             elif question_type in ["2"]: # set intersection
                 if question_type not in performance:
                     performance[question_type] = 0
                 try:
                     performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
                 except:
-                    continue
-            elif question_type in []: # exact match
+                    pass
+            elif question_type in ["4"]: # exact match
                 if question_type not in performance:
                     performance[question_type] = 0
                 try:
                     performance[question_type] += int(llm_answer==gt_answer)
                 except:
-                    continue
+                    pass
             elif question_type in []: # F1
                 pass
         
@@ -461,15 +461,10 @@ if __name__ == "__main__":
 
     for key in performance.keys():
         if key in ["1","3"]: ###
-            print("before", performance[key])
             actual_mean = sum(performance[key][1]) / len(performance[key][1])
-            print("actual_mean", actual_mean)
             sstot = sum((x-actual_mean)**2 for x in performance[key][1])
-            print("sstot", sstot)
-            print("performance[key][0]", performance[key][0])
             performance[key] = 1 - performance[key][0]/sstot
-            print("after", performance[key])
-        elif key in ["2"]: ###
+        elif key in ["2","4"]: ###
             performance[key] = performance[key] / count[key]
         elif key in []: ###
             pass
