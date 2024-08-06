@@ -15,9 +15,7 @@ from datasets import Dataset, DatasetDict, concatenate_datasets
 
 # Good old Transformer models
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
-# from transformers import BertForSequenceClassification, BertTokenizer, BertConfig
-# from transformers import DistilBertForSequenceClassification, DistilBertTokenizer, DistilBertConfig
-from transformers import PreTrainedTokenizerFast
+from transformers import PreTrainedTokenizerFast, BatchEncoding
 
 # Import the sklearn Multinomial Naive Bayes
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
@@ -125,6 +123,15 @@ class table_toolkits():
         test_start, test_end = extract_start_end(test_duration)
     
         def preprocess_hupd(start_year, end_year):
+            def convert_date(series):
+                if series.dtype==np.float64:
+                    series = series.astype('Int64')
+                series = series.astype(str)
+                if "-" in series.iloc[0]:
+                    series = pd.to_datetime(series)
+                else:
+                    series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
+                return series
             if not start_year and not end_year:
                 return None
             df = []
@@ -134,9 +141,9 @@ class table_toolkits():
                 df_raw['patent_number'] = pd.to_numeric(df_raw['patent_number'], errors='coerce').astype('Int64').replace(0, pd.NA) # so that the LLM is aware of which patent numbers are invalid 
                 df_raw['examiner_id'] = pd.to_numeric(df_raw['examiner_id'], errors='coerce').astype('Int64') 
                 
-                df_raw['filing_date'] = pd.to_datetime(df_raw['filing_date'])
-                df_raw['patent_issue_date'] = pd.to_datetime(df_raw['patent_issue_date'])
-                df_raw['date_published'] = pd.to_datetime(df_raw['date_published'])
+                df_raw['filing_date'] = convert_date(df_raw['filing_date'])
+                df_raw['patent_issue_date'] = convert_date(df_raw['patent_issue_date'])
+                df_raw['date_published'] = convert_date(df_raw['date_published'])
                 
                 df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
                 df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
@@ -173,6 +180,8 @@ class table_toolkits():
         elif target_db=="neurips":
             if train_end>3583 or test_end>3585:
                 return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
+            if test_start!=train_end+1:
+                return "Error: test_start must be one more than train_end."
             train_df = preprocess_neurips(train_start, train_end)
             test_df = preprocess_neurips(test_start, test_end)   
         else:
@@ -186,10 +195,11 @@ class table_toolkits():
         
         if test_df is None:
             self.data = train_df
+            length = len(self.data)
             column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
             column_names_str = ', '.join(column_names)
             self.dataset_dict = None
-            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has the following structure: {}".format(self.data.head()) 
+            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has {} rows.".format(length)+"\nIt has the following structure: {}".format(self.data.head()) 
         else:
             train_dataset = Dataset.from_pandas(train_df)
             if outcome_col!="None":
@@ -218,7 +228,7 @@ class table_toolkits():
                     elif var_name=="global_var":
                         for global_var_name, global_var_value in var_value.items(): 
                             excluded_types = (types.ModuleType, types.FunctionType, type)
-                            if global_var_name not in ["df", "__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
+                            if global_var_name not in ["__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
                                 pd_types = (pd.DataFrame, pd.Series)
                                 if isinstance(global_var_value, pd_types):
                                     variable_values[global_var_name] = global_var_value.head().to_dict()
@@ -254,6 +264,7 @@ class table_toolkits():
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
         
+        majority_class_label = max(value_counts, key=value_counts.get)
         class_weights = []
         for ind in range(num_classes):
             class_weights.append(1/value_counts[unique_classes[ind]])
@@ -389,9 +400,11 @@ class table_toolkits():
                 dataset = self.dataset_dict[name]
                 print('*** Tokenizing...')
                 # Tokenize the input
+                zero_encoding = BatchEncoding({'input_ids':[0]*max_length, 'token_type_ids':[0]*max_length, 'attention_mask':[0]*max_length})
                 dataset = dataset.map(
-                    lambda e: tokenizer(e[section], truncation=True, padding='max_length'),
-                    batched=True)
+                    lambda e: tokenizer(e[section], truncation=True, padding='max_length') if e[section] is not None else zero_encoding,
+                    batched=True
+                ) ###
                 # Set the dataset format
                 if name=="test":
                     gt_list = self.test_groundtruth.to_list()
@@ -423,7 +436,7 @@ class table_toolkits():
             predictions = []
             
             # Loop over the examples in the evaluation set
-            for i, batch in enumerate(tqdm(test_loader)):
+            for i, batch in enumerate(tqdm(test_loader)):                
                 inputs, decisions = batch['input_ids'], batch['output']
                 inputs = inputs.to(device)
                 decisions = decisions.to(device)
@@ -441,7 +454,43 @@ class table_toolkits():
                 total_confusion += c_matrix
                 total_correct += correct_n
                 total_sample += sample_n
-            
+                
+            # Loop over the examples in the evaluation set
+            # for i, batch in enumerate(tqdm(test_loader)):
+            #     inputs, decisions = batch['input_ids'], batch['output']
+            #     inputs = inputs.to(device)
+            #     decisions = decisions.to(device)
+                
+            #     # Handle `None` values
+            #     none_indices = [i for i, x in enumerate(inputs) if x is None]
+            #     valid_indices = [i for i in range(len(inputs)) if i not in none_indices]
+                
+            #     # Initialize preds with the majority class label
+            #     preds = torch.full((inputs.size(0),), majority_class_label, dtype=torch.long, device=device)
+                
+            #     # Perform predictions only for valid inputs
+            #     if valid_indices:
+            #         valid_inputs = inputs[valid_indices]
+            #         valid_decisions = decisions[valid_indices]
+            #         with torch.no_grad():
+            #             if model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
+            #                 outputs = model(input_ids=valid_inputs)
+            #             else:
+            #                 outputs = model(input_ids=valid_inputs, labels=valid_decisions).logits
+            #             valid_preds = torch.argmax(outputs, dim=1)
+            #             preds[valid_indices] = valid_preds
+                    
+            #         # Compute loss and other metrics only if there are valid inputs
+            #         loss = criterion(outputs, valid_decisions)
+            #         total_loss += loss.cpu().item()
+            #         logits = outputs
+            #         correct_n, sample_n, c_matrix = measure_accuracy(logits.cpu().numpy(), valid_decisions.cpu().numpy())
+            #         total_confusion += c_matrix
+            #         total_correct += correct_n
+            #         total_sample += sample_n
+                
+            #     predictions.extend(preds.cpu().numpy().tolist())
+                    
             # Print the performance of the model on the test set 
             print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
             print(f'*** Confusion matrix:\n{total_confusion}')
@@ -552,7 +601,7 @@ class table_toolkits():
         
         # Remove the rows where the section is None
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
-        self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
+        # self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
         self.dataset_dict['train'] = self.dataset_dict['train'].map(map_target_to_label) 
     
         # Create a model and an appropriate tokenizer
@@ -596,12 +645,13 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    # db.db_loader('hupd', '2016-2016', 'None', 'None')
+    db.db_loader('hupd', '2007-2011', 'None', 'None')  #2016-2016
+    pandas_code = """df['publication_delay'] = (df['date_published'] - df['filing_date']).dt.days\ndf[df['publication_delay'] == df['publication_delay'].max()]['title'].values[0]"""
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
-    # print(db.pandas_interpreter(pandas_code))
+    print(db.pandas_interpreter(pandas_code))
 
     # print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
-    # db.textual_classifier('cnn', 'full_description', 'decision')
+    # print(db.textual_classifier('cnn', 'summary', 'decision'))
     # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Oral'))
     # db.textual_classifier('cnn', 'Abstract', 'Oral') 
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    

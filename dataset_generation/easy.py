@@ -1,6 +1,7 @@
 import os
 import copy
 import pandas as pd
+import numpy as np
 import json
 import random
 import tqdm
@@ -54,17 +55,25 @@ def compare_applications_year(year1, year2):
 
 # HUPD Template 4: What is the title of the patent filed between {start_year} and {end_year} that took the longest time to be published?
 def longest_time(start_year, end_year):
+    def convert_date(series):
+        if series.dtype==np.float64:
+            series = series.astype('Int64')
+        series = series.astype(str)
+        if "-" in series.iloc[0]:
+            series = pd.to_datetime(series)
+        else:
+            series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
+        return series
     df_lst = []
     for year in range(start_year, end_year+1):
         df_year = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
         df_lst.append(df_year)
     df = pd.concat(df_lst, axis=0, ignore_index=True)
     del df_lst
-    df["date_published"] = pd.to_datetime(df["date_published"])
-    df["filing_date"] = pd.to_datetime(df["filing_date"])
+    df["date_published"] = convert_date(df["date_published"])
+    df["filing_date"] = convert_date(df["filing_date"])
     df["duration"] = df["date_published"]-df["filing_date"]
     sorted_df = df.sort_values(by="duration", ascending=False).reset_index()  
-    print(sorted_df.head()) ###
     del df  
     return sorted_df.at[0,"title"]
 
@@ -107,7 +116,7 @@ def author_num(compare,n):
 question_id = 1
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
     while question_id<=10: # 600 
-        question_type = random.randint(3,3) 
+        question_type = random.randint(4,4) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)
