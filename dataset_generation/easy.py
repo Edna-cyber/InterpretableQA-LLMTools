@@ -64,6 +64,7 @@ def longest_time(start_year, end_year):
     df["filing_date"] = pd.to_datetime(df["filing_date"])
     df["duration"] = df["date_published"]-df["filing_date"]
     sorted_df = df.sort_values(by="duration", ascending=False).reset_index()  
+    print(sorted_df.head()) ###
     del df  
     return sorted_df.at[0,"title"]
 
@@ -140,7 +141,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             year_2 = random.randint(2004,2018)
             while year_2==year_1:
                 year_2 = random.randint(2004,2018)
-            question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}?".format(year_1, year_2)
+            question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}? Return a number.".format(year_1, year_2)
             answer = compare_applications_year(year_1, year_2)
             if answer:
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
@@ -156,10 +157,10 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_id += 1
         elif question_type == 5:
-            # Who were the top {#} authors with the most publications at NeurIPS 2023?
+            # Who were the top {#} authors with the most publications at NeurIPS 2023? Break ties alphabetically, return as a list of authors.
             num = random.randint(2,10)
             llm_keyword = random.choice([True, False])
-            question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS 2023? Break ties alphabetically, return as a list.", "Who were the top {} authors with the highest number of publications at NeurIPS 2023? Break ties alphabetically, return as a list.", "Which {} authors had the most publications at NeurIPS 2023? Break ties alphabetically, return as a list."]
+            question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS 2023? Break ties alphabetically, return as a list of authors.", "Who were the top {} authors with the highest number of publications at NeurIPS 2023? Break ties alphabetically, return as a list of authors.", "Which {} authors had the most publications at NeurIPS 2023? Break ties alphabetically, return as a list of authors."]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(num)
             if llm_keyword:
                 insert_pos = question.find("publications")+len("publications")
