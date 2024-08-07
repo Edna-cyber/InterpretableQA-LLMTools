@@ -430,11 +430,25 @@ class table_toolkits():
                 dataset = self.dataset_dict[name]
                 print('*** Tokenizing...')
                 # Tokenize the input
-                zero_encoding = BatchEncoding({'input_ids':[0]*max_length, 'token_type_ids':[0]*max_length, 'attention_mask':[0]*max_length})
+                zero_encoding = tokenizer('', truncation=True, padding='max_length')
                 dataset = dataset.map(
-                    lambda e: tokenizer(e[section], truncation=True, padding='max_length') if e[section] is not None else zero_encoding,
+                    lambda e: {
+                        section: [
+                            tokenizer(text, truncation=True, padding='max_length') if text is not None else zero_encoding
+                            for text in e[section]
+                        ]
+                    },
                     batched=True
-                ) ###
+                )
+
+                # Flatten the lists of dictionaries into separate columns
+                dataset = dataset.map(
+                    lambda e: {
+                        'input_ids': [item['input_ids'] for item in e[section]],
+                        'attention_mask': [item['attention_mask'] for item in e[section]],
+                    },
+                    batched=True
+                )
                 # Set the dataset format
                 if name=="test":
                     gt_list = self.test_groundtruth.to_list()
@@ -631,7 +645,7 @@ class table_toolkits():
         
         # Remove the rows where the section is None
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
-        self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
+        self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None)
         self.dataset_dict['train'] = self.dataset_dict['train'].map(map_target_to_label) 
     
         # Create a model and an appropriate tokenizer
@@ -680,7 +694,7 @@ if __name__ == "__main__":
     # print(db.pandas_interpreter(pandas_code))
 
     print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
-    print(db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED'))
+    db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
     # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Topic'))
     # db.textual_classifier('cnn', 'Abstract', 'Topic', 'Deep Learning')
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
