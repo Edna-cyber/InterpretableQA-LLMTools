@@ -248,8 +248,10 @@ def calc_cost1(function_type, function_arguments):
             packages_cost = 2
         return lines_cost*packages_cost
     if function_type=="Forecaster":
-        pass
-        ###
+        if function_arguments["model_name"]=="linear_regression":
+            return 6
+        elif function_arguments["model_name"]=="ARIMA":
+            return 8
     if function_type=="TextualClassifier":
         if function_arguments["model_name"]=="logistic_regression":
             return 7

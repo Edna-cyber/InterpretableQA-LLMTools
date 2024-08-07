@@ -1,3 +1,4 @@
+import re
 import os
 import types
 import random
@@ -132,6 +133,7 @@ class table_toolkits():
                 else:
                     series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
                 return series
+            
             if not start_year and not end_year:
                 return None
             df = []
@@ -148,6 +150,7 @@ class table_toolkits():
                 df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
                 df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
                 df_raw.drop(columns=["main_ipcr_label", "main_cpc_label"], inplace=True)
+                
                 column_names = ["'"+x+"'" for x in df_raw.columns.tolist()]
                 column_names_str = ', '.join(column_names)
                 if outcome_col not in df_raw.columns and outcome_col!="None":
@@ -170,6 +173,14 @@ class table_toolkits():
             df = pd.read_csv(file_path)
             # print(df.dtypes)
             df = df.iloc[start_row:end_row+1]
+            df['Authors'] = df['Authors'].str.split(' · ')
+            column_names = ["'"+x+"'" for x in df.columns.tolist()]
+            column_names_str = ', '.join(column_names)
+            if outcome_col not in df.columns and outcome_col!="None":
+                return "Error: The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
+            # remove rows where the predicted target is NA
+            if outcome_col!="None":
+                df.dropna(subset=[outcome_col], inplace=True)
             return df   
            
         if target_db=="hupd":
@@ -178,9 +189,9 @@ class table_toolkits():
             train_df = preprocess_hupd(train_start, train_end)
             test_df = preprocess_hupd(test_start, test_end)   
         elif target_db=="neurips":
-            if train_end>3583 or test_end>3585:
+            if train_end>3585 or (test_end and test_end>3585):
                 return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
-            if test_start!=train_end+1:
+            if test_start is not None and test_start!=train_end+1:
                 return "Error: test_start must be one more than train_end."
             train_df = preprocess_neurips(train_start, train_end)
             test_df = preprocess_neurips(test_start, test_end)   
@@ -215,41 +226,44 @@ class table_toolkits():
         """
         Executes the provided Pandas code.
         """
-        if self.data is None:
-            return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
-        else:
+        if self.dataset_dict is not None:
+            # print(self.dataset_dict["train"].to_pandas().at[1,"claims"])
+            global_var = {"df": self.dataset_dict["train"].to_pandas()}
+        elif self.data is not None:
             global_var = {"df": self.data.copy()}
-            try: 
-                exec(pandas_code, global_var)
-                variable_values = {}
-                for var_name, var_value in locals().items(): 
-                    if var_name in ["self", "pandas_code","variable_values"]:
-                        continue
-                    elif var_name=="global_var":
-                        for global_var_name, global_var_value in var_value.items(): 
-                            excluded_types = (types.ModuleType, types.FunctionType, type)
-                            if global_var_name not in ["__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
-                                pd_types = (pd.DataFrame, pd.Series)
-                                if isinstance(global_var_value, pd_types):
-                                    variable_values[global_var_name] = global_var_value.head().to_dict()
-                                else:
-                                    variable_values[global_var_name] = global_var_value
-                    elif not var_name.startswith('__') and not isinstance(var_value, excluded_types):
-                        if isinstance(var_value, pd_types):
-                            variable_values[var_name] = var_value.head().to_dict()
-                        else:
-                            variable_values[var_name] = var_value
-                return variable_values
-            except KeyError as e:
-                column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
-                column_names_str = ', '.join(column_names)
-                return "Error: "+str(e)+"column does not exist.\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(self.data.head())
-            except NameError as e:
-                if "'pd'" in str(e):
-                    return "Error: "+str(e)+"\nImport the pandas library using the pandas_interpreter."
-            except Exception as e:
-                return "Error: "+str(e)
-            # other exceptions
+        else:
+            return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
+        try: 
+            exec(pandas_code, global_var)
+            variable_values = {}
+            for var_name, var_value in locals().items(): 
+                if var_name in ["self", "pandas_code","variable_values"]:
+                    continue
+                elif var_name=="global_var":
+                    for global_var_name, global_var_value in var_value.items(): 
+                        excluded_types = (types.ModuleType, types.FunctionType, type)
+                        if global_var_name not in ["__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
+                            pd_types = (pd.DataFrame, pd.Series)
+                            if isinstance(global_var_value, pd_types):
+                                variable_values[global_var_name] = global_var_value.head().to_dict()
+                            else:
+                                variable_values[global_var_name] = global_var_value
+                elif not var_name.startswith('__') and not isinstance(var_value, excluded_types):
+                    if isinstance(var_value, pd_types):
+                        variable_values[var_name] = var_value.head().to_dict()
+                    else:
+                        variable_values[var_name] = var_value
+            return variable_values
+        except KeyError as e:
+            column_names = ["'"+x+"'" for x in global_var["df"].columns.tolist()]
+            column_names_str = ', '.join(column_names)
+            return "Error: "+str(e)+"column does not exist.\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(self.data.head())
+        except NameError as e:
+            if "'pd'" in str(e):
+                return "Error: "+str(e)+"\nImport the pandas library using the pandas_interpreter."
+        except Exception as e:
+            return "Error: "+str(e)
+        # other exceptions
             
     def textual_classifier(self, model_name, section, target):
         """
@@ -645,14 +659,15 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    db.db_loader('hupd', '2007-2011', 'None', 'None')  #2016-2016
-    pandas_code = """df['publication_delay'] = (df['date_published'] - df['filing_date']).dt.days\ndf[df['publication_delay'] == df['publication_delay'].max()]['title'].values[0]"""
+    # print(db.db_loader('hupd', '2016-2016', 'None', 'None'))  
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
-    print(db.pandas_interpreter(pandas_code))
+    # print(db.pandas_interpreter(pandas_code))
 
     # print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
     # print(db.textual_classifier('cnn', 'summary', 'decision'))
     # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Oral'))
     # db.textual_classifier('cnn', 'Abstract', 'Oral') 
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
-    
+    db.db_loader("hupd", "2007-2009", "2010-2011", "claims")
+    pandas_code = "import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)"
+    print(db.pandas_interpreter(pandas_code))

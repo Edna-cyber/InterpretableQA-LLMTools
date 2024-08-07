@@ -3,7 +3,7 @@ import json
 messages = [
     {
         'role': 'system',
-        'content': """You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools that can be executed sequentially can solve the question. Below are some examples that map the problem to the tools."""
+        'content': """You need to act as a policy model, that given a question and a set of tools, determines the optimal sequence of tools that can be executed sequentially to answer the question as accurately as possible. Below are some examples that map the problem to the tools."""
     },
     {
         'role': 'user',
@@ -115,11 +115,11 @@ ans = solution(19)
         'tool_call_id': 'call_1',
         'role': 'tool',
         'name': 'PandasInterpreter',
-        'content': "{'month':12}"
+        'content': "{'df':..., 'month':12}"
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'month':12}, month, integer)""",
+        'content': """To execute: Finish({'df':..., 'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_2',
@@ -216,6 +216,102 @@ ans = solution(19)
     {
         'role': 'assistant',
         'content': "The predicted poster sessions for the remaining papers in the dataset are: 4.0, 2.0, 6.0, 1.0, 4.0, 2.0, 1.0, 1.0, 1.0, and 3.0."
+    },
+    {
+        'role': 'user',
+        'content': 'Using the patent applications from 2007 to 2009, predict the average length of claims for patent applications in 2010 and 2011.'
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: LoadDB(hupd, 2007-2009, 2010-2011, claims)""",
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LoadDB',
+                    'arguments': json.dumps({
+                        "target_db": "hupd", "train_duration": "2007-2009", "test_duration": "2010-2011", "outcome_col": "claims"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'LoadDB',
+        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'],num_rows: 5713}) test: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'filing_date', 'patent_issue_date', 'date_published', 'icpr_category', 'cpc_category'],num_rows: 1110})})"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())""",
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'PandasInterpreter',
+                    'arguments': json.dumps({
+                        "pandas_code": "import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'PandasInterpreter',
+        'content': "{'df':..., 'average_claims_per_year': {2007: 6194.2525, 2008: 5842.907314349525, 2009: 6151.568627450981}}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Forecaster(linear_regression,[6194.2525, 5842.907314349525, 6151.568627450981],2)""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Forecaster',
+                    'arguments': json.dumps({
+                        "model_name": "linear_regression", "previous_data": [6194.2525, 5842.907314349525, 6151.568627450981], "forecast_len": 2
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Forecaster',
+        'content': "{'forecast_predictions': [6020.225608051151, 5998.883671776641])}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values":{'forecast_predictions': [6020.225608051151, 5998.883671776641]}, "answer_variable": 'forecast_predictions', "answer_type": "list"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "[6020.225608051151, 5998.883671776641]"
+    },
+    {
+        'role': 'assistant',
+        'content': "The predicted average length of claims for patent applications in 2010 and 2011 are respectively 6020 characters and 5999 characters."
     }
 ]
 
@@ -224,7 +320,7 @@ messages_formula = [
     {
         'role': 'system',
         'content': """
-You need to act as a policy model that determines the sequence of tools with the lowest total interpretability cost that can be executed sequentially to solve the question. Follow these steps:
+You need to act as a policy model, that given a question and a set of tools, determines the sequence of tools with the lowest total interpretability cost that can be executed sequentially to answer the question as accurately as possible. Follow these steps:
 
 1. Generate Solutions: First, list AS MANY solutions AS POSSIBLE (at most 4). Each solution should be a sequence of tools that can be used to solve the question.
 
@@ -268,7 +364,11 @@ Interpretability Cost Formulas:
     - If model name is "cnn": 15
     - If model name is "distilbert-base-uncased": 20
 
-Below are some examples that map the problem to the tools.
+6. Forecaster: Cost is based on the model name:
+    - If model name is "linear_regression": 6
+    - If model name is "ARIMA": 8
+
+You cannot sacrifice accuracy for interpretability. Below are some examples that map the problem to the tools.
     """
     },
     {
@@ -399,11 +499,11 @@ To execute: LoadDB(hupd, 2016-2016, None, None)""",
         'tool_call_id': 'call_1',
         'role': 'tool',
         'name': 'PandasInterpreter',
-        'content': "{'month':12}"
+        'content': "{'df':..., 'month':12}"
     },
     {
         'role': 'assistant',
-        'content': """To execute: Finish({'month':12}, month, integer)""",
+        'content': """To execute: Finish({'df':..., 'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_2',
@@ -438,11 +538,11 @@ Modules2: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(distilb
 Modules3: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(naive_bayes, Title, Poster Session)
 Modules4: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(cnn, Topic, Poster Session)
 
-Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(logistic_regression, Abstract, Poster Session): 7 (model_name is "logistic_regression"). Summing these costs: 3+7=10.
+Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(naive_bayes, Title, Poster Session): 8 (model_name is "naive_bayes"). Summing these costs: 3+8=11.
 Total interpretability cost of Modules2 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(distilbert-base-uncased, Abstract, Poster Session): 20 (model_name is "distilbert-base-uncased"). Summing these costs: 3+20=23.
-Total interpretability cost of Modules3 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(naive_bayes, Title, Poster Session): 8 (model_name is "naive_bayes"). Summing these costs: 3+8=11.
-Total interpretability cost of Modules4 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(cnn, Topic, Poster Session): 15 (model_name is "cnn"). Summing these costs: 3+15=18.
-Therefore, Modules1 is selected because it has the lowest total interpretability cost of 10 compared to 23 for Modules2, 11 for Modules 3, and 18 for Modules 4. ###
+Total interpretability cost of Modules3 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(cnn, Topic, Poster Session): 15 (model_name is "cnn"). Summing these costs: 3+15=18.
+Total interpretability cost of Modules4 is calculated as follows: LoadDB(neurips, 0-2000, 2001-3585, Poster Session): 3, Classifier(logistic_regression, Abstract, Poster Session): 7 (model_name is "logistic_regression"). Summing these costs: 3+7=10.
+Therefore, Modules4 is selected because it has the lowest total interpretability cost of 10 compared to 11 for Modules1, 23 for Modules2, and 18 for Modules3.
 
 Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), Classifier(logistic_regression, Abstract, Poster Session)
 
@@ -513,6 +613,114 @@ To execute: LoadDB(neurips, 0-2000, 2001-3585, Poster Session)""",
     {
         'role': 'assistant',
         'content': "The predicted poster sessions for the remaining papers in the dataset are: 4.0, 2.0, 6.0, 1.0, 4.0, 2.0, 1.0, 1.0, 1.0, and 3.0."
+    },
+    {
+        'role': 'user',
+        'content': 'Using the patent applications from 2007 to 2009, predict the average length of claims for patent applications in 2010 and 2011.'
+    },
+    {
+        'role': 'assistant',
+        'content': """Modules1: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1))
+Modules2: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()), Forecaster(ARIMA,previous_data,2)
+Modules3: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()), Forecaster(linear_regression,previous_data,2)
+
+Thought: Total interpretability cost of Modules1 is calculated as follows: LoadDB(hupd, 2007-2009, 2010-2011, claims): 3, PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)): 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4. Summing these costs: 3+4=7.
+Total interpretability cost of Modules2 is calculated as follows: LoadDB(hupd, 2007-2009, 2010-2011, claims): 3, PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()): 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4, Forecaster(ARIMA,previous_data,2): 8 (model_name is "ARIMA"). Summing these costs: 3+4+8=15.
+Total interpretability cost of Modules3 is calculated as follows: LoadDB(hupd, 2007-2009, 2010-2011, claims): 3, PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()): 4 (the number of lines of pandas_code < 10) * 1 (the number of imported packages in pandas_code < 2) = 4, Forecaster(linear_regression,previous_data,2): 6 (model_name is "linear_regression"). Summing these costs: 3+4+6=13.
+Modules1 assumes that the average length of claims remains constant from one year to the next and does not account for any trends or changes over time. This limitation negatively affects the accuracy of the solution.
+Therefore, Modules3 is selected because it has the lower total interpretability cost of 13 compared to 15 for Modules2.
+
+Best Modules: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()), Forecaster(linear_regression,previous_data,2)
+
+To execute: LoadDB(hupd, 2007-2009, 2010-2011, claims)""",
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LoadDB',
+                    'arguments': json.dumps({
+                        "target_db": "hupd", "train_duration": "2007-2009", "test_duration": "2010-2011", "outcome_col": "claims"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'LoadDB',
+        'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'],num_rows: 5713}) test: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'filing_date', 'patent_issue_date', 'date_published', 'icpr_category', 'cpc_category'],num_rows: 1110})})"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())""",
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'PandasInterpreter',
+                    'arguments': json.dumps({
+                        "pandas_code": "import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'PandasInterpreter',
+        'content': "{'df':..., 'average_claims_per_year': {2007: 6194.2525, 2008: 5842.907314349525, 2009: 6151.568627450981}}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Forecaster(linear_regression,[6194.2525, 5842.907314349525, 6151.568627450981],2)""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Forecaster',
+                    'arguments': json.dumps({
+                        "model_name": "linear_regression", "previous_data": [6194.2525, 5842.907314349525, 6151.568627450981], "forecast_len": 2
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Forecaster',
+        'content': "{'forecast_predictions': [6020.225608051151, 5998.883671776641])}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values":{'forecast_predictions': [6020.225608051151, 5998.883671776641]}, "answer_variable": 'forecast_predictions', "answer_type": "list"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "[6020.225608051151, 5998.883671776641]"
+    },
+    {
+        'role': 'assistant',
+        'content': "The predicted average length of claims for patent applications in 2010 and 2011 are respectively 6020 characters and 5999 characters."
     }
 ]
 

@@ -9,7 +9,7 @@ def forecast(model_name, previous_data, forecast_len): # return a list of foreca
     if model_name=="linear_regression":
         model = LinearRegression()
         model.fit(np.arange(len(previous_data)).reshape(-1,1), previous_data)
-        preds = model.predict(np.arange(len(previous_data), len(previous_data)+forecast_len).reshape(-1,1))
+        preds = model.predict(np.arange(len(previous_data), len(previous_data)+forecast_len).reshape(-1,1)).tolist()
     if model_name=="ARIMA":
         # differencing -> make data stationary
         model = ARIMA(previous_data, order=(1,1,1))
