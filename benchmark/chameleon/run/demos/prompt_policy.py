@@ -171,14 +171,14 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """To execute: TextualClassifier(logistic_regression, Abstract, Poster Session)""",
+        'content': """To execute: TextualClassifier(logistic_regression, Abstract, Poster Session, None)""",
         'tool_calls': [
             {
                 'id': 'call_1',
                 'function': {
                     'name': 'TextualClassifier',
                     'arguments': json.dumps({
-                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session"
+                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session", "one_v_all": "None"
                     })
                 },
                 'type': 'function'
@@ -568,14 +568,14 @@ To execute: LoadDB(neurips, 0-2000, 2001-3585, Poster Session)""",
     },
     {
         'role': 'assistant',
-        'content': """To execute: TextualClassifier(logistic_regression, Abstract, Poster Session)""",
+        'content': """To execute: TextualClassifier(logistic_regression, Abstract, Poster Session, None)""",
         'tool_calls': [
             {
                 'id': 'call_1',
                 'function': {
                     'name': 'TextualClassifier',
                     'arguments': json.dumps({
-                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session"
+                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session", "one_v_all": "None"
                     })
                 },
                 'type': 'function'

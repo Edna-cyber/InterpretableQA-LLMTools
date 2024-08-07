@@ -265,16 +265,26 @@ class table_toolkits():
             return "Error: "+str(e)
         # other exceptions
             
-    def textual_classifier(self, model_name, section, target):
+    def textual_classifier(self, model_name, section, target, one_v_all="None"):
         """
         Runs a classificaiton prediction task given a textual input.
         """
         
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         combined_series = pd.concat([self.train_groundtruth, self.test_groundtruth])
-        value_counts = combined_series.value_counts().to_dict()
-        unique_classes = combined_series.unique().tolist()
-        num_classes = len(unique_classes)
+        if one_v_all!="None":
+            unique_classes = ["not "+one_v_all, one_v_all]
+            combined_series_df = pd.DataFrame(combined_series)
+            combined_series_df["contains_"+one_v_all] = combined_series_df[target].str.contains(one_v_all).astype(int)
+            ind_value_counts = combined_series_df.groupby("contains_"+one_v_all).count().to_dict()[target]
+            value_counts = {}
+            for key in ind_value_counts.keys():
+                value_counts[unique_classes[key]] = ind_value_counts[key]
+            num_classes = 2
+        else:
+            value_counts = combined_series.value_counts().to_dict()
+            unique_classes = combined_series.unique().tolist()
+            num_classes = len(unique_classes)
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
         
@@ -401,10 +411,16 @@ class table_toolkits():
 
         # Map target2string
         def map_target_to_label(example):
-            return {'output': target_to_label[example[target]]}
+            if one_v_all!="None":
+                return {'output': int(one_v_all in example[target])}
+            else:
+                return {'output': target_to_label[example[target]]}
         
         def map_groundtruth_to_label(lst):
-            return [target_to_label[x] for x in lst]
+            if one_v_all!="None":
+                return [int(one_v_all in x) for x in lst]
+            else:
+                return [target_to_label[x] for x in lst]
         
         # Create dataset
         def create_dataset(tokenizer, section=section):
@@ -615,7 +631,7 @@ class table_toolkits():
         
         # Remove the rows where the section is None
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
-        # self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
+        self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None) ###
         self.dataset_dict['train'] = self.dataset_dict['train'].map(map_target_to_label) 
     
         # Create a model and an appropriate tokenizer
@@ -663,11 +679,9 @@ if __name__ == "__main__":
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
     # print(db.pandas_interpreter(pandas_code))
 
-    # print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
-    # print(db.textual_classifier('cnn', 'summary', 'decision'))
-    # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Oral'))
-    # db.textual_classifier('cnn', 'Abstract', 'Oral') 
+    print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
+    print(db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED'))
+    # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Topic'))
+    # db.textual_classifier('cnn', 'Abstract', 'Topic', 'Deep Learning')
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
-    db.db_loader("hupd", "2007-2009", "2010-2011", "claims")
-    pandas_code = "import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)"
-    print(db.pandas_interpreter(pandas_code))
+    

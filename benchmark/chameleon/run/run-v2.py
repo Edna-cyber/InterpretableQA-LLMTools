@@ -166,6 +166,10 @@ tools = [
                     "target": {
                         "type": "string",
                         "description": "The target variable of the classifier model.",
+                    },
+                    "one_v_all": {
+                        "type": "string",
+                        "description": "The class label for a one-vs-all classification task. When it's set to default value None, the model will predict all possible classes.",
                     }
                 },
                 "required": ["model_name", "section", "target"], 
