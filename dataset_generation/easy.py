@@ -114,8 +114,8 @@ def author_num(compare,n):
 
 question_id = 1
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
-    while question_id<=10: # 600 
-        question_type = random.randint(5,5) 
+    while question_id<=600:
+        question_type = random.randint(1,6) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)

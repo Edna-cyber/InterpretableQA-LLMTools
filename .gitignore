@@ -1,4 +1,5 @@
 data/external_corpus/
+data/questions/
 benchmark/chameleon/logs/
 benchmark/chameleon/run/tools/table/models/
 benchmark/chameleon/run/tools/table/temp_tokenizer.json
