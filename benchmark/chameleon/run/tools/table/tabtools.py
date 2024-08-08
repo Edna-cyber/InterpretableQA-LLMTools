@@ -174,6 +174,7 @@ class table_toolkits():
             # print(df.dtypes)
             df = df.iloc[start_row:end_row+1]
             df['Authors'] = df['Authors'].str.split(' · ')
+            print(df.at[0,'Authors']) ###
             column_names = ["'"+x+"'" for x in df.columns.tolist()]
             column_names_str = ', '.join(column_names)
             if outcome_col not in df.columns and outcome_col!="None":
@@ -210,7 +211,7 @@ class table_toolkits():
             column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
             column_names_str = ', '.join(column_names)
             self.dataset_dict = None
-            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has {} rows.".format(length)+"\nIt has the following structure: {}".format(self.data.head()) 
+            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has {} rows.".format(length)+"\nIt has the following structure: {}".format(self.data.head())
         else:
             train_dataset = Dataset.from_pandas(train_df)
             if outcome_col!="None":
@@ -227,7 +228,6 @@ class table_toolkits():
         Executes the provided Pandas code.
         """
         if self.dataset_dict is not None:
-            # print(self.dataset_dict["train"].to_pandas().at[1,"claims"])
             global_var = {"df": self.dataset_dict["train"].to_pandas()}
         elif self.data is not None:
             global_var = {"df": self.data.copy()}
@@ -333,7 +333,7 @@ class table_toolkits():
             naive_bayes_version='Bernoulli' 
         else:
             naive_bayes_version='Multinomial'
-                                
+                                                    
         # Create a BoW (Bag-of-Words) representation
         def text2bow(input, vocab_size):
             arr = []
@@ -444,8 +444,8 @@ class table_toolkits():
                 # Flatten the lists of dictionaries into separate columns
                 dataset = dataset.map(
                     lambda e: {
-                        'input_ids': [item['input_ids'] for item in e[section]],
-                        'attention_mask': [item['attention_mask'] for item in e[section]],
+                        'input_ids': torch.tensor([item['input_ids'] for item in e[section]]),
+                        'attention_mask': torch.tensor([item['attention_mask'] for item in e[section]]),
                     },
                     batched=True
                 )
@@ -456,7 +456,8 @@ class table_toolkits():
                     dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
                 dataset.set_format(type='torch', 
                     columns=['input_ids', 'attention_mask', 'output'])
-                data_loaders.append(DataLoader(dataset, batch_size=batch_size, shuffle=(name=='train')))
+                shuffle = (name=='train')
+                data_loaders.append(DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, worker_init_fn=lambda worker_id: np.random.seed(RANDOM_SEED) if shuffle else None))
             return data_loaders
 
         def measure_accuracy(outputs, labels):
@@ -479,7 +480,7 @@ class table_toolkits():
             total_confusion = np.zeros((CLASSES, CLASSES))
             predictions = []
             
-            # Loop over the examples in the evaluation set
+            # Loop over the examples in the test set
             for i, batch in enumerate(tqdm(test_loader)):                
                 inputs, decisions = batch['input_ids'], batch['output']
                 inputs = inputs.to(device)
@@ -498,42 +499,6 @@ class table_toolkits():
                 total_confusion += c_matrix
                 total_correct += correct_n
                 total_sample += sample_n
-                
-            # Loop over the examples in the evaluation set
-            # for i, batch in enumerate(tqdm(test_loader)):
-            #     inputs, decisions = batch['input_ids'], batch['output']
-            #     inputs = inputs.to(device)
-            #     decisions = decisions.to(device)
-                
-            #     # Handle `None` values
-            #     none_indices = [i for i, x in enumerate(inputs) if x is None]
-            #     valid_indices = [i for i in range(len(inputs)) if i not in none_indices]
-                
-            #     # Initialize preds with the majority class label
-            #     preds = torch.full((inputs.size(0),), majority_class_label, dtype=torch.long, device=device)
-                
-            #     # Perform predictions only for valid inputs
-            #     if valid_indices:
-            #         valid_inputs = inputs[valid_indices]
-            #         valid_decisions = decisions[valid_indices]
-            #         with torch.no_grad():
-            #             if model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
-            #                 outputs = model(input_ids=valid_inputs)
-            #             else:
-            #                 outputs = model(input_ids=valid_inputs, labels=valid_decisions).logits
-            #             valid_preds = torch.argmax(outputs, dim=1)
-            #             preds[valid_indices] = valid_preds
-                    
-            #         # Compute loss and other metrics only if there are valid inputs
-            #         loss = criterion(outputs, valid_decisions)
-            #         total_loss += loss.cpu().item()
-            #         logits = outputs
-            #         correct_n, sample_n, c_matrix = measure_accuracy(logits.cpu().numpy(), valid_decisions.cpu().numpy())
-            #         total_confusion += c_matrix
-            #         total_correct += correct_n
-            #         total_sample += sample_n
-                
-            #     predictions.extend(preds.cpu().numpy().tolist())
                     
             # Print the performance of the model on the test set 
             print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
@@ -645,7 +610,6 @@ class table_toolkits():
         
         # Remove the rows where the section is None
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
-        self.dataset_dict['test'] = self.dataset_dict['test'].filter(lambda e: e[section] is not None)
         self.dataset_dict['train'] = self.dataset_dict['train'].map(map_target_to_label) 
     
         # Create a model and an appropriate tokenizer
@@ -699,3 +663,6 @@ if __name__ == "__main__":
     # db.textual_classifier('cnn', 'Abstract', 'Topic', 'Deep Learning')
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
     
+    # print(db.db_loader('neurips', '0-3583'))
+    # pandas_code = "import pandas as pd\\nauthors_df = df[\'Authors\'].str.split(\', \', expand=True).stack().reset_index(level=1, drop=True).reset_index(name=\'Author\')\\ntop_authors = authors_df[\'Author\'].value_counts().sort_index().sort_values(ascending=False).index[:5].tolist()"
+    # print(db.pandas_interpreter(pandas_code))
