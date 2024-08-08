@@ -17,7 +17,7 @@ from model import solver
 
 from tools.finish import finish
 from tools.code.python_interpreter import execute as python_interpreter
-from tools.code.forecaster import forecast as forecaster
+from tools.simple_model.forecaster import forecast as forecaster
 from tools.llm.llm_inferencer import llm_inferencer 
 from tools.math.calculator import calculator
 from tools.table.tabtools import table_toolkits
@@ -308,7 +308,6 @@ if __name__ == "__main__":
     result_root = f"{args.output_root}" 
     os.makedirs(result_root, exist_ok=True)
     result_file = f"{result_root}/{args.label}_{args.test_split}.json"
-    print("result_file", result_file)
     cache_file = f"{result_root}/{args.label}_{args.test_split}_cache.jsonl"
     cache = []
     cost_function = calc_cost1 # Change with experiment
@@ -372,27 +371,22 @@ if __name__ == "__main__":
                     function = ACTION_LIST[function_type]
                     function_arguments = json.loads(tool_call.function.arguments)
                     function_response = function(**function_arguments)
-                    # print("function_type", function_type) ###
-                    # print("function_arguments", function_arguments) ###
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
                         cost[question_type] += cost_function(function_type, function_arguments)
                         total_cost += cost_function(function_type, function_arguments)
                         per_question_cost += cost_function(function_type, function_arguments)
-                    
-                    # print("1") ###
                     
                     tool_call_response = {
                         "tool_call_id": tool_call.id,
                         "role": "tool",
                         "name": function_type,
                         "content": str(function_response) if function_response is not None else "",
-                    } ###
+                    } 
                     # print(tool_call_response) 
                     llm_answer = function_response
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
                     iterations += 1
-                    # print("3") ###
                 else:
                     response_without_tools = {
                         "role": choice.message.role,
@@ -422,12 +416,7 @@ if __name__ == "__main__":
             errors[question_type] += 1
         else:
             # Calculate performance metric
-            if question_type in ["1", "3", "6"]: # R2 -> threshold correct / incorrect
-                # if question_type not in performance:
-                #     performance[question_type] = [0,[]]
-                # try:
-                #     performance[question_type][0] += (llm_answer-gt_answer)**2
-                #     performance[question_type][1].append(gt_answer)
+            if question_type in ["1", "3", "6"]: # threshold correct / incorrect
                 if question_type not in performance:
                     performance[question_type] = 0
                 try:

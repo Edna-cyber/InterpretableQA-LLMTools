@@ -174,7 +174,6 @@ class table_toolkits():
             # print(df.dtypes)
             df = df.iloc[start_row:end_row+1]
             df['Authors'] = df['Authors'].str.split(' · ')
-            print(df.at[0,'Authors']) ###
             column_names = ["'"+x+"'" for x in df.columns.tolist()]
             column_names_str = ', '.join(column_names)
             if outcome_col not in df.columns and outcome_col!="None":
