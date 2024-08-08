@@ -121,6 +121,7 @@ url = 'https://neurips.cc/virtual/2023/papers.html?filter=titles&search=#tab-bro
 # # Save the DataFrame to a CSV file
 # df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_New_Papers.csv', index=False)
 
+# Have to manually add missing data due to the browser's shuffling way of presentation.
 df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_New_Papers.csv')
 print(df.dtypes)
 ind = df.index[df['Title'] == 'Minigrid & Miniworld: Modular & Customizable Reinforcement Learning Environments for Goal-Oriented Tasks'][0]
