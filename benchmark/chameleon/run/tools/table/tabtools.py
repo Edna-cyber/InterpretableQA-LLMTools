@@ -240,15 +240,14 @@ class table_toolkits():
                     continue
                 elif var_name=="global_var":
                     for global_var_name, global_var_value in var_value.items(): 
-                        excluded_types = (types.ModuleType, types.FunctionType, type)
+                        excluded_types = (types.ModuleType, types.FunctionType, type, pd.DataFrame)
                         if global_var_name not in ["__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
-                            pd_types = (pd.DataFrame, pd.Series)
-                            if isinstance(global_var_value, pd_types):
+                            if isinstance(global_var_value, pd.Series):
                                 variable_values[global_var_name] = global_var_value.head().to_dict()
                             else:
                                 variable_values[global_var_name] = global_var_value
                 elif not var_name.startswith('__') and not isinstance(var_value, excluded_types):
-                    if isinstance(var_value, pd_types):
+                    if isinstance(var_value, pd.Series):
                         variable_values[var_name] = var_value.head().to_dict()
                     else:
                         variable_values[var_name] = var_value
@@ -652,7 +651,7 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    # print(db.db_loader('hupd', '2016-2016', 'None', 'None'))  
+    db.db_loader('hupd', '2016-2016', 'None', 'None')
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
     # print(db.pandas_interpreter(pandas_code))
 
@@ -661,7 +660,3 @@ if __name__ == "__main__":
     # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Topic'))
     # db.textual_classifier('cnn', 'Abstract', 'Topic', 'Deep Learning')
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
-    
-    # print(db.db_loader('neurips', '0-3583'))
-    # pandas_code = "import pandas as pd\\nauthors_df = df[\'Authors\'].str.split(\', \', expand=True).stack().reset_index(level=1, drop=True).reset_index(name=\'Author\')\\ntop_authors = authors_df[\'Author\'].value_counts().sort_index().sort_values(ascending=False).index[:5].tolist()"
-    # print(db.pandas_interpreter(pandas_code))

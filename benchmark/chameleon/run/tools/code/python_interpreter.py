@@ -9,10 +9,9 @@ def execute(python_code):
         exec(python_code)
         variable_values = {}
         for var_name, var_value in locals().items(): 
-            excluded_types = (types.ModuleType, types.FunctionType)
+            excluded_types = (types.ModuleType, types.FunctionType, pd.DataFrame)
             if not var_name.startswith('__') and var_name not in ["python_code","variable_values"] and not isinstance(var_value, excluded_types):
-                pd_types = (pd.DataFrame, pd.Series)
-                if isinstance(var_value, pd_types):
+                if isinstance(var_value, pd.Series):
                     variable_values[var_name] = var_value.head().to_dict()
                 else:
                     variable_values[var_name] = var_value

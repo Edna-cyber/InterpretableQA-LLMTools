@@ -113,9 +113,11 @@ def author_num(compare,n):
     return papers / total_papers
 
 question_id = 1
+question_type_count = {1:100, 2:100, 3:100, 4:100, 5:100, 6:100}
+question_types = [1,2,3,4,5,6]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
     while question_id<=600:
-        question_type = random.randint(1,6) 
+        question_type = random.choice(question_types) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)
@@ -128,6 +130,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             # use None to signify not adding to the questions / answers
             if answer:
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[1] -= 1
+                if question_type_count[1]==0:
+                    question_types.remove(1)
                 question_id += 1
         elif question_type == 2:
             # What were the top {#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list of {IPCR/CPC categories}.
@@ -142,6 +147,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             answer = top_accepted_category(num, category, year)
             if answer and len(answer)==num: # deal with some datasets with missing values
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[2] -= 1
+                if question_type_count[2]==0:
+                    question_types.remove(2)
                 question_id += 1
         elif question_type == 3:
             # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
@@ -153,6 +161,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             answer = compare_applications_year(year_1, year_2)
             if answer:
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[3] -= 1
+                if question_type_count[3]==0:
+                    question_types.remove(3)
                 question_id += 1
         elif question_type == 4:
             # What is the title of the patent filed between {start_year} and {end_year} that took the longest time to be published?
@@ -163,6 +174,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             answer = longest_time(start_year, end_year)
             if answer:
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[4] -= 1
+                if question_type_count[4]==0:
+                    question_types.remove(4)
                 question_id += 1
         elif question_type == 5:
             # Who were the top {#} authors with the most publications at NeurIPS? 
@@ -176,6 +190,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             answer = top_authors(num, llm_keyword)
             if answer:
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[5] -= 1
+                if question_type_count[5]==0:
+                    question_types.remove(5)
                 question_id += 1
         else:
             # What proportion of papers have {compare} {n} authors? Return a value between 0 and 1.
@@ -186,5 +203,8 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             answer = author_num(compare,n)
             if answer:
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[6] -= 1
+                if question_type_count[6]==0:
+                    question_types.remove(6)
                 question_id += 1
 
