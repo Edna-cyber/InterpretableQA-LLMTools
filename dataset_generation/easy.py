@@ -22,21 +22,17 @@ def convert_date(series):
 
 # HUPD Template 1: What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
 def average_pendency(start_year, end_year):
-    total_len = 0
-    pedencies_sum = 0
-    
+    df_lst = []
     for year in range(start_year, end_year+1):
         df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
-        df = df[df["decision"] == "ACCEPTED"]
-        total_len += len(df)
         df["filing_date"] = convert_date(df['filing_date'])
         df["patent_issue_date"] = convert_date(df['patent_issue_date'])
-        # Calculate pendencies directly as days
-        pendencies = (df["patent_issue_date"] - df["filing_date"]).dt.days
-        pedencies_sum += pendencies.sum()
-        del df
+        df_lst.append(df)
+    df = pd.concat(df_lst, ignore_index=True)
+    df['duration'] = (df['patent_issue_date'] - df['filing_date']).dt.days
+    average_duration = df['duration'].mean()
     
-    return pedencies_sum / total_len
+    return average_duration
 
 # HUPD Template 2: What were the top {#} {IPCR/CPC categories} with the highest percentage of patent acceptance in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list of {IPCR/CPC categories}. 
 def top_accepted_category(num, category, year):
@@ -115,9 +111,9 @@ def author_num(compare,n):
 
 question_id = 1
 question_type_count = {1:100, 2:100, 3:100, 4:100, 5:100, 6:100}
-question_types = [1,2,3,4,5,6]
+question_types = [1] #[1,2,3,4,5,6]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
-    while question_id<=600:
+    while question_id<=10: # 600
         question_type = random.choice(question_types) 
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
@@ -129,7 +125,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
             answer = average_pendency(start_year, end_year)
             # use None to signify not adding to the questions / answers
-            if answer:
+            if answer and not np.isnan(answer):
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[1] -= 1
                 if question_type_count[1]==0:
@@ -160,7 +156,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 year_2 = random.randint(2004,2018)
             question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}? Return a number.".format(year_1, year_2)
             answer = compare_applications_year(year_1, year_2)
-            if answer:
+            if answer and not np.isnan(answer):
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[3] -= 1
                 if question_type_count[3]==0:
@@ -202,7 +198,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question_phrasings = ["What proportion of papers have {} {} authors? Return a value between 0 and 1.", "What percentage of papers have {} {} authors? Return a value between 0 and 1.", "What's the ratio of papers that have {} {} authors? Return a value between 0 and 1."] 
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(compare,n)
             answer = author_num(compare,n)
-            if answer:
+            if answer and not np.isnan(answer):
                 writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[6] -= 1
                 if question_type_count[6]==0:
