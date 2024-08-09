@@ -10,6 +10,16 @@ import ast
 
 corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
 
+def convert_date(series):
+    if series.dtype==np.float64:
+        series = series.astype('Int64')
+    series = series.astype(str)
+    if "-" in series.iloc[0]:
+        series = pd.to_datetime(series)
+    else:
+        series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
+    return series
+
 # HUPD Template 1: What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
 def average_pendency(start_year, end_year):
     total_len = 0
@@ -19,8 +29,8 @@ def average_pendency(start_year, end_year):
         df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
         df = df[df["decision"] == "ACCEPTED"]
         total_len += len(df)
-        df["filing_date"] = pd.to_datetime(df['filing_date'])
-        df["patent_issue_date"] = pd.to_datetime(df['patent_issue_date'])
+        df["filing_date"] = convert_date(df['filing_date'])
+        df["patent_issue_date"] = convert_date(df['patent_issue_date'])
         # Calculate pendencies directly as days
         pendencies = (df["patent_issue_date"] - df["filing_date"]).dt.days
         pedencies_sum += pendencies.sum()
@@ -55,15 +65,6 @@ def compare_applications_year(year1, year2):
 
 # HUPD Template 4: What is the title of the patent filed between {start_year} and {end_year} that took the longest time to be published?
 def longest_time(start_year, end_year):
-    def convert_date(series):
-        if series.dtype==np.float64:
-            series = series.astype('Int64')
-        series = series.astype(str)
-        if "-" in series.iloc[0]:
-            series = pd.to_datetime(series)
-        else:
-            series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
-        return series
     df_lst = []
     for year in range(start_year, end_year+1):
         df_year = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
