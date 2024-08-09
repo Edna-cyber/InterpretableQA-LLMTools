@@ -5,85 +5,111 @@ import jsonlines
 
 corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
 
-# HUPD Template 5: Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents that will be accepted in the first {n} months of 2013. Return a list of numbers between 0 and 100. 
+# HUPD Template 5: Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents filed in the first {n} months of 2013 that will be accepted. Return a list of percentages, with each value between 0 and 100.
 def forecast(n):
     df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_2013.csv"))
+    print(1) ###
     df["filing_date"] = pd.to_datetime(df['filing_date'])
+    print(2)
     df["month"] = df["filing_date"].dt.month
-    df["acceptance"] = df["decision"].apply(lambda x: 100 if x =="ACCEPTED" else 0)
-    first_few_months = df.groupby("month")['acceptance'].mean().sort_index()
+    print(3)
+    df["acceptance"] = df["decision"].apply(lambda x: 1 if x =="ACCEPTED" else 0)
+    print(4)
+    first_few_months = df.groupby("month")['acceptance'].mean().sort_index()*100 ## maybe need a way to fill in when a month of data is missing
+    print("first few months", first_few_months) ###
     del df
     first_n = first_few_months.head(n).tolist()
     return first_n
 
-# HUPD Template 6: Using the {section} of patent applications from {start_year} to {end_year} for training, what proportion of applications from {year_not_in_the_range} are predicted to be accepted if they fall into the {IPCR/CPC} category of {A-H}?
-def predict_decision(year_not_in_the_range, label):
-    total_len = len(df)
-    accepted_cat_df_len = len(df[df["decision"]=="ACCEPTED"] and df["cpc_category"]==label) 
-    del df
-    return accepted_cat_df_len / total_len
+# HUPD Template 6: Using patent applications from {start_year} to {end_year} for training, predict the decisions of applications from {year_not_in_the_range}. Return a list of "ACCEPTED" and "REJECTED".
+def predict_decision(year_not_in_the_range):
+    df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv").format(year_not_in_the_range))
+    filtered_df = df[(df['decision']=="ACCEPTED") | (df['decision']=="REJECTED")]
+    return filtered_df['decision'].tolist()
 
-# NeurIPS Template 3: Using the {section} of NeurIPS 2023 papers, what proportion of papers are predicted to belong to {topic}?
-def predict_topic(topic):
+# NeurIPS Template 3: Using the rows 1-{num} of NeurIPS papers for training, predict whether the rows {num+1}-3585 of NeurIPS papers belong to {topic}?
+def predict_topic(row_num, topic):
     df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv")) 
-    total_len = len(df)
-    topic_df_len = len(df[df["Topic"]==topic])
-    return topic_df_len / total_len
+    df = df.iloc[row_num+1:]
+    def contains_topic(string):
+        if topic in string:
+            return topic
+        else:
+            return "not "+topic
+    df["Topic"] = df["Topic"].apply(contains_topic)    
+    return df["Topic"].tolist()
 
-# NeurIPS Template 4: Are papers with more than {num} authors more likely to be selected for oral presentations rather than poster presentations? 
-def oral_vs_poster(num):
-    pass
-
-# NeurIPS Template 5: Are the abstract '{abstract}' and the title '{title}' from the same submission? 
-def match(abstract, title):
-    df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
-    return bool(len(df[df["Abstract"]==abstract and df["Title"]==title]))
+# NeurIPS Template 4: Using the first {num-1} papers for training, determine a threshold for the number of authors among the {num}-3585 NeurIPS papers. Papers with more authors than this threshold should be more often oral presentations compared to papers with fewer authors.
+def threshold(num):
+    df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv")) 
+    df = df.iloc[num:]
+    df["num_authors"] = df["Authors"].str.split(" · ").apply(len)
+    df["oral_bool"] = df["Oral"].apply(lambda x: 1 if x =="TRUE" else 0)
+    number_of_authors = df["num_authors"].unique()
+    thresholds = []
+    for threshold in range(min(number_of_authors), max(number_of_authors)+1):
+        more_than_threshold = df[df["num_authors"]>threshold]["oral_bool"].mean()
+        less_than_threshold = df[df["num_authors"]<=threshold]["oral_bool"].mean()
+        if more_than_threshold>less_than_threshold:
+            thresholds.append(threshold)
+    return thresholds
 
 question_id = 1
+question_type_count = {7:100, 8:100, 9:100, 10:100}
+question_types = [7,8,9,10]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/medium.jsonl', mode='w') as writer:
-    while question_id<=500: 
-        question_type = random.randint(7,11) 
+    while question_id<=1: # 400
+        question_type = random.choice(question_types) 
         if question_id==7:
-            # Based on the patent applications per month from {start_year} to 2012, estimate the percentage of patents that will be accepted in the first {n} months of 2013. Return a list of numbers between 0 and 100. 
+            # Based on the patent applications per month from {} to 2012, estimate the percentage of patents filed in the first {} months of 2013 that will be accepted. Return a list of percentages, with each value between 0 and 100.
             start_year = random.randint(2004,2012)
             n = random.randint(1,12)
-            question_phrasings = ["Based on the patent applications per month from {} to 2012, estimate the percentage of patents that will be accepted in the first {} months of 2013. Return a list of numbers between 0 and 100.", "Given the patent applications per month from {} to 2012, predict the proportion of patents that will be accepted in the first {} months of 2013. Return a list of numbers between 0 and 100."] 
+            question_phrasings = ["Based on the patent applications per month from {} to 2012, estimate the percentage of patents filed in the first {} months of 2013 that will be accepted. Return a list of percentages, with each value between 0 and 100.", "Given the patent applications per month from {} to 2012, predict the acceptance percentage for patents filed in the first {} months of 2013. Return a list of percentages ranging from 0 to 100."] 
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year,n)
             answer = forecast(n)
+            # use None to signify not adding to the questions / answers
+            if answer:
+                writer.write({"qid": "medium-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
+                question_type_count[7] -= 1
+                if question_type_count[7]==0:
+                    question_types.remove(7)
+                question_id += 1
         elif question_id==8:
-            # Using the {section} of patent applications from {start_year} to {end_year} for training, what proportion of applications from {year_not_in_the_range} are predicted to be accepted if they fall into the CPC category of {A-H}?
-            section = random.choice(["abstracts", "backgrounds", "summaries", "full descriptions"]) 
+            # Using patent applications from {start_year} to {end_year} for training, predict the decisions of applications from {year_not_in_the_range}. Return a list of "ACCEPTED" and "REJECTED".
             start_year = random.randint(2004,2012)
             end_year = random.randint(start_year,2012)
             year_not_in_the_range = random.randint(2013,2018)
-            label = random.choice() ### in the format of e.g. A01 Technology
-            question = "Using the {} of patent applications from {} to {} for training, what proportion of applications from {} are predicted to be accepted if they fall into the CPC category of {}?".format(section, start_year, end_year, year_not_in_the_range, label)
-            answer = predict_decision(year_not_in_the_range, label)
+            question = "Using patent applications from {} to {} for training, predict the decisions of applications from {}. Return a list of 'ACCEPTED' and 'REJECTED'.".format(start_year, end_year, year_not_in_the_range)
+            answer = predict_decision(year_not_in_the_range)
+            if answer:
+                writer.write({"qid": "medium-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
+                question_type_count[8] -= 1
+                if question_type_count[8]==0:
+                    question_types.remove(8)
+                question_id += 1
         elif question_id==9:
-            # Using the {section} of NeurIPS 2023 papers, what proportion of these papers are predicted to belong to the {topic} topic? 
-            section = random.choice(["abstracts", "titles"]) 
-            topic = random.choice() ### need all
-            question_phrasings = ["Using the {} of NeurIPS 2023 papers, what proportion of these papers are predicted to belong to the {} topic?", "Based on the {} from NeurIPS 2023 papers, what proportion of these papers are predicted to fall into the {} category?", "Given the {} of NeurIPS 2023 papers, what fraction of these papers is anticipated to be classified under the {} topic?"] 
-            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(section, topic)
-            answer = predict_topic(topic)
-        elif question_id==10:
-            # Are papers with more than {num} authors more likely to be selected for oral presentations rather than poster presentations? 
-            num = random.randint(1,20)
-            order = random.randint(0,1)
-            if order==0:
-                question_phrasings = ["Are papers with more than {} authors more likely to be selected for oral presentations rather than poster presentations?", "Do papers with more than {} authors have a higher chance of being chosen for oral presentations instead of poster presentations?", "Do papers with more than {} authors tend to be selected for oral presentations rather than poster presentations?"]
-            else:
-                question_phrasings = ["Are papers with more than {} authors more likely to be selected for poster presentations rather than oral presentations?", "Do papers with more than {} authors have a higher chance of being chosen for poster presentations instead of oral presentations?", "Do papers with more than {} authors tend to be selected for poster presentations rather than oral presentations?"]
-            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(num)
-            answer = oral_vs_poster(num)
+            # Using the rows 1-{num} of NeurIPS papers for training, predict whether the rows {num+1}-3585 of NeurIPS papers belong to {topic}? Return a list of '{topic}' and 'not {topic}'.
+            topic = random.choice(["Deep Learning", "Reinforcement Learning", "Applications", "Theory", "Data-centric AI", "Probabilistic Methods", "Social Aspects", "Optimization"]) 
+            row_num = random.choice(list(range(1000, 3000+1, 250)))
+            question_phrasings = ["Using the rows 1-{} of NeurIPS papers for training, predict whether the rows {}-3585 of NeurIPS papers belong to {}? Return a list of '{}' and 'not {}'.", "Given the rows 1-{} from NeurIPS papers for training, predict whether the NeurIPS papers in rows {}-3585 fall into the {} category? Return a list of '{}' and 'not {}'.", "Given the {} of NeurIPS papers, predict whether the NeurIPS papers in rows {} through 3585 are anticipated to be classified under the {} topic? Return a list of '{}' and 'not {}'."] 
+            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(row_num, row_num+1, topic, topic, topic)
+            answer = predict_topic(row_num, topic)
+            if answer:
+                writer.write({"qid": "medium-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
+                question_type_count[9] -= 1
+                if question_type_count[9]==0:
+                    question_types.remove(9)
+                question_id += 1
         else:
-            # Are the abstract '{abstract}' and the title '{title}' from the same submission? 
-            abstract = random.choice ###
-            title = random.choice ###
-            question = "Are the abstract '{}' and the title '{}' from the same submission?".format(abstract,title)
-            answer = match(abstract,title)
-        # use None to signify not adding to the questions / answers
-        if answer:
-            writer.write({"qid": "medium-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
-            question_id += 1
+            # Using the first {num-1} papers for training, determine a threshold for the number of authors among the {num}-3585 NeurIPS papers. Papers with more authors than this threshold should be more often oral presentations compared to papers with fewer authors.
+            num = random.choice(list(range(100,3500+1,100)))
+            question_phrasings = ["Using the first {} papers for training, determine a threshold for the number of authors among the {}-3585 NeurIPS papers. Papers with more authors than this threshold should be more often oral presentations compared to papers with fewer authors.", "Using the first {} papers for training, identify a threshold number of authors for the {}-3585 NeurIPS papers. Papers with more authors than this threshold are more often oral presentations compared to those with fewer authors.", "Using the first {} papers for training, find the number of authors threshold for the {}-3585 NeurIPS papers, where papers exceeding this threshold are more often oral presentations than those with fewer authors."]
+            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(num-1,num)
+            answer = threshold(num)
+            if answer:
+                writer.write({"qid": "medium-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
+                question_type_count[10] -= 1
+                if question_type_count[10]==0:
+                    question_types.remove(10)
+                question_id += 1
 
