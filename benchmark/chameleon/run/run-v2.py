@@ -16,11 +16,12 @@ from utilities import *
 from model import solver
 
 from tools.finish import finish
-from tools.code.python_interpreter import execute as python_interpreter
-from tools.simple_model.forecaster import forecast as forecaster
-from tools.llm.llm_inferencer import llm_inferencer 
-from tools.math.calculator import calculator
-from tools.table.tabtools import table_toolkits
+from tools.python_interpreter import execute as python_interpreter
+from tools.forecaster import forecast as forecaster
+from tools.tfidf import tfidf as tfidf
+from tools.llm_inferencer import llm_inferencer 
+from tools.calculator import calculator
+from tools.tabtools import table_toolkits
 import datetime
 
 from api.gpt4 import call_gpt4, call_gpt3_5
@@ -37,6 +38,7 @@ db = table_toolkits()
 ACTION_LIST = {
     'Calculate': calculator,
     'LoadDB': db.db_loader, 
+    'TFIDF': tfidf,
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
     'Forecaster': forecaster,
@@ -53,18 +55,20 @@ def calc_cost1(function_type, function_arguments):
     if function_type=="Calculate":
         return 2
     if function_type=="LoadDB":
-        return 3
+        return 3   
+    if function_type=="TFIDF":
+        return 5
     if function_type=="PandasInterpreter":
         num_lines = len(function_arguments["pandas_code"].splitlines()) 
         num_packages = function_arguments["pandas_code"].count('import')
         if num_lines<10:
             lines_cost = 4
         elif num_lines<=20:
-            lines_cost = 7
-        elif num_lines<=100:
-            lines_cost = 9
-        else:
             lines_cost = 10
+        elif num_lines<=100:
+            lines_cost = 15
+        else:
+            lines_cost = 20
         if num_packages<2:
             packages_cost = 1
         elif num_packages<=5:
@@ -78,11 +82,11 @@ def calc_cost1(function_type, function_arguments):
         if num_lines<10:
             lines_cost = 4
         elif num_lines<=20:
-            lines_cost = 7
-        elif num_lines<=100:
-            lines_cost = 9
-        else:
             lines_cost = 10
+        elif num_lines<=100:
+            lines_cost = 15
+        else:
+            lines_cost = 20
         if num_packages<2:
             packages_cost = 1
         elif num_packages<=5:
@@ -299,11 +303,7 @@ if __name__ == "__main__":
             writer.write(row)
 
     for key in performance.keys():
-        if key in []: ### "1","3"
-            actual_mean = sum(performance[key][1]) / len(performance[key][1])
-            sstot = sum((x-actual_mean)**2 for x in performance[key][1])
-            performance[key] = 1 - performance[key][0]/sstot
-        elif key in ["1","2","3","4","5","6"]: 
+        if key in ["1","2","3","4","5","6"]: 
             performance[key] = performance[key] / (count[key]-errors[key])
         elif key in []: 
             pass

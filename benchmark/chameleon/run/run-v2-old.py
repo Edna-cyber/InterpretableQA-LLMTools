@@ -6,6 +6,7 @@ import jsonlines
 import argparse
 import random
 from tqdm import tqdm
+from sklearn.metrics import f1_score
 from demos import prompt_policy
 from openai import OpenAI
 from collections import defaultdict
@@ -18,10 +19,17 @@ from model import solver
 from tools.finish import finish
 from tools.python_interpreter import execute as python_interpreter
 from tools.forecaster import forecast as forecaster
+from tools.tfidf import tfidf as tfidf
 from tools.llm_inferencer import llm_inferencer 
 from tools.calculator import calculator
 from tools.tabtools import table_toolkits
 import datetime
+
+from api.gpt4 import call_gpt4, call_gpt3_5
+from api.gemini import call_gemini_pro
+from api.claude import call_claude3
+
+from tools.tools_set import tools_gpt, tools_gemini
 
 current_datetime = datetime.datetime.now()
 datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
@@ -30,6 +38,7 @@ db = table_toolkits()
 ACTION_LIST = {
     'Calculate': calculator,
     'LoadDB': db.db_loader, 
+    'TFIDF': tfidf,
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
     'Forecaster': forecaster,
@@ -41,191 +50,25 @@ ACTION_LIST = {
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "Calculate",
-            "description": "Conduct an arithmetic operation",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "input_query": {
-                        "type": "string",
-                        "description": "An arithmetic operation containing only numbers and operators, e.g. 2*3.",
-                    }
-                },
-                "required": ["input_query"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "LoadDB",
-            "description": "Load a database specified by the DBName, train and test subsets, and a column to be predicted. Normally, we only use LoadDB when the question requires data from a specific structured database.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "target_db": {
-                        "type": "string",
-                        "description": "The name of the database to be loaded. The only choices for target_db are hupd (a patent dataset) and neurips (a papers dataset).",
-                    },
-                    "train_duration": {
-                        "type": "string",
-                        "description": "The training subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2004-2006. When target_db is neurips, specify the range of rows in the format 0-endRow, e.g. 0-2000. When the task does not involve prediction and the target_db is neurips, use the default range 0-3585.",
-                    },
-                    "test_duration": {
-                        "type": "string",
-                        "description": "The testing subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2016-2018. When target_db is neurips, specify the range of rows in the format startRow-3585, e.g. 2001-3585, where startRow must be one more than the endRow of train_duration. When the task does not involve prediction, set this value to None.",
-                    },
-                    "outcome_col": {
-                        "type": "string",
-                        "description": "The column to predict if the task involves making a prediction. If no prediction is required, set this value to None.",
-                    }
-                },
-                "required": ["target_db", "train_duration"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "PandasInterpreter",
-            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "pandas_code": {
-                        "type": "string",
-                        "description": "Pandas code written in Python that involves operations on a DataFrame df",
-                    }
-                },
-                "required": ["pandas_code"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "PythonInterpreter",
-            "description": "Interpret Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "python_code": {
-                        "type": "string",
-                        "description": "Python code",
-                    }
-                },
-                "required": ["python_code"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "Forecaster",
-            "description": "Run a specified forecast model on the previous data to predict the next forecast_len data points",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "model_name": {
-                        "type": "string",
-                        "description": "The model_name can be linear_regression or ARIMA",
-                    },
-                    "previous_data": {
-                        "type": "string",
-                        "description": "A list of past data points used to train the forecast model",
-                    },
-                    "forecast_len": {
-                        "type": "integer",
-                        "description": "The number of data points to be predicted by the forecast model",
-                    } 
-                },
-                "required": ["model_name", "previous_data", "forecast_len"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "TextualClassifier",
-            "description": "Run a specified classifier model on the given textual predictorSection to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "model_name": {
-                        "type": "string",
-                        "description": "The model_name can be logistic_regression, distilbert-base-uncased, cnn, or naive_bayes.",
-                    },
-                    "section": {
-                        "type": "string",
-                        "description": "The predictor variable of the classifier model, which is a column that consists of natural language requiring tokenization.",
-                    },
-                    "target": {
-                        "type": "string",
-                        "description": "The target variable of the classifier model.",
-                    },
-                    "one_v_all": {
-                        "type": "string",
-                        "description": "The class label for a one-vs-all classification task. When it's set to default value None, the model will predict all possible classes.",
-                    }
-                },
-                "required": ["model_name", "section", "target"], 
-            },
-        },
-    }, 
-    {
-        "type": "function",
-        "function": {
-            "name": "LLMInterpreter",
-            "description": "Use the current LLM to generate an answer."
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "Finish",
-            "description": "Terminate the task and return the final answer. You must use Finish as the final module for solving each question.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "variable_values": {
-                        "type": "string",
-                        "description": "A string that evaluates to a dictionary of variables and their corresponding values.",
-                    },
-                    "answer_variable": {
-                        "type": "string",
-                        "description": "A key among the variable_values dictionary that corresponds to the variable which best addresses the question.",
-                    },
-                    "answer_type": {
-                        "type": "string",
-                        "description": "A string specifying the required type for the final answer. The only choices are list, float, integer, and string."
-                    }
-                },
-                "required": ["variable_values", "answer_variable", "answer_type"], 
-            },
-        },
-    }
-]
 
 def calc_cost1(function_type, function_arguments):
     if function_type=="Calculate":
         return 2
     if function_type=="LoadDB":
-        return 3
+        return 3   
+    if function_type=="TFIDF":
+        return 5
     if function_type=="PandasInterpreter":
         num_lines = len(function_arguments["pandas_code"].splitlines()) 
         num_packages = function_arguments["pandas_code"].count('import')
         if num_lines<10:
             lines_cost = 4
         elif num_lines<=20:
-            lines_cost = 7
-        elif num_lines<=100:
-            lines_cost = 9
-        else:
             lines_cost = 10
+        elif num_lines<=100:
+            lines_cost = 15
+        else:
+            lines_cost = 20
         if num_packages<2:
             packages_cost = 1
         elif num_packages<=5:
@@ -239,11 +82,11 @@ def calc_cost1(function_type, function_arguments):
         if num_lines<10:
             lines_cost = 4
         elif num_lines<=20:
-            lines_cost = 7
-        elif num_lines<=100:
-            lines_cost = 9
-        else:
             lines_cost = 10
+        elif num_lines<=100:
+            lines_cost = 15
+        else:
+            lines_cost = 20
         if num_packages<2:
             packages_cost = 1
         elif num_packages<=5:
@@ -283,7 +126,8 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument("--hardness", type=str, default="easy")
     parser.add_argument("--version", type=str, default="v3")
-    parser.add_argument("--gpt", type=str, default="gpt3")
+    parser.add_argument("--prompt", type=str, default="clean")
+    parser.add_argument("--formula", type=str, default="")
     # module prediction
     parser.add_argument('--modules', nargs='+', default=None, help='default modules') 
     parser.add_argument('--policy_engine', type=str, default="gpt-3.5-turbo", help='engine for module prediction')
@@ -307,8 +151,8 @@ if __name__ == "__main__":
     # Get the result file
     result_root = f"{args.output_root}" 
     os.makedirs(result_root, exist_ok=True)
-    result_file = f"{result_root}/{args.label}_{args.test_split}.json"
-    cache_file = f"{result_root}/{args.label}_{args.test_split}_cache.jsonl"
+    result_file = f"{result_root}/{args.policy_engine}-{args.prompt}-{args.formula}-test.json"
+    cache_file = f"{result_root}/{args.policy_engine}-{args.prompt}-{args.formula}-cache.jsonl"
     cache = []
     cost_function = calc_cost1 # Change with experiment
 
@@ -328,8 +172,10 @@ if __name__ == "__main__":
         per_question_cost = 0
         count[question_type] += 1
 
-        # messages = prompt_policy.messages.copy() # Change with experiment
-        messages = prompt_policy.messages_formula.copy()
+        if args.prompt=="clean":
+            messages = prompt_policy.messages.copy() # Change with experiment
+        elif args.prompt=="interp":
+            messages = prompt_policy.messages_formula.copy()
         
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
@@ -339,7 +185,7 @@ if __name__ == "__main__":
 
         while iterations<10:
             try:
-                response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools, tool_choice="auto")
+                response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice="auto")
                 # print("response", response) 
                 choice = response.choices[0]
                 response_message = choice.message
@@ -437,16 +283,29 @@ if __name__ == "__main__":
                     performance[question_type] += int(llm_answer==gt_answer)
                 except:
                     errors[question_type] += 1
-            elif question_type in []: # F1
-                pass
+            elif question_type in ["7"]: # R2
+                if question_type not in performance:
+                    performance[question_type] = [0,[]]
+                try:
+                    performance[question_type][0] += (llm_answer-gt_answer)**2
+                    performance[question_type][1].append(gt_answer)
+                except:
+                    errors[question_type] += 1
+            elif question_type in ["8"]: # macro F1
+                if question_type not in performance:
+                    performance[question_type] = 0
+                try:
+                    performance[question_type] += f1_score(true_labels, predicted_labels, average='macro')
+                except:
+                    errors[question_type] += 1
         
         cost_original[question_type].append(per_question_cost) 
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
-        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.gpt, datetime_string, args.hardness, args.version)): #<YOUR_OWN_PATH>
-            os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.gpt, datetime_string, args.hardness, args.version)) #<YOUR_OWN_PATH>
-            logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.gpt, datetime_string, args.hardness, args.version) #<YOUR_OWN_PATH>
+        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}'.format(datetime_string, args.hardness, args.version)): #<YOUR_OWN_PATH>
+            os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}'.format(datetime_string, args.hardness, args.version)) #<YOUR_OWN_PATH>
+            logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}'.format(datetime_string, args.hardness, args.version) #<YOUR_OWN_PATH>
         with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
             for item in logs:
                 f.write(f"{item}\n")
@@ -456,14 +315,17 @@ if __name__ == "__main__":
             writer.write(row)
 
     for key in performance.keys():
-        if key in []: ### "1","3"
-            actual_mean = sum(performance[key][1]) / len(performance[key][1])
-            sstot = sum((x-actual_mean)**2 for x in performance[key][1])
-            performance[key] = 1 - performance[key][0]/sstot
-        elif key in ["1","2","3","4","5","6"]: 
+        if key in ["1","2","3","4","5","6","8"]: 
             performance[key] = performance[key] / (count[key]-errors[key])
-        elif key in []: 
-            pass
+        elif key in ["7"]: 
+            print("before", performance[key])
+            actual_mean = sum(performance[key][1]) / len(performance[key][1])
+            print("actual_mean", actual_mean)
+            sstot = sum((x-actual_mean)**2 for x in performance[key][1])
+            print("sstot", sstot)
+            print("performance[key][0]", performance[key][0])
+            performance[key] = 1 - performance[key][0]/sstot
+            print("after", performance[key])
     for key in errors.keys():
         errors[key] = errors[key] / count[key]
     for key in cost.keys():

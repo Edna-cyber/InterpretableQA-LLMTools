@@ -420,7 +420,8 @@ ans = solution(19)
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LLMInferencer'
+                    'name': 'LLMInferencer',
+                    'arguments': ""
                 },
                 'type': 'function'
             }
@@ -430,7 +431,7 @@ ans = solution(19)
         'tool_call_id': 'call_0',
         'role': 'tool',
         'name': 'LLMInferencer',
-        'content': "{'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}"
+        'content': "Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key 'ans' and place your answer inside the dictionary, like this: {'ans': your_answer}. Nest, call the Finish tool with this dictionary as variable_values."
     },
     {
         'role': 'assistant',
@@ -998,8 +999,10 @@ To execute: LLMInferencer()""",
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LLMInferencer'
+                    'name': 'LLMInferencer',
+                    'arguments': ""
                 },
+
                 'type': 'function'
             }
         ]
@@ -1008,7 +1011,7 @@ To execute: LLMInferencer()""",
         'tool_call_id': 'call_0',
         'role': 'tool',
         'name': 'LLMInferencer',
-        'content': "{'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}"
+        'content': "Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key 'ans' and place your answer inside the dictionary, like this: {'ans': your_answer}. Nest, call the Finish tool with this dictionary as variable_values." 
     },
     {
         'role': 'assistant',

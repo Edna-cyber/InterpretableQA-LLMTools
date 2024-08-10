@@ -1,6 +1,3 @@
-
-
-
 tools_gpt = [
     {
         "type": "function",
@@ -45,6 +42,27 @@ tools_gpt = [
                     }
                 },
                 "required": ["target_db", "train_duration"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "TFIDF",
+            "description": "Find the most relevant document for a given query or to identify pairs of documents that are most relevant to each other",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "A query or a reference document used for comparison."
+                    },
+                    "document": {
+                        "type": "string",
+                        "description": "A document to be compared against the query."
+                    }
+                },
+                "required": ["query", "document"],
             },
         },
     },
@@ -140,7 +158,9 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "LLMInterpreter",
-            "description": "Use the current LLM to generate an answer."
+            "description": "Use the current LLM to generate an answer.",
+            "parameters": {},
+            "required": [],
         },
     },
     {
@@ -169,6 +189,8 @@ tools_gpt = [
         },
     }
 ]
+
+
 
 tools_gemini = [
   {
@@ -215,6 +237,28 @@ tools_gemini = [
             }
           },
           "required": ["target_db", "train_duration"]
+        }
+      }
+    ]
+  },
+  {
+    "function_declarations": [
+      {
+        "name": "TFIDF",
+        "description": "Find the most relevant document for a given query or to identify pairs of documents that are most relevant to each other",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "A query or a reference document used for comparison."
+            },
+            "document": {
+              "type": "string",
+              "description": "A document to be compared against the query."
+            }
+          },
+          "required": ["query", "document"]
         }
       }
     ]
@@ -346,4 +390,3 @@ tools_gemini = [
     ]
   }
 ]
-
