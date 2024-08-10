@@ -268,7 +268,7 @@ class table_toolkits():
         else:
             return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
         try: 
-            exec(pandas_code, global_var)
+            exec(pandas_code, globals(), global_var)
             variable_values = {}
             for var_name, var_value in locals().items(): 
                 if var_name in ["self", "pandas_code","variable_values"]:

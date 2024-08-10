@@ -312,6 +312,102 @@ ans = solution(19)
     {
         'role': 'assistant',
         'content': "The predicted average length of claims for patent applications in 2010 and 2011 are respectively 6020 characters and 5999 characters."
+    },
+    {
+        'role': 'user',
+        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.' Document 2: 'Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.' Which of these two is more relevant to the search query 'machine learning'?"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.)""",
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'TFIDF',
+                    'arguments': json.dumps({
+                        "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems." 
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'TFIDF',
+        'content': "{'match':1}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: TFIDF(machine learning, Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.)""",
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'TFIDF',
+                    'arguments': json.dumps({
+                        "query": "machine learning", "document": "Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants." 
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'TFIDF',
+        'content': "{'match':0}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: PythonInterpreter""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'PythonInterpreter',
+                    'arguments': json.dumps({
+                        "python_code": "def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'PythonInterpreter',
+        'content': "{'most_relevant': 'Document 1'}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Finish({'most_relevant': 'Document 1'}, most_relevant, string)""",
+        'tool_calls': [
+            {
+                'id': 'call_3',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_3',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "Document 1"
+    },
+    {
+        'role': 'assistant',
+        'content': "Document 1 is more relevant to the search query 'machine learning'."
     }
 ]
 
@@ -334,39 +430,45 @@ Interpretability Cost Formulas:
 
 2. LoadDB: Cost is 3
 
-3. PandasInterpreter: Cost is based on the number of lines of Python code and the number of imported packages:
+3. TFIDF: Cost is 5
+
+4. PandasInterpreter: Cost is based on the number of lines of Python code and the number of imported packages:
     - Number of Lines of Python Code:
         - If less than 10 lines: 4
-        - If between 10 and 20 lines: 7
-        - If between 21 and 100 lines: 9
-        - If more than 100 lines: 10
+        - If between 10 and 20 lines: 10
+        - If between 21 and 100 lines: 15
+        - If more than 100 lines: 20
     - Number of Imported Packages:
         - If fewer than 2 packages: 1
         - If between 2 and 5 packages: 1.5
         - If more than 5 packages: 2
     - Formula: (Cost based on number of lines) * (Cost based on number of packages)
 
-4. PythonInterpreter: Cost is similar to PandasInterpreter, based on the number of lines of Python code and the number of imported packages:
+5. PythonInterpreter: Cost is similar to PandasInterpreter, based on the number of lines of Python code and the number of imported packages:
     - Number of Lines of Python Code:
         - If less than 10 lines: 4
-        - If between 10 and 20 lines: 7
-        - If between 21 and 100 lines: 9
-        - If more than 100 lines: 10
+        - If between 10 and 20 lines: 10
+        - If between 21 and 100 lines: 15
+        - If more than 100 lines: 20
     - Number of Imported Packages:
         - If fewer than 2 packages: 1
         - If between 2 and 5 packages: 1.5
         - If more than 5 packages: 2
     - Formula: (Cost based on number of lines) * (Cost based on number of packages)
 
-5. TextualClassifier: Cost is based on the model name:
+6. TextualClassifier: Cost is based on the model name:
     - If model name is "logistic_regression": 7
     - If model name is "naive_bayes": 8
     - If model name is "cnn": 15
     - If model name is "distilbert-base-uncased": 20
 
-6. Forecaster: Cost is based on the model name:
+7. Forecaster: Cost is based on the model name:
     - If model name is "linear_regression": 6
     - If model name is "ARIMA": 8
+
+8. Summarizer: 25
+
+9. LLMInferencer: 30
 
 You cannot sacrifice accuracy for interpretability. Below are some examples that map the problem to the tools.
     """
@@ -721,6 +823,113 @@ To execute: LoadDB(hupd, 2007-2009, 2010-2011, claims)""",
     {
         'role': 'assistant',
         'content': "The predicted average length of claims for patent applications in 2010 and 2011 are respectively 6020 characters and 5999 characters."
+    },
+    {
+        'role': 'user',
+        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.' Document 2: 'Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.' Which of these two is more relevant to the search query 'machine learning'?"
+    },
+    {
+        'role': 'assistant',
+        'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n    vectorizer = TfidfVectorizer()\n    tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n    similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n    similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n    if similarity_doc1 > similarity_doc2:\n        return 'Document 1'\n    elif similarity_doc2 > similarity_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.'\ndoc2 = 'Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2))
+Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.), TFIDF(machine learning, Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))
+Modules3: LLMInferencer()
+
+Thought: Total interpretability cost of Modules1 is calculated as follows: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n    vectorizer = TfidfVectorizer()\n    tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n    similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n    similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n    if similarity_doc1 > similarity_doc2:\n        return 'Document 1'\n    elif similarity_doc2 > similarity_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.'\ndoc2 = 'Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)): 10 (the number of lines of python_code is between 10 and 20 lines) * 1.5 (the number of imported packages in python_code is between 2 and 5 packages) = 15. Summing these costs: 15.
+Total interpretability cost of Modules2 is calculated as follows: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.): 5, TFIDF(machine learning, Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.): 5, PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 5+5+4=14.
+Total interpretability cost of Modules3 is calculated as follows: LLMInferencer(): 30. Summing these costs: 30. 
+Therefore, Modules2 is selected because it has the lower total interpretability cost of 14 compared to 15 for Modules1 and 30 for Modules3. 
+
+Best Modules: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.), TFIDF(machine learning, Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))
+
+To execute: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.)""",
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'TFIDF',
+                    'arguments': json.dumps({
+                        "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems." 
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'TFIDF',
+        'content': "{'match':1}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: TFIDF(machine learning, Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.)""",
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'TFIDF',
+                    'arguments': json.dumps({
+                        "query": "machine learning", "document": "Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants." 
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'TFIDF',
+        'content': "{'match':0}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))""",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'PythonInterpreter',
+                    'arguments': json.dumps({
+                        "python_code": "def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'PythonInterpreter',
+        'content': "{'most_relevant': 'Document 1'}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Finish({'most_relevant': 'Document 1'}, most_relevant, string)""",
+        'tool_calls': [
+            {
+                'id': 'call_3',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_3',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "Document 1"
+    },
+    {
+        'role': 'assistant',
+        'content': "Document 1 is more relevant to the search query 'machine learning'."
     }
 ]
 

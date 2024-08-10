@@ -4,11 +4,12 @@ import pandas as pd
 def execute(python_code):
     """
     Executes the provided Python code.
-    """
+    """    
     try: 
-        exec(python_code)
+        exec(python_code, globals())
         variable_values = {}
-        for var_name, var_value in locals().items(): 
+        combined = globals() | locals()
+        for var_name, var_value in combined.items(): 
             excluded_types = (types.ModuleType, types.FunctionType, pd.DataFrame)
             if not var_name.startswith('__') and var_name not in ["python_code","variable_values"] and not isinstance(var_value, excluded_types):
                 if isinstance(var_value, pd.Series):
