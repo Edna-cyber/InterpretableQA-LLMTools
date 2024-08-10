@@ -56,9 +56,9 @@ def threshold(num):
 
 question_id = 1
 question_type_count = {7:100, 8:100, 9:100, 10:100}
-question_types = [7,8,9,10]
+question_types = [7] #[7,8,9,10]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/medium.jsonl', mode='w') as writer:
-    while question_id<=1: # 400
+    while question_id<=10: # 400
         question_type = random.choice(question_types) 
         if question_id==7:
             # Based on the patent applications per month from {} to 2012, estimate the percentage of patents filed in the first {} months of 2013 that will be accepted. Return a list of percentages, with each value between 0 and 100.
@@ -89,7 +89,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 question_id += 1
         elif question_id==9:
             # Using the rows 1-{num} of NeurIPS papers for training, predict whether the rows {num+1}-3585 of NeurIPS papers belong to {topic}? Return a list of '{topic}' and 'not {topic}'.
-            topic = random.choice(["Deep Learning", "Reinforcement Learning", "Applications", "Theory", "Data-centric AI", "Probabilistic Methods", "Social Aspects", "Optimization"]) 
+            topic = random.choice(["Deep Learning", "Reinforcement Learning", "Health", "Applications", "Theory", "Data-centric AI", "Probabilistic Methods", "Social Aspects", "Optimization"]) 
             row_num = random.choice(list(range(1000, 3000+1, 250)))
             question_phrasings = ["Using the rows 1-{} of NeurIPS papers for training, predict whether the rows {}-3585 of NeurIPS papers belong to {}? Return a list of '{}' and 'not {}'.", "Given the rows 1-{} from NeurIPS papers for training, predict whether the NeurIPS papers in rows {}-3585 fall into the {} category? Return a list of '{}' and 'not {}'.", "Given the {} of NeurIPS papers, predict whether the NeurIPS papers in rows {} through 3585 are anticipated to be classified under the {} topic? Return a list of '{}' and 'not {}'."] 
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(row_num, row_num+1, topic, topic, topic)

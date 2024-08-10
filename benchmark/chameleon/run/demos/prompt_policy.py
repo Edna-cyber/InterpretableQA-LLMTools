@@ -408,6 +408,55 @@ ans = solution(19)
     {
         'role': 'assistant',
         'content': "Document 1 is more relevant to the search query 'machine learning'."
+    },
+    {
+        'role': 'user',
+        'content': "Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: LLMInferencer()""",
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LLMInferencer'
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'LLMInferencer',
+        'content': "{'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)""",
+        'tool_calls': [
+            {
+                'id': 'call_3',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": "{'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}", "answer_variable": "ans", "answer_type": "string"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_3',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models"
+    },
+    {
+        'role': 'assistant',
+        'content': "A common theme that links these papers is 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'."
     }
 ]
 
@@ -456,17 +505,15 @@ Interpretability Cost Formulas:
         - If more than 5 packages: 2
     - Formula: (Cost based on number of lines) * (Cost based on number of packages)
 
-6. TextualClassifier: Cost is based on the model name:
+7. TextualClassifier: Cost is based on the model name:
     - If model name is "logistic_regression": 7
     - If model name is "naive_bayes": 8
     - If model name is "cnn": 15
     - If model name is "distilbert-base-uncased": 20
 
-7. Forecaster: Cost is based on the model name:
+8. Forecaster: Cost is based on the model name:
     - If model name is "linear_regression": 6
     - If model name is "ARIMA": 8
-
-8. Summarizer: 25
 
 9. LLMInferencer: 30
 
@@ -930,6 +977,64 @@ To execute: TFIDF(machine learning, Machine learning is a specialized branch of 
     {
         'role': 'assistant',
         'content': "Document 1 is more relevant to the search query 'machine learning'."
+    },
+    {
+        'role': 'user',
+        'content': "Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'"
+    },
+    {
+        'role': 'assistant',
+        'content': """Modules1: LLMInferencer()
+Modules2: PandasInterpreter(from collections import Counter\nmost_frequent_topic = Counter(df[df[\"Title\"] == \"4D Panoptic Scene Graph Generation\"][\"Topic\"].str.split(\"/\").values[0] + df[df[\"Title\"] == \"VoxDet: Voxel Learning for Novel Instance Detection\"][\"Topic\"].str.split(\"/\").values[0] + df[df[\"Title\"] == \"L2T-DLN: Learning to Teach with Dynamic Loss Network\"][\"Topic\"].str.split(\"/\").values[0]).most_common(1)[0][0])
+
+Thought: Total interpretability cost of Modules1 is calculated as follows: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n    vectorizer = TfidfVectorizer()\n    tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n    similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n    similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n    if similarity_doc1 > similarity_doc2:\n        return 'Document 1'\n    elif similarity_doc2 > similarity_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.'\ndoc2 = 'Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)): 10 (the number of lines of python_code is between 10 and 20 lines) * 1.5 (the number of imported packages in python_code is between 2 and 5 packages) = 15. Summing these costs: 15.
+Total interpretability cost of Modules2 is calculated as follows: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence focused on developing algorithms that allow computers to learn from data. It involves techniques that enable systems to improve their performance on tasks over time without being explicitly programmed. Applications of machine learning include predictive analytics, natural language processing, and recommendation systems.): 5, TFIDF(machine learning, Artificial intelligence (AI) is a broad field that encompasses various technologies aimed at simulating human intelligence. It includes subfields like machine learning, computer vision, and natural language processing. AI technologies are used in diverse applications, from autonomous vehicles to virtual personal assistants.): 5, PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)): 4 (the number of lines of python_code < 10) * 1 (the number of imported packages in python_code < 2) = 4. Summing these costs: 5+5+4=14.
+Therefore, Modules1 is selected because it has the lower total interpretability cost of 14 compared to 15 for Modules1 and 30 for Modules3. 
+
+Best Modules: LLMInferencer()
+
+To execute: LLMInferencer()""",
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LLMInferencer'
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'LLMInferencer',
+        'content': "{'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}"
+    },
+    {
+        'role': 'assistant',
+        'content': """To execute: Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)""",
+        'tool_calls': [
+            {
+                'id': 'call_3',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": "{'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}", "answer_variable": "ans", "answer_type": "string"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_3',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models"
+    },
+    {
+        'role': 'assistant',
+        'content': "A common theme that links these papers is 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'."
     }
 ]
 

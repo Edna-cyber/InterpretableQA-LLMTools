@@ -77,7 +77,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             title_id = random.randint(0,3585)
             title = df_neurips.at[title_id, "Title"]
             true_topics = df_neurips.at[title_id, "Topic"].split(" · ")
-            false_topics = set(["Deep Learning", "Reinforcement Learning", "Applications", "Theory", "Data-centric AI", "Probabilistic Methods", "Social Aspects", "Optimization"])-set(true_topics)
+            false_topics = set(["Deep Learning", "Reinforcement Learning", "Health", "Applications", "Theory", "Data-centric AI", "Probabilistic Methods", "Social Aspects", "Optimization"])-set(true_topics)
             three_topics = random.sample(false_topics, 2)+[true_topics[0]]
             random.shuffle(three_topics)
             topic1, topic2, topic3 = three_topics
