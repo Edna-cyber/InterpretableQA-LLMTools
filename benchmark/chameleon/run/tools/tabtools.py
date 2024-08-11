@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from datasets import Dataset, DatasetDict, concatenate_datasets
 
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -66,6 +67,9 @@ from transformers import (
 from transformers import AutoTokenizer
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
 from transformers.utils import check_min_version
+
+from sklearn.metrics import f1_score
+
 
 # Fixing the random seeds
 RANDOM_SEED = 1729
@@ -146,7 +150,7 @@ class table_toolkits():
         Loads the needed dataframe(s).
         """     
         if test_duration=="None" and outcome_col!="None":
-            return "Error: outcome_col needs to be set to None when test_duration is None."
+            return "Error: outcome_col needs to be set to string None when test_duration is None."
         
         def extract_start_end(duration):
             if duration=="None":
@@ -190,15 +194,17 @@ class table_toolkits():
                 column_names_str = ', '.join(column_names)
                 if outcome_col not in df_raw.columns and outcome_col!="None":
                     return "Error: The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
-                # remove rows where the predicted target is NA
-                if outcome_col!="None":
-                    df_raw.dropna(subset=[outcome_col], inplace=True)
-                if outcome_col=="decision": # only use "ACCEPTED" and "REJECTED" column
-                    df_raw = df_raw[(df_raw[outcome_col]=="ACCEPTED") | (df_raw[outcome_col]=="REJECTED")]
                 # print(df_raw.dtypes)
                 # print(df_raw.head())
                 df.append(df_raw)
             df = pd.concat(df, ignore_index=True)
+            df['Unique_ID'] = df.index.map(lambda x:"ID-"+str(x)) ###
+            df = df.reset_index(drop=False)
+            # remove rows where the predicted target is NA
+            if outcome_col!="None":
+                df.dropna(subset=[outcome_col], inplace=True)
+            if outcome_col=="decision": # only use "ACCEPTED" and "REJECTED" column
+                df = df[(df[outcome_col]=="ACCEPTED") | (df[outcome_col]=="REJECTED")]
             return df
         
         def preprocess_neurips(start_row, end_row):
@@ -207,15 +213,18 @@ class table_toolkits():
             file_path = "{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv".format(self.path)
             df = pd.read_csv(file_path)
             # print(df.dtypes)
+            df['Unique_ID'] = df.index.map(lambda x:"ID-"+str(x)) ###
+            df = df.reset_index(drop=False)
             df = df.iloc[start_row:end_row+1]
             df['Authors'] = df['Authors'].str.split(' · ')
+            df['Authors_Num'] = df['Authors'].apply(len)
             column_names = ["'"+x+"'" for x in df.columns.tolist()]
             column_names_str = ', '.join(column_names)
             if outcome_col not in df.columns and outcome_col!="None":
                 return "Error: The outcome_col does not exist in the dataframe. Choose from the following columns: {}.".format(column_names_str)
             # remove rows where the predicted target is NA
             if outcome_col!="None":
-                df.dropna(subset=[outcome_col], inplace=True)
+                df = df.dropna(subset=[outcome_col])
             return df   
            
         if target_db=="hupd":
@@ -226,6 +235,8 @@ class table_toolkits():
         elif target_db=="neurips":
             if train_end>3585 or (test_end and test_end>3585):
                 return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
+            if train_end>3000 and test_duration!="None":
+                return "Error: The end year of the training dataframe cannot exceed row 3000."
             if test_start is not None and test_start!=train_end+1:
                 return "Error: test_start must be one more than train_end."
             train_df = preprocess_neurips(train_start, train_end)
@@ -247,6 +258,8 @@ class table_toolkits():
             self.dataset_dict = None
             return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has {} rows.".format(length)+"\nIt has the following structure: {}".format(self.data.head())
         else:
+            test_df['Unique_ID'] = test_df.index.map(lambda x:"ID-"+str(x))
+            test_df = test_df.reset_index(drop=False)
             train_dataset = Dataset.from_pandas(train_df)
             if outcome_col!="None":
                 self.train_groundtruth = train_df[outcome_col]
@@ -257,6 +270,16 @@ class table_toolkits():
             self.data = None
             return "We have successfully loaded the {} dataset dict that has the following structure: {}".format(target_db, self.dataset_dict)
         
+    def test_sampler(self, indices):
+        if not self.dataset_dict or not self.dataset_dict["test"]:
+            return "Error: There is no test set available for sampling."
+        test_df = self.dataset_dict["test"].to_pandas()
+        indices_lst = indices.split(",")
+        new_test_df = test_df[test_df["Unique_ID"].isin(indices_lst)]
+        new_test_dataset = Dataset.from_pandas(new_test_df)
+        self.dataset_dict["test"] = new_test_dataset
+        return "Done sampling the test set according to the specified indices."
+    
     def pandas_interpreter(self, pandas_code): 
         """
         Executes the provided Pandas code.
@@ -279,11 +302,15 @@ class table_toolkits():
                         if global_var_name not in ["__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
                             if isinstance(global_var_value, pd.Series):
                                 variable_values[global_var_name] = global_var_value.head().to_dict()
+                            elif isinstance(global_var_value, (list, dict, np.ndarray)):
+                                variable_values[global_var_name] = global_var_value[:10]
                             else:
                                 variable_values[global_var_name] = global_var_value
                 elif not var_name.startswith('__') and not isinstance(var_value, excluded_types):
                     if isinstance(var_value, pd.Series):
                         variable_values[var_name] = var_value.head().to_dict()
+                    elif isinstance(var_value, (list, dict, np.ndarray)):
+                        variable_values[var_name] = var_value[:10]
                     else:
                         variable_values[var_name] = var_value
             return variable_values
@@ -298,33 +325,76 @@ class table_toolkits():
             return "Error: "+str(e)
         # other exceptions
     
-    def numerical_classifier(self, model_name, feature, target):
-        scaler = MinMaxScaler()
-        df_train = self.dataset_dict["train"].to_pandas()
-        df_test = self.dataset_dict["test"].to_pandas()
-        X_train = df_train[[feature]]
-        X_test = df_test[[feature]]
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.fit_transform(X_test)
-        y_train = self.dataset_dict["train"].to_pandas()[target]
-        if model_name=="random_forest":
-            rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
-            rf_model.fit(X_train_scaled, y_train)
-            probabilities = rf_model.predict_proba(X_test_scaled)[:, 1]
-        elif model_name=="mlp":
-            nn_model = MLPClassifier(hidden_layer_sizes=(10,), max_iter=500, random_state=42)
-            nn_model.fit(X_train_scaled, y_train)
-            probabilities = nn_model.predict_proba(X_test_scaled)[:, 1]
-        elif model_name=="svm":
-            svm_model = SVC(kernel='linear', probability=True, random_state=42)
-            svm_model.fit(X_train_scaled, y_train)
-            probabilities = svm_model.predict_proba(X_test_scaled)[:, 1]
-        return probabilities
+    # def numerical_classifier(self, model_name, feature, target):
+    #     combined_series = pd.concat([self.train_groundtruth, self.test_groundtruth])
+    #     value_counts = combined_series.value_counts().to_dict()
+    #     unique_classes = combined_series.unique().tolist()
+    #     num_classes = len(unique_classes)
+    #     class_weights = []
+    #     for ind in range(num_classes):
+    #         class_weights.append(1/value_counts[unique_classes[ind]])
+    #     class_weights = [x/sum(class_weights) for x in class_weights]
+    #     print("BEFORE", class_weights)
+    #     target_to_label = {} 
+    #     for ind in range(num_classes):
+    #         target_to_label[unique_classes[ind]] = ind
+    #     max_occurrence = max(value_counts.values())
+    #     min_occurrence = min(value_counts.values())
+    #     if max_occurrence / min_occurrence>10:
+    #         for k in range(len(unique_classes)):
+    #             unique_class = unique_classes[k]
+    #             if value_counts[unique_class] < min_occurrence * 5:
+    #             # if class_weights[target_to_label[unique_class]]<1/20:
+    #                 train_dataset = self.dataset_dict["train"]
+    #                 df = train_dataset.to_pandas()
+    #                 subset_df = df[df[target] == unique_class]
+    #                 repeated_df = pd.concat([subset_df] * 5, ignore_index=True)
+    #                 class_weights[k] /= 6 
+    #                 # class_weights[k] *= 6 
+    #                 repeated_dataset = Dataset.from_pandas(repeated_df)
+    #                 combined_dataset = concatenate_datasets([train_dataset, repeated_dataset])
+    #                 self.dataset_dict["train"] = combined_dataset.shuffle(seed=RANDOM_SEED)
+    #     class_weights = [x/sum(class_weights) for x in class_weights]
+    #     class_weights_dic = {}
+    #     for i in range(num_classes):
+    #         class_weights_dic[i] = class_weights[i]
+    #     CLASS_WEIGHTS = class_weights_dic
+    #     print("AFTER", CLASS_WEIGHTS)
+        
+    #     scaler = MinMaxScaler()
+    #     df_train = self.dataset_dict["train"].to_pandas()
+    #     df_test = self.dataset_dict["test"].to_pandas()
+    #     X_train = df_train[[feature]]
+    #     X_test = df_test[[feature]]
+    #     scaler.fit(X_train)
+    #     X_train_scaled = scaler.transform(X_train)
+    #     X_test_scaled = scaler.transform(X_test)
+    #     y_train = self.dataset_dict["train"].to_pandas()[target]
+    #     if model_name == "decision_tree":
+    #         dt_model = DecisionTreeClassifier(class_weight=CLASS_WEIGHTS, random_state=42)
+    #         dt_model.fit(X_train_scaled, y_train)
+    #         preds = dt_model.predict(X_test_scaled)
+    #     elif model_name=="random_forest":
+    #         rf_model = RandomForestClassifier(class_weight=CLASS_WEIGHTS, n_estimators=100, random_state=42)
+    #         rf_model.fit(X_train_scaled, y_train)
+    #         preds = rf_model.predict(X_test_scaled)
+    #     elif model_name=="svm":
+    #         svm_model = SVC(class_weight=CLASS_WEIGHTS, kernel='linear', probability=True, random_state=42)
+    #         svm_model.fit(X_train_scaled, y_train)
+    #         preds = svm_model.predict(X_test_scaled)
+    #     # print(len(probabilities))
+    #     return preds
             
     def textual_classifier(self, model_name, section, target, one_v_all="None"):
         """
         Runs a classificaiton prediction task given a textual input.
         """
+        if not self.dataset_dict:
+            return "Error: Dataset_dict does not exist."
+        if section not in self.dataset_dict["train"].features:
+            return "Error: {} column does not exist.\nThe dataset_dict has the following features: {}".format(section, self.dataset_dict["train"].features)
+        if target not in self.dataset_dict["train"].features:
+            return "Error: {} column does not exist.\nThe dataset_dict has the following features: {}".format(target, self.dataset_dict["train"].features)
         
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         combined_series = pd.concat([self.train_groundtruth, self.test_groundtruth])
@@ -353,19 +423,21 @@ class table_toolkits():
         target_to_label = {} 
         for ind in range(num_classes):
             target_to_label[unique_classes[ind]] = ind
-        
+
         # address class imbalance by repeating minority class 5 times
         max_occurrence = max(value_counts.values())
         min_occurrence = min(value_counts.values())
         if max_occurrence / min_occurrence>10:
             for k in range(len(unique_classes)):
                 unique_class = unique_classes[k]
-                if class_weights[target_to_label[unique_class]]<1/20:
+                if value_counts[unique_class] < min_occurrence * 5:
+                # if class_weights[target_to_label[unique_class]]<1/20:
                     train_dataset = self.dataset_dict["train"]
                     df = train_dataset.to_pandas()
                     subset_df = df[df[target] == unique_class]
                     repeated_df = pd.concat([subset_df] * 5, ignore_index=True)
-                    class_weights[k] *= 6 
+                    # class_weights[k] *= 6 
+                    class_weights[unique_class] /= 6
                     repeated_dataset = Dataset.from_pandas(repeated_df)
                     combined_dataset = concatenate_datasets([train_dataset, repeated_dataset])
                     self.dataset_dict["train"] = combined_dataset.shuffle(seed=RANDOM_SEED)
@@ -484,6 +556,8 @@ class table_toolkits():
             for name in ['train', 'test']:
                 # Skip the training set if we are doing only inference
                 dataset = self.dataset_dict[name]
+                print("name", name) ###
+                print("dataset", dataset) ###
                 print('*** Tokenizing...')
                 # Tokenize the input
                 zero_encoding = tokenizer('', truncation=True, padding='max_length')
@@ -505,11 +579,13 @@ class table_toolkits():
                     },
                     batched=True
                 )
+                print("dataset first", dataset.features)
                 # Set the dataset format
                 if name=="test":
                     gt_list = self.test_groundtruth.to_list()
                     gt_list = map_groundtruth_to_label(gt_list)
                     dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
+                print("dataset second", dataset.features)
                 dataset.set_format(type='torch', 
                     columns=['input_ids', 'attention_mask', 'output'])
                 shuffle = (name=='train')
@@ -700,7 +776,7 @@ class table_toolkits():
             else:
                 optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
             # Loss function 
-            criterion = torch.nn.CrossEntropyLoss(weight=CLASS_WEIGHTS.to(device))
+            criterion = torch.nn.CrossEntropyLoss(weight=CLASS_WEIGHTS.to(device)) 
             
             # Train and validate
             predictions = train(data_loaders, epoch_n, model, optim, criterion, device)
@@ -713,10 +789,26 @@ if __name__ == "__main__":
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
     # print(db.pandas_interpreter(pandas_code))
 
-    # print(db.db_loader('hupd', '2004-2006', '2007-2007', 'decision'))
+    # db.db_loader('hupd', '2004-2006', '2004-2007', 'decision')
     # db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
-    # print(db.db_loader('neurips', '0-1000', '1001-3583', 'Topic'))
+    # print(db.db_loader('neurips', '0-1000', '1001-3585', 'Topic'))
     # db.textual_classifier('cnn', 'Abstract', 'Topic', 'Deep Learning')
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
-    
-    print(db.summarizer("t5-small", "abstract", "title"))
+
+    # db.db_loader('neurips', '0-1000', 'None', 'None')
+    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
+    # # db.pandas_interpreter('df[author_num]=df[Authors].apply(len)')
+    # preds = db.textual_classifier('cnn', 'Abstract', 'Oral')["predictions"]
+    # # preds = db.numerical_classifier('random_forest', 'Authors_Num', 'Oral')
+    # path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
+    # actual_df = pd.read_csv("{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv".format(path))
+    # actual_df = actual_df.iloc[1001:]
+    # actual_df.dropna(subset=['Oral'], inplace=True)
+    # actual = actual_df["Oral"].tolist()
+    # # print(len(actual))
+    # f1_macro = f1_score(actual, preds, average='macro') #, average='micro'
+    # print("omo cnn nb", f1_macro)
+
+    # db.db_loader('neurips', "0-2000", "2001-3585", "Poster Session")
+    # db.test_sampler("ID-2001,ID-2500,ID-2486,ID-2759,ID-3300")
+    # print(db.textual_classifier("logistic_regression", "Abstract", "Poster Session", "None"))

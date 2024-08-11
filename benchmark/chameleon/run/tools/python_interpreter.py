@@ -14,6 +14,8 @@ def execute(python_code):
             if not var_name.startswith('__') and var_name not in ["python_code","variable_values"] and not isinstance(var_value, excluded_types):
                 if isinstance(var_value, pd.Series):
                     variable_values[var_name] = var_value.head().to_dict()
+                elif isinstance(var_value, (list, dict, np.ndarray)):
+                    variable_values[var_name] = var_value[:10]
                 else:
                     variable_values[var_name] = var_value
         return variable_values

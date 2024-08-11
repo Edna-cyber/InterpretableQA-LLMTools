@@ -38,6 +38,7 @@ db = table_toolkits()
 ACTION_LIST = {
     'Calculate': calculator,
     'LoadDB': db.db_loader, 
+    'TestSampler': db.test_sampler,
     'TFIDF': tfidf,
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
@@ -51,8 +52,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
 
-def calc_cost1(function_type, function_arguments):
+def calc_cost1(function_type, function_arguments, function_response):
     if function_type=="Calculate":
+        return 2
+    if function_type=="TestSampler":
         return 2
     if function_type=="LoadDB":
         return 3   
@@ -61,6 +64,7 @@ def calc_cost1(function_type, function_arguments):
     if function_type=="PandasInterpreter":
         num_lines = len(function_arguments["pandas_code"].splitlines()) 
         num_packages = function_arguments["pandas_code"].count('import')
+        max_elements = 0
         if num_lines<10:
             lines_cost = 4
         elif num_lines<=20:
@@ -75,10 +79,24 @@ def calc_cost1(function_type, function_arguments):
             packages_cost = 1.5
         else:
             packages_cost = 2
-        return lines_cost*packages_cost
+        for value in list(function_response.values()):
+            object_types = (list, dict, pd.DataFrame, pd.Series)
+            if isinstance(value, object_types):
+                if len(value)>max_elements:
+                    max_elements = len(value)
+        if max_elements<10:
+            elements_cost = 1
+        elif max_elements<=50:
+            elements_cost = 1.5
+        elif max_elements<=100:
+            elements_cost = 2
+        else:
+            elements_cost = 3
+        return lines_cost*packages_cost*elements_cost
     if function_type=="PythonInterpreter":
         num_lines = len(function_arguments["python_code"].splitlines()) 
         num_packages = function_arguments["python_code"].count('import')
+        max_elements = 0
         if num_lines<10:
             lines_cost = 4
         elif num_lines<=20:
@@ -93,7 +111,20 @@ def calc_cost1(function_type, function_arguments):
             packages_cost = 1.5
         else:
             packages_cost = 2
-        return lines_cost*packages_cost
+        for value in list(function_response.values()):
+            object_types = (list, dict, pd.DataFrame, pd.Series)
+            if isinstance(value, object_types):
+                if len(value)>max_elements:
+                    max_elements = len(value)
+        if max_elements<10:
+            elements_cost = 1
+        elif max_elements<=50:
+            elements_cost = 1.5
+        elif max_elements<=100:
+            elements_cost = 2
+        else:
+            elements_cost = 3
+        return lines_cost*packages_cost*elements_cost
     if function_type=="Forecaster":
         if function_arguments["model_name"]=="linear_regression":
             return 6
@@ -113,8 +144,97 @@ def calc_cost1(function_type, function_arguments):
     if function_type=="Finish":
         return 0
 
-def calc_cost2(function_type, function_arguments): ###
-    pass
+def calc_cost2(function_type, function_arguments, function_response):
+    if function_type=="Calculate":
+        return 1
+    if function_type=="TestSampler":
+        return 2
+    if function_type=="LoadDB":
+        return 4   
+    if function_type=="TFIDF":
+        return 3
+    if function_type=="PandasInterpreter":
+        num_lines = len(function_arguments["pandas_code"].splitlines()) 
+        num_packages = function_arguments["pandas_code"].count('import')
+        max_elements = 0
+        if num_lines<10:
+            lines_cost = 4
+        elif num_lines<=20:
+            lines_cost = 7
+        elif num_lines<=100:
+            lines_cost = 10
+        else:
+            lines_cost = 15
+        if num_packages<2:
+            packages_cost = 1
+        elif num_packages<=5:
+            packages_cost = 1.1
+        else:
+            packages_cost = 1.5
+        for value in list(function_response.values()):
+            object_types = (list, dict, pd.DataFrame, pd.Series)
+            if isinstance(value, object_types):
+                if len(value)>max_elements:
+                    max_elements = len(value)
+        if max_elements<10:
+            elements_cost = 1
+        elif max_elements<=50:
+            elements_cost = 1.2
+        elif max_elements<=100:
+            elements_cost = 1.5
+        else:
+            elements_cost = 2
+        return lines_cost*packages_cost*elements_cost
+    if function_type=="PythonInterpreter":
+        num_lines = len(function_arguments["python_code"].splitlines()) 
+        num_packages = function_arguments["python_code"].count('import')
+        max_elements = 0
+        if num_lines<10:
+            lines_cost = 4
+        elif num_lines<=20:
+            lines_cost = 7
+        elif num_lines<=100:
+            lines_cost = 10
+        else:
+            lines_cost = 15
+        if num_packages<2:
+            packages_cost = 1
+        elif num_packages<=5:
+            packages_cost = 1.1
+        else:
+            packages_cost = 1.5
+        for value in list(function_response.values()):
+            object_types = (list, dict, pd.DataFrame, pd.Series)
+            if isinstance(value, object_types):
+                if len(value)>max_elements:
+                    max_elements = len(value)
+        if max_elements<10:
+            elements_cost = 1
+        elif max_elements<=50:
+            elements_cost = 1.2
+        elif max_elements<=100:
+            elements_cost = 1.5
+        else:
+            elements_cost = 2
+        return lines_cost*packages_cost*elements_cost
+    if function_type=="Forecaster":
+        if function_arguments["model_name"]=="linear_regression":
+            return 5
+        elif function_arguments["model_name"]=="ARIMA":
+            return 5
+    if function_type=="TextualClassifier":
+        if function_arguments["model_name"]=="logistic_regression":
+            return 5
+        elif function_arguments["model_name"]=="naive_bayes":
+            return 5
+        elif function_arguments["model_name"]=="cnn":
+            return 15
+        elif function_arguments["model_name"]=="distilbert-base-uncased":
+            return 10
+    if function_type=="LLMInterpreter":
+        return 20
+    if function_type=="Finish":
+        return 0
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -151,8 +271,8 @@ if __name__ == "__main__":
     # Get the result file
     result_root = f"{args.output_root}" 
     os.makedirs(result_root, exist_ok=True)
-    result_file = f"{result_root}/{args.policy_engine}-{args.prompt}-{args.formula}-test.json"
-    cache_file = f"{result_root}/{args.policy_engine}-{args.prompt}-{args.formula}-cache.jsonl"
+    result_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-test.json"
+    cache_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-cache.jsonl"
     cache = []
     cost_function = calc_cost1 # Change with experiment
 
@@ -218,9 +338,9 @@ if __name__ == "__main__":
                     function_arguments = json.loads(tool_call.function.arguments)
                     function_response = function(**function_arguments)
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
-                        cost[question_type] += cost_function(function_type, function_arguments)
-                        total_cost += cost_function(function_type, function_arguments)
-                        per_question_cost += cost_function(function_type, function_arguments)
+                        cost[question_type] += cost_function(function_type, function_arguments, function_response)
+                        total_cost += cost_function(function_type, function_arguments, function_response)
+                        per_question_cost += cost_function(function_type, function_arguments, function_response)
                     
                     tool_call_response = {
                         "tool_call_id": tool_call.id,
@@ -295,7 +415,7 @@ if __name__ == "__main__":
                 if question_type not in performance:
                     performance[question_type] = 0
                 try:
-                    performance[question_type] += f1_score(true_labels, predicted_labels, average='macro')
+                    performance[question_type] += f1_score(gt_answer, llm_answer, average='macro')
                 except:
                     errors[question_type] += 1
         
@@ -303,9 +423,9 @@ if __name__ == "__main__":
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
-        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}'.format(datetime_string, args.hardness, args.version)): #<YOUR_OWN_PATH>
-            os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}'.format(datetime_string, args.hardness, args.version)) #<YOUR_OWN_PATH>
-            logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}'.format(datetime_string, args.hardness, args.version) #<YOUR_OWN_PATH>
+        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)) # <YOUR_OWN_PATH>
+            os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)) # <YOUR_OWN_PATH>
+            logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH>
         with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
             for item in logs:
                 f.write(f"{item}\n")
@@ -316,7 +436,10 @@ if __name__ == "__main__":
 
     for key in performance.keys():
         if key in ["1","2","3","4","5","6","8"]: 
-            performance[key] = performance[key] / (count[key]-errors[key])
+            if count[key]==errors[key]:
+                performance[key] = 0
+            else:
+                performance[key] = performance[key] / (count[key]-errors[key])
         elif key in ["7"]: 
             print("before", performance[key])
             actual_mean = sum(performance[key][1]) / len(performance[key][1])
