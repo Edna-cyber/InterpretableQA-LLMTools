@@ -48,6 +48,23 @@ tools_gpt = [
     {
         "type": "function",
         "function": {
+            "name": "TestSampler",
+            "description": "Shrink the test set to include only the samples specified by the indices",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "indices": {
+                        "type": "string",
+                        "description": "The indices from the original test set to be selected. A string in the format of e.g. ID-1,ID-5,ID-1000"
+                    }
+                },
+                "required": ["indices"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "TFIDF",
             "description": "Find the most relevant document for a given query or to identify pairs of documents that are most relevant to each other",
             "parameters": {
@@ -237,6 +254,24 @@ tools_gemini = [
             }
           },
           "required": ["target_db", "train_duration"]
+        }
+      }
+    ]
+  },
+  {
+    "function_declarations": [
+      {
+        "name": "TestSampler",
+        "description": "Shrink the test set to include only the samples specified by the indices",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "indices": {
+              "type": "string",
+              "description": "The indices from the original test set to be selected. A string in the format of e.g. ID-1,ID-5,ID-1000"
+            },
+          },
+          "required": ["indices"]
         }
       }
     ]
