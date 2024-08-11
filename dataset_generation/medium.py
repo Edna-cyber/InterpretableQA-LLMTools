@@ -55,7 +55,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             year_not_in_the_range = random.randint(2013,2018)
             df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv").format(year_not_in_the_range))
             indices_to_choose = df.index[(df['decision']=="ACCEPTED") | (df['decision']=="REJECTED")].to_list()
-            indices = random.sample(indices_to_choose,5)
+            indices = random.sample(indices_to_choose,8)
             indices_str = ",".join(["ID-"+str(x) for x in indices])
             decisions = [df.at[index,"decision"] for index in indices]
             question = "Using patent applications from {} to {} for training, predict the decisions of applications from {} with unique indices {}. Return a list of 'ACCEPTED' and 'REJECTED'.".format(start_year, end_year, year_not_in_the_range, indices_str)
@@ -73,7 +73,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
             df = df.iloc[row_num+1:]
             indices_to_choose = df.index[df["Topic"].notna()].to_list()
-            indices = random.sample(indices_to_choose,5)
+            indices = random.sample(indices_to_choose,8)
             indices_str = ",".join(["ID-"+str(x) for x in indices])
             topics = []
             for index in indices:
@@ -96,7 +96,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
             df = df.iloc[num+1:]
             indices_to_choose = df.index[df["Oral"].notna()].to_list()
-            indices = random.sample(indices_to_choose,5)
+            indices = random.sample(indices_to_choose,8)
             indices_str = ",".join(["ID-"+str(x) for x in indices])
             orals = []
             for index in indices:

@@ -781,7 +781,7 @@ class table_toolkits():
             # Train and validate
             predictions = train(data_loaders, epoch_n, model, optim, criterion, device)
         predictions_to_categories = [unique_classes[x] for x in predictions]
-        return {"predictions": predictions_to_categories}
+        return {"predictions": predictions_to_categories[:10]} # limit to the first 10 values to prevent content limit exceeded
 
 if __name__ == "__main__":
     db = table_toolkits()

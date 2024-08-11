@@ -126,7 +126,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             answer = average_pendency(start_year, end_year)
             # use None to signify not adding to the questions / answers
             if answer and not np.isnan(answer):
-                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[1] -= 1
                 if question_type_count[1]==0:
                     question_types.remove(1)
@@ -143,7 +143,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 question = "Which {} were among the top {} with the highest percentage of patent approvals in {}? Calculate the approval percentage for each category, then return the top categories with the highest approval rates as a list of {}.".format(category, num, year, category)
             answer = top_accepted_category(num, category, year)
             if answer and len(answer)==num: # deal with some datasets with missing values
-                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[2] -= 1
                 if question_type_count[2]==0:
                     question_types.remove(2)
@@ -157,7 +157,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}? Return a number.".format(year_1, year_2)
             answer = compare_applications_year(year_1, year_2)
             if answer and not np.isnan(answer):
-                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[3] -= 1
                 if question_type_count[3]==0:
                     question_types.remove(3)
@@ -170,7 +170,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
             answer = longest_time(start_year, end_year)
             if answer:
-                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[4] -= 1
                 if question_type_count[4]==0:
                     question_types.remove(4)
@@ -186,7 +186,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 question = question[:insert_pos]+" containing 'Large Language Models' in the title"+question[insert_pos:]
             answer = top_authors(num, llm_keyword)
             if answer:
-                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[5] -= 1
                 if question_type_count[5]==0:
                     question_types.remove(5)
@@ -199,7 +199,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(compare,n)
             answer = author_num(compare,n)
             if answer and not np.isnan(answer):
-                writer.write({"qid": "easy-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
                 question_type_count[6] -= 1
                 if question_type_count[6]==0:
                     question_types.remove(6)
