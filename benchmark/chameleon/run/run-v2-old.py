@@ -1,10 +1,12 @@
 import os
 import re
+import ast
 import sys
 import json
 import jsonlines
 import argparse
 import random
+import pandas as pd
 from tqdm import tqdm
 from sklearn.metrics import f1_score
 from demos import prompt_policy
@@ -412,6 +414,8 @@ if __name__ == "__main__":
                 except:
                     errors[question_type] += 1
             elif question_type in ["8"]: # macro F1
+                if isinstance(gt_answer, str):
+                    gt_answer = ast.literal_eval(gt_answer)
                 if question_type not in performance:
                     performance[question_type] = 0
                 try:
@@ -420,12 +424,14 @@ if __name__ == "__main__":
                     errors[question_type] += 1
         
         cost_original[question_type].append(per_question_cost) 
+        logs.append({"Question Type": question_type})
+        logs.append({"Cost": per_question_cost})
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
+        logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH>
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)): # <YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)) # <YOUR_OWN_PATH>
-            logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH>
         with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
             for item in logs:
                 f.write(f"{item}\n")
