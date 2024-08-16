@@ -1,5 +1,6 @@
 import re
 import os
+import math
 import types
 import random
 import numpy as np
@@ -167,7 +168,7 @@ class table_toolkits():
                 if series.dtype==np.float64:
                     series = series.astype('Int64')
                 series = series.astype(str)
-                if "-" in series.iloc[0]:
+                if series.str.contains("-").any(): 
                     series = pd.to_datetime(series)
                 else:
                     series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
@@ -198,7 +199,7 @@ class table_toolkits():
                 # print(df_raw.head())
                 df.append(df_raw)
             df = pd.concat(df, ignore_index=True)
-            df['Unique_ID'] = df.index.map(lambda x:"ID-"+str(x)) ###
+            df['Unique_ID'] = df.index.map(lambda x:"ID-"+str(x))
             df = df.reset_index(drop=False)
             # remove rows where the predicted target is NA
             if outcome_col!="None":
@@ -213,7 +214,7 @@ class table_toolkits():
             file_path = "{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv".format(self.path)
             df = pd.read_csv(file_path)
             # print(df.dtypes)
-            df['Unique_ID'] = df.index.map(lambda x:"ID-"+str(x)) ###
+            df['Unique_ID'] = df.index.map(lambda x:"ID-"+str(x))
             df = df.reset_index(drop=False)
             df = df.iloc[start_row:end_row+1]
             df['Authors'] = df['Authors'].str.split(' · ')
@@ -253,10 +254,22 @@ class table_toolkits():
         if test_df is None:
             self.data = train_df
             length = len(self.data)
-            column_names = ["'"+x+"'" for x in self.data.columns.tolist()]
-            column_names_str = ', '.join(column_names)
+            examples_lst = []
+            for column in self.data.columns:
+                if column=="decision":
+                    examples_lst.append("'"+column+"'"+"(e.g.'ACCEPTED', <class 'str'>)")
+                else:
+                    i = 0
+                    example_data = self.data.at[i, column]
+                    while not isinstance(example_data, list) and pd.isna(example_data):
+                        i += 1
+                        example_data = self.data.at[i, column]
+                    if isinstance(example_data, str) and len(example_data)>=10:
+                        example_data = str(example_data[:10])+"..."
+                    examples_lst.append("'"+column+"'"+"(e.g."+str(example_data)+", {})".format(type(example_data)))
+            examples_lst_str = ', '.join(examples_lst)
             self.dataset_dict = None
-            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, column_names_str)+"\nIt has {} rows.".format(length)+"\nIt has the following structure: {}".format(self.data.head())
+            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, examples_lst_str)+"\nIt has {} rows.".format(length)
         else:
             test_df['Unique_ID'] = test_df.index.map(lambda x:"ID-"+str(x))
             test_df = test_df.reset_index(drop=False)
@@ -385,7 +398,7 @@ class table_toolkits():
     #     # print(len(probabilities))
     #     return preds
             
-    def textual_classifier(self, model_name, section, target, one_v_all="None"):
+    def textual_classifier(self, model_name, section, target, one_v_all="None"): # text instead of section
         """
         Runs a classificaiton prediction task given a textual input.
         """
@@ -413,36 +426,10 @@ class table_toolkits():
             num_classes = len(unique_classes)
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
-        
-        majority_class_label = max(value_counts, key=value_counts.get)
-        class_weights = []
-        for ind in range(num_classes):
-            class_weights.append(1/value_counts[unique_classes[ind]])
-        class_weights = [x/sum(class_weights) for x in class_weights]
             
         target_to_label = {} 
         for ind in range(num_classes):
             target_to_label[unique_classes[ind]] = ind
-
-        # address class imbalance by repeating minority class 5 times
-        max_occurrence = max(value_counts.values())
-        min_occurrence = min(value_counts.values())
-        if max_occurrence / min_occurrence>10:
-            for k in range(len(unique_classes)):
-                unique_class = unique_classes[k]
-                if value_counts[unique_class] < min_occurrence * 5:
-                # if class_weights[target_to_label[unique_class]]<1/20:
-                    train_dataset = self.dataset_dict["train"]
-                    df = train_dataset.to_pandas()
-                    subset_df = df[df[target] == unique_class]
-                    repeated_df = pd.concat([subset_df] * 5, ignore_index=True)
-                    # class_weights[k] *= 6 
-                    class_weights[unique_class] /= 6
-                    repeated_dataset = Dataset.from_pandas(repeated_df)
-                    combined_dataset = concatenate_datasets([train_dataset, repeated_dataset])
-                    self.dataset_dict["train"] = combined_dataset.shuffle(seed=RANDOM_SEED)
-        class_weights = [x/sum(class_weights) for x in class_weights]
-        CLASS_WEIGHTS = torch.tensor(np.array(class_weights), dtype=torch.float32)
         
         vocab_size = 10000
         batch_size=64
@@ -454,7 +441,7 @@ class table_toolkits():
         lr=2e-5
         eps=1e-8
         embed_dim=200
-        max_length=256
+        max_length=512 #256
         alpha_smooth_val=1.0
         
         if num_classes==2:
@@ -515,7 +502,7 @@ class table_toolkits():
                 tokenizer.save("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/temp_tokenizer.json")  # <YOUR_OWN_PATH>
                 tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/temp_tokenizer.json") # <YOUR_OWN_PATH>
 
-                if model_name != 'naive_bayes': # CHANGE 'naive_bayes'
+                if model_name != 'naive_bayes': 
                     tokenizer.model_max_length = max_length
                     tokenizer.max_length = max_length
                     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
@@ -553,44 +540,46 @@ class table_toolkits():
         # Create dataset
         def create_dataset(tokenizer, section=section):
             data_loaders = []
-            for name in ['train', 'test']:
-                # Skip the training set if we are doing only inference
-                dataset = self.dataset_dict[name]
-                print("name", name) ###
-                print("dataset", dataset) ###
-                print('*** Tokenizing...')
-                # Tokenize the input
-                zero_encoding = tokenizer('', truncation=True, padding='max_length')
-                dataset = dataset.map(
-                    lambda e: {
-                        section: [
-                            tokenizer(text, truncation=True, padding='max_length') if text is not None else zero_encoding
-                            for text in e[section]
-                        ]
-                    },
-                    batched=True
-                )
+            dataset = self.dataset_dict['test']
+            print('*** Tokenizing...')
+            # Tokenize the input
+            zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
+            dataset = dataset.map(
+                lambda e: {
+                    section: [
+                        tokenizer(text, truncation=True, padding='max_length', max_length=max_length) if text is not None else zero_encoding
+                        for text in e[section]
+                    ]
+                },
+                batched=True
+            )
 
-                # Flatten the lists of dictionaries into separate columns
-                dataset = dataset.map(
-                    lambda e: {
-                        'input_ids': torch.tensor([item['input_ids'] for item in e[section]]),
-                        'attention_mask': torch.tensor([item['attention_mask'] for item in e[section]]),
-                    },
-                    batched=True
-                )
-                print("dataset first", dataset.features)
-                # Set the dataset format
-                if name=="test":
-                    gt_list = self.test_groundtruth.to_list()
-                    gt_list = map_groundtruth_to_label(gt_list)
-                    dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
-                print("dataset second", dataset.features)
-                dataset.set_format(type='torch', 
-                    columns=['input_ids', 'attention_mask', 'output'])
-                shuffle = (name=='train')
-                data_loaders.append(DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, worker_init_fn=lambda worker_id: np.random.seed(RANDOM_SEED) if shuffle else None))
+            # Flatten the lists of dictionaries into separate columns
+            dataset = dataset.map(
+                lambda e: {
+                    'input_ids': torch.tensor([item['input_ids'] for item in e[section]]),
+                    'attention_mask': torch.tensor([item['attention_mask'] for item in e[section]]),
+                },
+                batched=True
+            )
+            # Set the dataset format
+            gt_list = self.test_groundtruth.to_list()
+            gt_list = map_groundtruth_to_label(gt_list)
+            dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
+            dataset.set_format(type='torch', 
+                columns=['input_ids', 'attention_mask', 'output'])
+            data_loaders.append(DataLoader(dataset, batch_size=batch_size))
             return data_loaders
+        
+        # def create_data(tokenizer, text=text):
+        #     zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
+        #     if text is None:
+        #         encoded_text = zero_encoding
+        #     else:
+        #         encoded_text = tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
+        #     input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0)
+        #     attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0)
+        #     return {'input_ids': input_ids, 'attention_mask': attention_mask}
 
         def measure_accuracy(outputs, labels):
             preds = np.argmax(outputs, axis=1).flatten()
@@ -604,13 +593,43 @@ class table_toolkits():
             return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
 
         # Evaluation procedure (for the neural models)
-        def test(test_loader, model, criterion, device, name='test'):
+        def test(test_loader, model, criterion, device, name='test'): # processed_text
             model.eval()
             total_loss = 0.
             total_correct = 0
             total_sample = 0
             total_confusion = np.zeros((CLASSES, CLASSES))
             predictions = []
+            
+            # inputs = processed_text['input_ids']
+            # inputs = inputs.to(device)
+            # with torch.no_grad():
+            #         if model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
+            #             outputs = model(input_ids=inputs)
+            #         else:
+            #             outputs = model(input_ids=inputs, labels=decisions).logits
+            #     preds = torch.argmax(outputs, dim=1)
+            #     predictions.extend(preds.cpu().numpy().tolist())
+            # return predictions
+                
+            for i, batch in enumerate(tqdm(test_loader)):                
+                inputs, decisions = batch['input_ids'], batch['output']
+                inputs = inputs.to(device)
+                decisions = decisions.to(device)
+                with torch.no_grad():
+                    if model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
+                        outputs = model(input_ids=inputs)
+                    else:
+                        outputs = model(input_ids=inputs, labels=decisions).logits
+                preds = torch.argmax(outputs, dim=1)
+                predictions.extend(preds.cpu().numpy().tolist())
+                loss = criterion(outputs, decisions) 
+                logits = outputs 
+                total_loss += loss.cpu().item()
+                correct_n, sample_n, c_matrix = measure_accuracy(logits.cpu().numpy(), decisions.cpu().numpy())
+                total_confusion += c_matrix
+                total_correct += correct_n
+                total_sample += sample_n
             
             # Loop over the examples in the test set
             for i, batch in enumerate(tqdm(test_loader)):                
@@ -636,63 +655,27 @@ class table_toolkits():
             print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
             print(f'*** Confusion matrix:\n{total_confusion}')
             
-            return predictions, total_loss, float(total_correct/total_sample) * 100.
-
-
-        # Training procedure (for the neural models)
-        def train(data_loaders, epoch_n, model, optim, criterion, device):
-            print('\n>>>Training starts...')
-            # Training mode is on
-            model.train()
-        
-            for epoch in range(epoch_n):
-                total_train_loss = 0.
-                # Loop over the examples in the training set.
-                for i, batch in enumerate(tqdm(data_loaders[0])):
-                    inputs, decisions = batch['input_ids'], batch['output']
-                    inputs = inputs.to(device, non_blocking=True)
-                    decisions = decisions.to(device, non_blocking=True)
-                    
-                    # Forward pass
-                    if model_name in ['cnn', 'logistic_regression']:
-                        outputs = model (input_ids=inputs)
-                    else:
-                        outputs = model(input_ids=inputs, labels=decisions).logits
-                    loss = criterion(outputs, decisions) #outputs.logits
-                    total_train_loss += loss.cpu().item()
-
-                    # Backward pass
-                    loss.backward()
-                    optim.step()
-                    optim.zero_grad()
-
-                    # Print the loss every test_every step
-                    if i % test_every == 0:
-                        print(f'*** Loss: {loss}')
-                        print(f'*** Input: {convert_ids_to_string(tokenizer, inputs[0])}')
-                        model.train()
-
-            # Training is complete!
-            print(f'\n ~ The End ~')
-            
-            # Final evaluation on the test set
-            predictions, _, _ = test(data_loaders[1], model, criterion, device, name='test')
-            
-            # Additionally, print the performance of the model on the training set if we were not doing only inference
-            if not test:
-                test(data_loaders[0], model, criterion, device, name='train')
             return predictions
 
         # Evaluation procedure (for the Naive Bayes models)
-        def test_naive_bayes(data_loader, model, vocab_size, name='test', pad_id=-1):
+        def test_naive_bayes(test_loader, model, vocab_size, name='test', pad_id=-1): # preprocessed_text
             total_loss = 0.
             total_correct = 0
             total_sample = 0
             total_confusion = np.zeros((CLASSES, CLASSES))
             predictions = []
             
+            # input = preprocessed_text["input_ids"]
+            # input = text2bow(input, vocab_size)
+            # input[:, pad_id] = 0
+            # logit = model.predict_log_proba(input)
+            # probs = np.exp(logit)
+            # preds = np.argmax(probs, axis=1)
+            # predictions.extend(preds.tolist())
+            # return predictions
+            
             # Loop over all the examples in the evaluation set
-            for i, batch in enumerate(tqdm(data_loader)):
+            for i, batch in enumerate(tqdm(test_loader)):
                 input, label = batch['input_ids'], batch['output']
                 input = text2bow(input, vocab_size)
                 input[:, pad_id] = 0
@@ -708,41 +691,10 @@ class table_toolkits():
                 total_sample += sample_n
             print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
             print(f'*** Confusion matrix:\n{total_confusion}')
-            return predictions, total_loss, float(total_correct/total_sample) * 100.
-
-
-        # Training procedure (for the Naive Bayes models)
-        def train_naive_bayes(data_loaders, tokenizer, vocab_size, version=naive_bayes_version, alpha=1.0):
-            pad_id = tokenizer.encode('[PAD]') # NEW
-            print(f'Training a {version} Naive Bayes classifier (with alpha = {alpha})...')
-
-            if version == 'Bernoulli':
-                model = BernoulliNB(alpha=alpha) 
-            elif version == 'Multinomial':
-                model = MultinomialNB(alpha=alpha) 
-            
-            # Loop over all the examples in the training set
-            for i, batch in enumerate(tqdm(data_loaders[0])):
-                input, decision = batch['input_ids'], batch['output']
-                input = text2bow(input, vocab_size) # change text2bow(input[0], vocab_size)
-                input[:, pad_id] = 0 # get rid of the paddings
-                label = np.array(decision.flatten())
-                # Using "partial fit", instead of "fit", to avoid any potential memory problems
-                # model.partial_fit(np.array([input]), np.array([label]), classes=CLASS_NAMES)
-                model.partial_fit(input, label, classes=CLASS_NAMES)
-            
-            print('\n*** Accuracy on the training set ***')
-            test_naive_bayes(data_loaders[0], model, vocab_size, 'training', pad_id)
-            print('\n*** Accuracy on the test set ***')
-            predictions, _, _ = test_naive_bayes(data_loaders[1], model, vocab_size, 'test', pad_id)
             return predictions
         
         if model_name == 'naive_bayes':
                 batch_size = 1
-        
-        # Remove the rows where the section is None
-        self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
-        self.dataset_dict['train'] = self.dataset_dict['train'].map(map_target_to_label) 
     
         # Create a model and an appropriate tokenizer
         tokenizer, self.dataset_dict, model, vocab_size = create_model_and_tokenizer(
@@ -764,11 +716,15 @@ class table_toolkits():
             tokenizer = tokenizer, 
             section = section
             )
+        # preprocessed_text = create_data(
+        #     tokenizer = tokenizer, 
+        #     text = text
+        # )
         del self.dataset_dict
             
         if model_name == 'naive_bayes': 
             print('Here we are!')
-            predictions = train_naive_bayes(data_loaders, tokenizer, vocab_size, naive_bayes_version, alpha_smooth_val)
+            predictions = test_naive_bayes(data_loaders[0], tokenizer, vocab_size, naive_bayes_version, alpha_smooth_val) # preprocessed_text
         else:
             # Optimizer
             if model_name in ['logistic_regression', 'cnn']:
@@ -776,23 +732,50 @@ class table_toolkits():
             else:
                 optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
             # Loss function 
-            criterion = torch.nn.CrossEntropyLoss(weight=CLASS_WEIGHTS.to(device)) 
+            criterion = torch.nn.CrossEntropyLoss() 
             
             # Train and validate
-            predictions = train(data_loaders, epoch_n, model, optim, criterion, device)
+            predictions = test(data_loaders[0], epoch_n, model, optim, criterion, device) # preprocessed_text
         predictions_to_categories = [unique_classes[x] for x in predictions]
         return {"predictions": predictions_to_categories[:10]} # limit to the first 10 values to prevent content limit exceeded
 
 if __name__ == "__main__":
     db = table_toolkits()
     # db.db_loader('hupd', '2016-2016', 'None', 'None')
+    print(db.db_loader('neurips', '0-3585', 'None', 'None'))
     # pandas_code = "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
     # print(db.pandas_interpreter(pandas_code))
-
+    
+    # print("1")
+    # db.db_loader('hupd', '2004-2006', '2004-2007', 'decision')
+    # db.textual_classifier('naive_bayes', 'summary', 'decision', 'ACCEPTED')
+    # print("2")
+    # db.db_loader('hupd', '2004-2006', '2004-2007', 'decision')
+    # db.textual_classifier('naive_bayes', 'summary', 'decision', 'ACCEPTED')
+    # print("3")
     # db.db_loader('hupd', '2004-2006', '2004-2007', 'decision')
     # db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
-    # print(db.db_loader('neurips', '0-1000', '1001-3585', 'Topic'))
-    # db.textual_classifier('cnn', 'Abstract', 'Topic', 'Deep Learning')
+    # print("4")
+    # db.db_loader('hupd', '2004-2006', '2004-2007', 'decision')
+    # db.textual_classifier('naive_bayes', 'summary', 'decision', 'ACCEPTED')
+    # print("5")
+    # db.db_loader('hupd', '2004-2006', '2004-2007', 'decision')
+    # db.textual_classifier('logistic_regression', 'summary', 'decision', 'ACCEPTED')
+    # print("6")
+    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
+    # db.textual_classifier('cnn', 'Abstract', 'Oral')
+    # print("7")
+    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
+    # db.textual_classifier('cnn', 'Abstract', 'Oral')
+    # print("8")
+    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
+    # db.textual_classifier('cnn', 'Abstract', 'Oral')
+    # print("9")
+    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
+    # db.textual_classifier('distilbert-base-uncased', 'Abstract', 'Oral')
+    # print("10")
+    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
+    # db.textual_classifier('logistic_regression', 'Abstract', 'Oral')
     # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
 
     # db.db_loader('neurips', '0-1000', 'None', 'None')
@@ -806,9 +789,13 @@ if __name__ == "__main__":
     # actual_df.dropna(subset=['Oral'], inplace=True)
     # actual = actual_df["Oral"].tolist()
     # # print(len(actual))
-    # f1_macro = f1_score(actual, preds, average='macro') #, average='micro'
+    # f1_macro = f1_score(actual, preds, average='macro') 
     # print("omo cnn nb", f1_macro)
 
     # db.db_loader('neurips', "0-2000", "2001-3585", "Poster Session")
     # db.test_sampler("ID-2001,ID-2500,ID-2486,ID-2759,ID-3300")
     # print(db.textual_classifier("logistic_regression", "Abstract", "Poster Session", "None"))
+
+    # db.db_loader('neurips', '0-3585', 'None', 'None')
+    
+    

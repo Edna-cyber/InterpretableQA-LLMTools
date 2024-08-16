@@ -398,11 +398,11 @@ if __name__ == "__main__":
                     performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
                 except:
                     errors[question_type] += 1
-            elif question_type in ["4"]: # exact match
+            elif question_type in ["4"]: # within set
                 if question_type not in performance:
                     performance[question_type] = 0
                 try:
-                    performance[question_type] += int(llm_answer==gt_answer)
+                    performance[question_type] += int(llm_answer in gt_answer)
                 except:
                     errors[question_type] += 1
             elif question_type in ["7"]: # R2
