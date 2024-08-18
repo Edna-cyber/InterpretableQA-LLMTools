@@ -104,7 +104,12 @@ ans = solution(19)
                 'function': {
                     'name': 'PandasInterpreter',
                     'arguments': json.dumps({
-                        "pandas_code": "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
+                        "pandas_code": """
+import pandas as pd
+df['filing_month'] = df['filing_date'].apply(lambda x: x.month)
+month = df['filing_month'].mode()[0]
+"""
+
                     })
                 },
                 'type': 'function'
@@ -274,7 +279,12 @@ ans = solution(19)
                 'function': {
                     'name': 'PandasInterpreter',
                     'arguments': json.dumps({
-                        "pandas_code": "import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()"
+                        "pandas_code": """
+import pandas as pd
+df['year'] = df['filing_date'].dt.year
+df['len_claims'] = df['claims'].apply(len)
+average_claims_per_year = df.groupby('year')['len_claims'].mean()
+"""
                     })
                 },
                 'type': 'function'
@@ -392,7 +402,16 @@ ans = solution(19)
                 'function': {
                     'name': 'PythonInterpreter',
                     'arguments': json.dumps({
-                        "python_code": "def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)"
+                        "python_code": """
+def get_most_relevant_document(match_doc1, match_doc2):
+    if match_doc1 > match_doc2:
+        return 'Document 1'
+    elif match_doc2 > match_doc1:
+        return 'Document 2'
+    else:
+        return 'Both documents are equally relevant'
+most_relevant = get_most_relevant_document(1, 0)
+"""
                     })
                 },
                 'type': 'function'
@@ -640,7 +659,11 @@ Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pand
                 'function': {
                     'name': 'PandasInterpreter',
                     'arguments': json.dumps({
-                        "pandas_code": "import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x:x.month)\nmonth = df['filing_month'].mode()[0]"
+                        "pandas_code": """
+import pandas as pd
+df['filing_month'] = df['filing_date'].apply(lambda x: x.month)
+month = df['filing_month'].mode()[0]
+"""
                     })
                 },
                 'type': 'function'
@@ -866,7 +889,12 @@ Best Modules: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(impo
                 'function': {
                     'name': 'PandasInterpreter',
                     'arguments': json.dumps({
-                        "pandas_code": "import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean()"
+                        "pandas_code": """
+import pandas as pd
+df['year'] = df['filing_date'].dt.year
+df['len_claims'] = df['claims'].apply(len)
+average_claims_per_year = df.groupby('year')['len_claims'].mean()
+"""
                     })
                 },
                 'type': 'function'
@@ -1003,7 +1031,16 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
                 'function': {
                     'name': 'PythonInterpreter',
                     'arguments': json.dumps({
-                        "python_code": "def get_most_relevant_document(match_doc1, match_doc2):\n    if match_doc1 > match_doc2:\n        return 'Document 1'\n    elif match_doc2 > match_doc1:\n        return 'Document 2'\n    else:\n        return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)"
+                        "python_code": """
+def get_most_relevant_document(match_doc1, match_doc2):
+    if match_doc1 > match_doc2:
+        return 'Document 1'
+    elif match_doc2 > match_doc1:
+        return 'Document 2'
+    else:
+        return 'Both documents are equally relevant'
+most_relevant = get_most_relevant_document(1, 0)
+"""
                     })
                 },
                 'type': 'function'

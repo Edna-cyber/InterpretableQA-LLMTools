@@ -1,5 +1,6 @@
 import types
 import pandas as pd
+import numpy as np
 
 def execute(python_code):
     """
@@ -25,6 +26,17 @@ def execute(python_code):
         return "Error: "+str(e)
 
 if __name__ == "__main__":
-    python_code = "import geopy\nimport geopy.distance\nlatitude = 40.05555\nlongitude = -75.090723\n_, lo_max, _ = geopy.distance.distance(kilometers=5).destination(point=(latitude, longitude), bearing=90)\n_, lo_min, _ = geopy.distance.distance(kilometers=5).destination(point=(latitude, longitude), bearing=270)\nla_max, _, _ = geopy.distance.distance(kilometers=5).destination(point=(latitude, longitude), bearing=0)\nla_min, _, _ = geopy.distance.distance(kilometers=5).destination(point=(latitude, longitude), bearing=180)\nresult = (la_max, la_min, lo_max, lo_min)" 
+    python_code = """
+import geopy
+import geopy.distance
+latitude = 40.05555
+longitude = -75.090723
+distance = geopy.distance.distance(kilometers=5)
+_, lo_max, _ = distance.destination((latitude, longitude), bearing=90)
+_, lo_min, _ = distance.destination((latitude, longitude), bearing=270)
+la_max, _, _ = distance.destination((latitude, longitude), bearing=0)
+la_min, _, _ = distance.destination((latitude, longitude), bearing=180)
+result = (la_max, la_min, lo_max, lo_min)
+"""
     answer = execute(python_code)
     print(answer)
