@@ -87,7 +87,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "PandasInterpreter",
-            "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
+            "description": "Interpret Pandas code written in Python and return a dictionary containing the values of variables defined within that code. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -104,7 +104,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "PythonInterpreter",
-            "description": "Interpret Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
+            "description": "Interpret Python code and return a dictionary containing the values of variables defined within that code. Normally, we only use PythonInterpreter when the question requires complex computations. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -302,7 +302,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "PandasInterpreter",
-        "description": "Interpret Pandas code written in Python. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
+        "description": "Interpret Pandas code written in Python and return a dictionary containing the values of variables defined within that code. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -320,7 +320,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "PythonInterpreter",
-        "description": "Interpret Python code. Normally, we only use PythonInterpreter when the question requires complex computations. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
+        "description": "Interpret Python code and return a dictionary containing the values of variables defined within that code. Normally, we only use PythonInterpreter when the question requires complex computations. We do not use this tool for tasks that can be performed with Pandas on dataframes.",
         "parameters": {
           "type": "object",
           "properties": {
