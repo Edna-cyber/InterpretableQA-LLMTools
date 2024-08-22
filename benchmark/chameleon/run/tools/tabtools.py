@@ -3,6 +3,7 @@ import os
 import math
 import types
 import random
+import pickle
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
@@ -24,9 +25,6 @@ from sklearn.ensemble import RandomForestClassifier
 # Good old Transformer models
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
 from transformers import PreTrainedTokenizerFast, BatchEncoding
-
-# Import the sklearn Multinomial Naive Bayes
-from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 
 # Tokenizer-releated dependencies
 from tokenizers import Tokenizer
@@ -445,11 +443,6 @@ class table_toolkits():
         embed_dim=200
         max_length=512 #256
         alpha_smooth_val = 1.0
-        
-        if num_classes==2:
-            naive_bayes_version='Bernoulli' 
-        else:
-            naive_bayes_version='Multinomial'
                                                     
         # Create a BoW (Bag-of-Words) representation
         def text2bow(input, vocab_size):
@@ -477,7 +470,7 @@ class table_toolkits():
                 tokenizer.max_length = max_length
                 tokenizer.model_max_length = max_length
                 model = AutoModelForSequenceClassification.from_config(config=config)
-            elif model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
+            elif model_name in ['cnn', 'logistic_regression']:
                 # # Word-level tokenizer
                 # tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))
                 # # Normalizers
@@ -498,24 +491,24 @@ class table_toolkits():
                 # tokenizer.pad_token = '[PAD]'
                 # vocab_size = vocab_size
 
-                # if model_name != 'naive_bayes': 
-                #     tokenizer.model_max_length = max_length
-                #     tokenizer.max_length = max_length
+                # tokenizer.model_max_length = max_length
+                # tokenizer.max_length = max_length
                 # tokenizer.save("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/temp_tokenizer.json")  # <YOUR_OWN_PATH>
                 tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/hupd_tokenizer.json") # <YOUR_OWN_PATH>
                 pad_idx = tokenizer.encode('[PAD]')[0]
 
-                if model_name != 'naive_bayes': 
-                    tokenizer.model_max_length = max_length
-                    tokenizer.max_length = max_length
-                    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-                    tokenizer.pad_token = '[PAD]'
-                    tokenizer.add_special_tokens({'sep_token': '[SEP]'})
-                    tokenizer.sep_token = '[SEP]'
+                tokenizer.model_max_length = max_length
+                tokenizer.max_length = max_length
+                tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+                tokenizer.pad_token = '[PAD]'
+                tokenizer.add_special_tokens({'sep_token': '[SEP]'})
+                tokenizer.sep_token = '[SEP]'
 
                 model = None
                 if model_name == 'logistic_regression':
-                    model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=n_classes, pad_idx=pad_idx)
+                    # model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=n_classes, pad_idx=pad_idx)
+                    with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/logistic_regression_model.pkl', 'rb') as file:
+                        model = pickle.load(file)
                 elif model_name == 'cnn':
                     model = BasicCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=n_classes, n_filters=n_filters, filter_sizes=filter_sizes[0], dropout=dropout)
             else:
@@ -609,7 +602,7 @@ class table_toolkits():
             # inputs = processed_text['input_ids']
             # inputs = inputs.to(device)
             # with torch.no_grad():
-            #         if model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
+            #         if model_name in ['cnn', 'logistic_regression']:
             #             outputs = model(input_ids=inputs)
             #         else:
             #             outputs = model(input_ids=inputs, labels=decisions).logits
@@ -622,7 +615,7 @@ class table_toolkits():
                 inputs = inputs.to(device)
                 decisions = decisions.to(device)
                 with torch.no_grad():
-                    if model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
+                    if model_name in ['cnn', 'logistic_regression']:
                         outputs = model(input_ids=inputs)
                     else:
                         outputs = model(input_ids=inputs, labels=decisions).logits
@@ -642,7 +635,7 @@ class table_toolkits():
                 inputs = inputs.to(device)
                 decisions = decisions.to(device)
                 with torch.no_grad():
-                    if model_name in ['cnn', 'naive_bayes', 'logistic_regression']:
+                    if model_name in ['cnn', 'logistic_regression']:
                         outputs = model(input_ids=inputs)
                     else:
                         outputs = model(input_ids=inputs, labels=decisions).logits
@@ -661,47 +654,7 @@ class table_toolkits():
             print(f'*** Confusion matrix:\n{total_confusion}')
             
             return predictions
-
-        # Evaluation procedure (for the Naive Bayes models)
-        def test_naive_bayes(test_loader, model, vocab_size, name='test', pad_id=-1): # preprocessed_text
-            total_loss = 0.
-            total_correct = 0
-            total_sample = 0
-            total_confusion = np.zeros((CLASSES, CLASSES))
-            predictions = []
-            
-            # input = preprocessed_text["input_ids"]
-            # input = text2bow(input, vocab_size)
-            # input[:, pad_id] = 0
-            # logit = model.predict_log_proba(input)
-            # probs = np.exp(logit)
-            # preds = np.argmax(probs, axis=1)
-            # predictions.extend(preds.tolist())
-            # return predictions
-            
-            # Loop over all the examples in the evaluation set
-            for i, batch in enumerate(tqdm(test_loader)):
-                input, label = batch['input_ids'], batch['output']
-                input = text2bow(input, vocab_size)
-                print(pad_id)
-                input[:, int(pad_id)] = 0
-                logit = model.predict_log_proba(input)
-                probs = np.exp(logit)
-                preds = np.argmax(probs, axis=1)
-                predictions.extend(preds.tolist())
-                
-                label = np.array(label.flatten()) 
-                correct_n, sample_n, c_matrix = measure_accuracy(logit, label)
-                total_confusion += c_matrix
-                total_correct += correct_n
-                total_sample += sample_n
-            print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
-            print(f'*** Confusion matrix:\n{total_confusion}')
-            return predictions
         
-        if model_name == 'naive_bayes':
-                batch_size = 1
-                
         self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
         self.dataset_dict['train'] = self.dataset_dict['train'].map(map_target_to_label) 
             
@@ -717,8 +670,7 @@ class table_toolkits():
             )
 
         # GPU specifications 
-        if model_name != 'naive_bayes':
-            model.to(device)
+        model.to(device)
 
         # Load the dataset
         data_loaders = create_dataset(
@@ -731,23 +683,15 @@ class table_toolkits():
         # )
         del self.dataset_dict
             
-        if model_name == 'naive_bayes': 
-            print('Here we are!')
-            if naive_bayes_version == 'Bernoulli':
-                model = BernoulliNB(alpha=alpha_smooth_val) 
-            elif naive_bayes_version == 'Multinomial':
-                model = MultinomialNB(alpha=alpha_smooth_val) 
-            predictions = test_naive_bayes(data_loaders[1], model, vocab_size, 'test') # preprocessed_text
+        # Optimizer
+        if model_name in ['logistic_regression', 'cnn']:
+            optim = torch.optim.Adam(params=model.parameters())
         else:
-            # Optimizer
-            if model_name in ['logistic_regression', 'cnn']:
-                optim = torch.optim.Adam(params=model.parameters())
-            else:
-                optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
-            # Loss function 
-            criterion = torch.nn.CrossEntropyLoss() 
-            # Train and validate
-            predictions = test(data_loaders[1], model, criterion, device, name='test') # preprocessed_text
+            optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
+        # Loss function 
+        criterion = torch.nn.CrossEntropyLoss() 
+        # Train and validate
+        predictions = test(data_loaders[1], model, criterion, device, name='test') # preprocessed_text
         predictions_to_categories = [unique_classes[x] for x in predictions]
         return {"predictions": predictions_to_categories[:10]} # limit to the first 10 values to prevent content limit exceeded
 
@@ -762,24 +706,27 @@ if __name__ == "__main__":
 # """
     # print(db.pandas_interpreter(pandas_code))
     
-    print("1")
-    db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
-    print("2")
-    db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    db.textual_classifier('logistic_regression', 'summary', 'decision', 'ACCEPTED')
-    print("3")
-    db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
-    print("4")
-    db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    db.textual_classifier('distilbert-base-uncased', 'summary', 'decision', 'ACCEPTED')
-    print("5")
+    # print("1")
+    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
+    # db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
+    # print("2")
     db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
     db.textual_classifier('logistic_regression', 'summary', 'decision', 'ACCEPTED')
-    print("6")
+    print("separate")
     db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    db.textual_classifier('distilbert-base-uncased', 'summary', 'decision', 'ACCEPTED')
+    db.textual_classifier('logistic_regression', 'summary', 'decision', 'ACCEPTED')
+    # print("3")
+    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
+    # db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
+    # print("4")
+    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
+    # db.textual_classifier('distilbert-base-uncased', 'summary', 'decision', 'ACCEPTED')
+    # print("5")
+    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
+    # db.textual_classifier('logistic_regression', 'summary', 'decision', 'ACCEPTED')
+    # print("6")
+    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
+    # db.textual_classifier('distilbert-base-uncased', 'summary', 'decision', 'ACCEPTED')
     # print("")
     # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
     # db.textual_classifier('cnn', 'Abstract', 'Oral')
@@ -795,7 +742,7 @@ if __name__ == "__main__":
     # print("10")
     # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
     # db.textual_classifier('logistic_regression', 'Abstract', 'Oral')
-    # logistic_regression, distilbert-base-uncased, cnn, naive_bayes hupd: # title, abstract, summary, claims, background, full_description # decision    
+    # logistic_regression, distilbert-base-uncased, cnn hupd: # title, abstract, summary, claims, background, full_description # decision    
 
     # db.db_loader('neurips', '0-1000', 'None', 'None')
     # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')

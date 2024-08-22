@@ -106,9 +106,9 @@ def top_authors(row_num, llm_keyword):
     new_num = 0
     while num_papers_lst[new_num]==max_num_papers:
         new_num += 1
-    return new_num, sorted_author_df.head(new_num)['Author'].tolist()
+    return new_num, sorted_author_df['Author'].head(new_num).tolist()
 
-# NeurIPS Template 2: What proportion of papers have {compare} {n} authors? Return a value between 0 and 1.
+# NeurIPS Template 2: What proportion of papers have {compare} {n} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.
 def author_num(compare,n):
     df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv")) 
     total_papers = len(df)
@@ -133,6 +133,8 @@ question_types = [1,2,3,4,5,6]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
     while question_id<=60:
         question_type = random.choice(question_types) 
+        print("question_id", question_id)
+        print("question_type", question_type)
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)
@@ -205,7 +207,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             if all_bool:
                 row_num = 3585
             else:
-                row_num = random.randint(list(range(1000, 3600, 100))) 
+                row_num = random.choice(list(range(1000, 3600, 100))) 
             llm_keyword = random.choice([True, False])
             new_num, answer = top_authors(row_num, llm_keyword)
             question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Who were the top {} authors with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Which {} authors had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors."]
@@ -223,7 +225,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(5)
                 question_id += 1
         else:
-            # What proportion of papers have {compare} {n} authors? Return a value between 0 and 1.
+            # What proportion of papers have {compare} {n} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.
             compare = random.choice(["more than", "fewer than", "exactly", "greater than or equal to", "fewer than or equal to"]) 
             n = random.randint(2,10)
             question_phrasings = ["What proportion of papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What percentage of papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What's the ratio of papers that have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1."] 
