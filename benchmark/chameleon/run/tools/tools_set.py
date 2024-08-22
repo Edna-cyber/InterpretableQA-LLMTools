@@ -286,11 +286,11 @@ tools_gemini = [
           "properties": {
             "query": {
               "type": "string",
-              "description": "A query or a reference document used for comparison."
+              "description": "A query or a reference document used for comparison"
             },
             "document": {
               "type": "string",
-              "description": "A document to be compared against the query."
+              "description": "A document to be compared against the query"
             }
           },
           "required": ["query", "document"]
@@ -308,7 +308,7 @@ tools_gemini = [
           "properties": {
             "pandas_code": {
               "type": "string",
-              "description": "Pandas code written in Python that involves operations on a DataFrame df."
+              "description": "Pandas code written in Python that involves operations on a DataFrame df"
             }
           },
           "required": ["pandas_code"]
@@ -326,7 +326,7 @@ tools_gemini = [
           "properties": {
             "python_code": {
               "type": "string",
-              "description": "Python code."
+              "description": "Python code"
             }
           },
           "required": ["python_code"]

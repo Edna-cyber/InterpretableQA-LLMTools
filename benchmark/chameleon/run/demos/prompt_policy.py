@@ -30,8 +30,7 @@ def solution(n):
     return b
 
 ans = solution(19)
-""", 
-                        "input_var_values": "{}"
+"""
                     })
                 },
                 'type': 'function'
@@ -411,9 +410,8 @@ def get_most_relevant_document(match_doc1, match_doc2):
         return 'Document 2'
     else:
         return 'Both documents are equally relevant'
-most_relevant = get_most_relevant_document(match1, match2)
-""", 
-                        "input_var_values": "{'match1': 1, 'match2': 0}"
+most_relevant = get_most_relevant_document(1, 0)
+"""
                     })
                 },
                 'type': 'function'
@@ -569,8 +567,7 @@ def solution(n):
     return b
 
 ans = solution(19)
-""", 
-                        "input_var_values": "{}"
+"""
                     })
                 },
                 'type': 'function'
@@ -1042,9 +1039,8 @@ def get_most_relevant_document(match_doc1, match_doc2):
         return 'Document 2'
     else:
         return 'Both documents are equally relevant'
-most_relevant = get_most_relevant_document(match1, match2)
-""", 
-                        "input_var_values": "{'match1':1, 'match2':0}"
+most_relevant = get_most_relevant_document(1, 0)
+"""
                     })
                 },
                 'type': 'function'
