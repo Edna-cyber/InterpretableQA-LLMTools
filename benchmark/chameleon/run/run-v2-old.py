@@ -39,8 +39,7 @@ datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 db = table_toolkits()
 ACTION_LIST = {
     'Calculate': calculator,
-    'LoadDB': db.db_loader, 
-    'TestSampler': db.test_sampler,
+    'LoadDB': db.db_loader,
     'TFIDF': tfidf,
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
@@ -57,8 +56,6 @@ client = OpenAI()
 def calc_cost1(function_type, function_arguments, function_response):
     if function_type=="Calculate":
         return 2
-    if function_type=="TestSampler":
-        return 2
     if function_type=="LoadDB":
         return 3   
     if function_type=="TFIDF":
@@ -66,7 +63,6 @@ def calc_cost1(function_type, function_arguments, function_response):
     if function_type=="PandasInterpreter":
         num_lines = len(function_arguments["pandas_code"].splitlines()) 
         num_packages = function_arguments["pandas_code"].count('import')
-        max_elements = 0
         if num_lines<10:
             lines_cost = 4
         elif num_lines<=20:
@@ -81,24 +77,10 @@ def calc_cost1(function_type, function_arguments, function_response):
             packages_cost = 1.5
         else:
             packages_cost = 2
-        for value in list(function_response.values()):
-            object_types = (list, dict, pd.DataFrame, pd.Series)
-            if isinstance(value, object_types):
-                if len(value)>max_elements:
-                    max_elements = len(value)
-        if max_elements<10:
-            elements_cost = 1
-        elif max_elements<=50:
-            elements_cost = 1.5
-        elif max_elements<=100:
-            elements_cost = 2
-        else:
-            elements_cost = 3
-        return lines_cost*packages_cost*elements_cost
+        return lines_cost*packages_cost
     if function_type=="PythonInterpreter":
         num_lines = len(function_arguments["python_code"].splitlines()) 
         num_packages = function_arguments["python_code"].count('import')
-        max_elements = 0
         if num_lines<10:
             lines_cost = 4
         elif num_lines<=20:
@@ -113,20 +95,7 @@ def calc_cost1(function_type, function_arguments, function_response):
             packages_cost = 1.5
         else:
             packages_cost = 2
-        for value in list(function_response.values()):
-            object_types = (list, dict, pd.DataFrame, pd.Series)
-            if isinstance(value, object_types):
-                if len(value)>max_elements:
-                    max_elements = len(value)
-        if max_elements<10:
-            elements_cost = 1
-        elif max_elements<=50:
-            elements_cost = 1.5
-        elif max_elements<=100:
-            elements_cost = 2
-        else:
-            elements_cost = 3
-        return lines_cost*packages_cost*elements_cost
+        return lines_cost*packages_cost
     if function_type=="Forecaster":
         if function_arguments["model_name"]=="linear_regression":
             return 6
@@ -149,76 +118,46 @@ def calc_cost1(function_type, function_arguments, function_response):
 def calc_cost2(function_type, function_arguments, function_response):
     if function_type=="Calculate":
         return 1
-    if function_type=="TestSampler":
-        return 2
-    if function_type=="LoadDB":
-        return 4   
     if function_type=="TFIDF":
         return 3
+    if function_type=="LoadDB":
+        return 3   
     if function_type=="PandasInterpreter":
         num_lines = len(function_arguments["pandas_code"].splitlines()) 
         num_packages = function_arguments["pandas_code"].count('import')
-        max_elements = 0
         if num_lines<10:
-            lines_cost = 4
+            lines_cost = 5
         elif num_lines<=20:
-            lines_cost = 7
-        elif num_lines<=100:
             lines_cost = 10
-        else:
+        elif num_lines<=100:
             lines_cost = 15
+        else:
+            lines_cost = 20
         if num_packages<2:
             packages_cost = 1
         elif num_packages<=5:
-            packages_cost = 1.1
+            packages_cost = 2
         else:
-            packages_cost = 1.5
-        for value in list(function_response.values()):
-            object_types = (list, dict, pd.DataFrame, pd.Series)
-            if isinstance(value, object_types):
-                if len(value)>max_elements:
-                    max_elements = len(value)
-        if max_elements<10:
-            elements_cost = 1
-        elif max_elements<=50:
-            elements_cost = 1.2
-        elif max_elements<=100:
-            elements_cost = 1.5
-        else:
-            elements_cost = 2
-        return lines_cost*packages_cost*elements_cost
+            packages_cost = 3
+        return lines_cost*packages_cost
     if function_type=="PythonInterpreter":
         num_lines = len(function_arguments["python_code"].splitlines()) 
         num_packages = function_arguments["python_code"].count('import')
-        max_elements = 0
         if num_lines<10:
-            lines_cost = 4
+            lines_cost = 5
         elif num_lines<=20:
-            lines_cost = 7
-        elif num_lines<=100:
             lines_cost = 10
-        else:
+        elif num_lines<=100:
             lines_cost = 15
+        else:
+            lines_cost = 20
         if num_packages<2:
             packages_cost = 1
         elif num_packages<=5:
-            packages_cost = 1.1
+            packages_cost = 2
         else:
-            packages_cost = 1.5
-        for value in list(function_response.values()):
-            object_types = (list, dict, pd.DataFrame, pd.Series)
-            if isinstance(value, object_types):
-                if len(value)>max_elements:
-                    max_elements = len(value)
-        if max_elements<10:
-            elements_cost = 1
-        elif max_elements<=50:
-            elements_cost = 1.2
-        elif max_elements<=100:
-            elements_cost = 1.5
-        else:
-            elements_cost = 2
-        return lines_cost*packages_cost*elements_cost
+            packages_cost = 3
+        return lines_cost*packages_cost
     if function_type=="Forecaster":
         if function_arguments["model_name"]=="linear_regression":
             return 5
@@ -283,6 +222,7 @@ if __name__ == "__main__":
     pids = solver.pids
     
     for pid in tqdm(pids): # pids
+        db.data = None # force reset
         if total_count < 10:
             print("\n\n===================================\n")
             print(f"# [Pid]: {pid}\n") # problem id
@@ -340,7 +280,6 @@ if __name__ == "__main__":
                     function_arguments = json.loads(tool_call.function.arguments)
                     function_response = function(**function_arguments)
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
-                        cost[question_type] += cost_function(function_type, function_arguments, function_response)
                         total_cost += cost_function(function_type, function_arguments, function_response)
                         per_question_cost += cost_function(function_type, function_arguments, function_response)
                     
@@ -387,43 +326,58 @@ if __name__ == "__main__":
             if question_type in ["1", "3", "6"]: # threshold correct / incorrect
                 if question_type not in performance:
                     performance[question_type] = 0
+                    cost[question_type] = defaultdict(int)
                 try:
                     performance[question_type] += int(abs(llm_answer-gt_answer)<=0.005*gt_answer)
+                    cost[question_type]["correct"] += per_question_cost
                 except:
                     errors[question_type] += 1
+                    cost[question_type]["wrong"] += per_question_cost
             elif question_type in ["2","5"]: # set intersection
                 if question_type not in performance:
                     performance[question_type] = 0
+                    cost[question_type] = defaultdict(int)
                 try:
                     performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
+                    cost[question_type]["correct"] += per_question_cost
                 except:
                     errors[question_type] += 1
+                    cost[question_type]["wrong"] += per_question_cost
             elif question_type in ["4"]: # within set
                 if question_type not in performance:
                     performance[question_type] = 0
+                    cost[question_type] = defaultdict(int)
                 try:
                     performance[question_type] += int(llm_answer in gt_answer)
+                    cost[question_type]["correct"] += per_question_cost
                 except:
                     errors[question_type] += 1
+                    cost[question_type]["wrong"] += per_question_cost
             elif question_type in ["7"]: # R2
                 if question_type not in performance:
                     performance[question_type] = [0,[]]
+                    cost[question_type] = defaultdict(int)
                 try:
                     performance[question_type][0] += (llm_answer-gt_answer)**2
                     performance[question_type][1].append(gt_answer)
+                    cost[question_type]["correct"] += per_question_cost
                 except:
                     errors[question_type] += 1
+                    cost[question_type]["wrong"] += per_question_cost
             elif question_type in ["8"]: # macro F1
                 if isinstance(gt_answer, str):
                     gt_answer = ast.literal_eval(gt_answer)
                 if question_type not in performance:
                     performance[question_type] = 0
+                    cost[question_type] = defaultdict(int)
                 try:
                     performance[question_type] += f1_score(gt_answer, llm_answer, average='macro')
+                    cost[question_type]["correct"] += per_question_cost
                 except:
                     errors[question_type] += 1
+                    cost[question_type]["wrong"] += per_question_cost
         
-        cost_original[question_type].append(per_question_cost) 
+        cost_original[question_type].append(per_question_cost) ###
         logs.append({"Question Type": question_type})
         logs.append({"Cost": per_question_cost})
         logs.append({"LLM Answer": llm_answer})
@@ -458,7 +412,8 @@ if __name__ == "__main__":
     for key in errors.keys():
         errors[key] = errors[key] / count[key]
     for key in cost.keys():
-        cost[key] = cost[key] / count[key]
+        cost[key]["right"] = cost[key]["right"] / (count[key]-count[key]*errors[key]) if errors[key]!=1 else 0  
+        cost[key]["wrong"] = cost[key]["wrong"] / (count[key]*errors[key]) if errors[key]!=0 else 0
     performance = dict(sorted(performance.items())) # between 0 and 1
     errors = dict(sorted(errors.items()))
     cost = dict(sorted(cost.items()))
