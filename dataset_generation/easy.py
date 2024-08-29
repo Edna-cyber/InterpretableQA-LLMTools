@@ -11,14 +11,16 @@ import ast
 corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
 
 def convert_date(series):
-    if series.dtype==np.float64:
+    if series.dtype == np.float64:
         series = series.astype('Int64')
+    series = series.replace('<NA>', pd.NA)
     series = series.astype(str)
-    if series.str.contains("-").any(): 
-        series = pd.to_datetime(series)
-    else:
-        series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
-    return series
+    formats = ["%Y-%m-%d", "%Y%m%d", "%d/%m/%Y"]
+    for fmt in formats:
+        parsed_dates = pd.to_datetime(series, format=fmt, errors='coerce')
+        if not parsed_dates.isna().all():
+            return parsed_dates
+    return pd.to_datetime(series, errors='coerce')
 
 # HUPD Template 1: What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
 def average_pendency(start_year, end_year):
@@ -34,7 +36,7 @@ def average_pendency(start_year, end_year):
     
     return average_duration
 
-# HUPD Template 2: What were the top {#} {IPCR/CPC categories} with the highest number of accepted patents in {year}? First, calculate the approval percentage for each category, then identify the categories with the highest approval rates and return them as a list of {IPCR/CPC categories}. 
+# HUPD Template 2: What were the top {#} {IPCR/CPC categories} with the highest number of accepted patents in {year}? Return them as a list of {IPCR/CPC categories}. 
 def top_accepted_category(category, year):
     df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
     if category=="IPCR categories":
@@ -48,11 +50,21 @@ def top_accepted_category(category, year):
     del df
     top_categories = top_categories.sort_values(by="acceptance", ascending=False)
     acceptance_sums = top_categories['acceptance'].tolist()
+    if len(acceptance_sums)==0:
+        return None, None
     max_acceptance_sum = acceptance_sums[0]
+    if max_acceptance_sum==0:
+        return None, None
+    max_2_acceptance_sum = max([x for x in acceptance_sums if x!=max_acceptance_sum])
     cnt = 0
-    while acceptance_sums[cnt]==max_acceptance_sum:
-        cnt += 1
-    top_n = top_categories.head(cnt).index.tolist()
+    while cnt<len(acceptance_sums):
+        if acceptance_sums[cnt]==max_acceptance_sum:
+            cnt += 1
+        elif acceptance_sums[cnt]==max_2_acceptance_sum and max_2_acceptance_sum!=0:
+            cnt += 1
+        else:
+            break
+    top_n = top_categories.head(cnt)[col].tolist()
     return cnt, top_n
 
 # HUPD Template 3: # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
@@ -75,7 +87,7 @@ def longest_time(start_year, end_year):
     del df_lst
     df["date_published"] = convert_date(df["date_published"])
     df["filing_date"] = convert_date(df["filing_date"])
-    df["duration"] = (df["date_published"]-df["filing_date"]).dt.days()
+    df["duration"] = (df["date_published"]-df["filing_date"]).dt.days
     sorted_df = df.sort_values(by="duration", ascending=False).reset_index()  
     del df
     durations = sorted_df["duration"].tolist()
@@ -83,7 +95,7 @@ def longest_time(start_year, end_year):
     i = 0
     if durations[i]==max_duration:
         i += 1
-    return set(durations[:i])
+    return sorted_df["title"].tolist()[:i]
 
 # NeurIPS Template 1: Who were the top {#} authors with the most publications {containing 'Large Language Models' in the title} at NeurIPS? 
 def top_authors(row_num, llm_keyword):
@@ -102,9 +114,13 @@ def top_authors(row_num, llm_keyword):
     sorted_author_df = author_df.sort_values(by='Number of Papers', ascending=False)
     del author_df
     num_papers_lst = sorted_author_df['Number of Papers'].tolist()
+    if len(num_papers_lst)==0: 
+        return None, None
     max_num_papers = num_papers_lst[0]
     new_num = 0
-    while num_papers_lst[new_num]==max_num_papers:
+    if max_num_papers==0:
+        return None, None
+    while new_num<len(num_papers_lst) and num_papers_lst[new_num]==max_num_papers:
         new_num += 1
     return new_num, sorted_author_df['Author'].head(new_num).tolist()
 
@@ -133,8 +149,6 @@ question_types = [1,2,3,4,5,6]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
     while question_id<=60:
         question_type = random.choice(question_types) 
-        print("question_id", question_id)
-        print("question_type", question_type)
         if question_type == 1:
             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
             start_year = random.randint(2004,2018)
@@ -210,7 +224,10 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 row_num = random.choice(list(range(1000, 3600, 100))) 
             llm_keyword = random.choice([True, False])
             new_num, answer = top_authors(row_num, llm_keyword)
-            question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Who were the top {} authors with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Which {} authors had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors."]
+            if new_num==1:
+                question_phrasings = ["Who was the top {} author with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author.", "Who was the top {} author with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author.", "Which {} author had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author."]
+            else:
+                question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Who were the top {} authors with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Which {} authors had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors."]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(new_num)
             if llm_keyword:
                 insert_pos = question.find("publications")+len("publications")

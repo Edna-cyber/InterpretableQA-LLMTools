@@ -53,7 +53,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
 
-def calc_cost1(function_type, function_arguments, function_response):
+def calc_cost1(function_type, function_arguments):
     if function_type=="Calculate":
         return 2
     if function_type=="LoadDB":
@@ -115,7 +115,7 @@ def calc_cost1(function_type, function_arguments, function_response):
     if function_type=="Finish":
         return 0
 
-def calc_cost2(function_type, function_arguments, function_response):
+def calc_cost2(function_type, function_arguments):
     if function_type=="Calculate":
         return 1
     if function_type=="TFIDF":
@@ -215,10 +215,13 @@ if __name__ == "__main__":
     result_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-test.json"
     cache_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-cache.jsonl"
     cache = []
-    cost_function = calc_cost1 # Change with experiment
+    if args.formula=="formula1":
+        cost_function = calc_cost1
+    if args.formula=="formula2":
+        cost_function = calc_cost2
 
-    total_count, total_cost = 0, 0
-    count, performance, errors, cost, cost_original = defaultdict(int), {}, defaultdict(int), defaultdict(int), defaultdict(list)
+    total_count = 0
+    count, performance, errors, cost, cost_original = defaultdict(int), {}, defaultdict(int), defaultdict(int), {}
     pids = solver.pids
     
     for pid in tqdm(pids): # pids
@@ -230,14 +233,14 @@ if __name__ == "__main__":
         total_count += 1  
         example = solver.examples[pid] # get one example 
         user_prompt = example["question"] 
-        question_type = example["question_type"]
+        question_type = int(example["question_type"])
         per_question_cost = 0
         count[question_type] += 1
 
         if args.prompt=="clean":
             messages = prompt_policy.messages.copy() # Change with experiment
         elif args.prompt=="interp":
-            messages = prompt_policy.messages_formula.copy()
+            messages = prompt_policy.messages_formula_1.copy() ###
         
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
@@ -280,8 +283,7 @@ if __name__ == "__main__":
                     function_arguments = json.loads(tool_call.function.arguments)
                     function_response = function(**function_arguments)
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
-                        total_cost += cost_function(function_type, function_arguments, function_response)
-                        per_question_cost += cost_function(function_type, function_arguments, function_response)
+                        per_question_cost += cost_function(function_type, function_arguments)
                     
                     tool_call_response = {
                         "tool_call_id": tool_call.id,
@@ -310,6 +312,11 @@ if __name__ == "__main__":
         
         gt_answer = example["answer"]
         
+        if question_type not in performance:
+            performance[question_type] = 0
+        if question_type not in cost_original:
+            cost_original[question_type] = {"right":[], "wrong":[]}
+        
         def is_json_serializable(obj):
             try:
                 json.dumps(obj)
@@ -318,66 +325,52 @@ if __name__ == "__main__":
                 return False
         if llm_answer is None:
             errors[question_type] += 1
+            cost_original[question_type]["wrong"].append(per_question_cost)
         elif not is_json_serializable(llm_answer):
             llm_answer = None
             errors[question_type] += 1
+            cost_original[question_type]["wrong"].append(per_question_cost)
         else:
             # Calculate performance metric
-            if question_type in ["1", "3", "6"]: # threshold correct / incorrect
-                if question_type not in performance:
-                    performance[question_type] = 0
-                    cost[question_type] = defaultdict(int)
+            if question_type in [1,3,6]: # threshold correct / incorrect
                 try:
                     performance[question_type] += int(abs(llm_answer-gt_answer)<=0.005*gt_answer)
-                    cost[question_type]["correct"] += per_question_cost
+                    cost_original[question_type]["right"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost[question_type]["wrong"] += per_question_cost
-            elif question_type in ["2","5"]: # set intersection
-                if question_type not in performance:
-                    performance[question_type] = 0
-                    cost[question_type] = defaultdict(int)
+                    cost_original[question_type]["wrong"].append(per_question_cost)
+            elif question_type in [2,5]: # set intersection
                 try:
                     performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
-                    cost[question_type]["correct"] += per_question_cost
+                    cost_original[question_type]["right"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost[question_type]["wrong"] += per_question_cost
-            elif question_type in ["4"]: # within set
-                if question_type not in performance:
-                    performance[question_type] = 0
-                    cost[question_type] = defaultdict(int)
+                    cost_original[question_type]["wrong"].append(per_question_cost)
+            elif question_type in [4]: # within set
                 try:
                     performance[question_type] += int(llm_answer in gt_answer)
-                    cost[question_type]["correct"] += per_question_cost
+                    cost_original[question_type]["right"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost[question_type]["wrong"] += per_question_cost
-            elif question_type in ["7"]: # R2
-                if question_type not in performance:
-                    performance[question_type] = [0,[]]
-                    cost[question_type] = defaultdict(int)
+                    cost_original[question_type]["wrong"].append(per_question_cost)
+            elif question_type in [7]: # R2
                 try:
                     performance[question_type][0] += (llm_answer-gt_answer)**2
                     performance[question_type][1].append(gt_answer)
-                    cost[question_type]["correct"] += per_question_cost
+                    cost_original[question_type]["right"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost[question_type]["wrong"] += per_question_cost
-            elif question_type in ["8"]: # macro F1
+                    cost_original[question_type]["wrong"].append(per_question_cost)
+            elif question_type in [8]: # macro F1
                 if isinstance(gt_answer, str):
                     gt_answer = ast.literal_eval(gt_answer)
-                if question_type not in performance:
-                    performance[question_type] = 0
-                    cost[question_type] = defaultdict(int)
                 try:
                     performance[question_type] += f1_score(gt_answer, llm_answer, average='macro')
-                    cost[question_type]["correct"] += per_question_cost
+                    cost_original[question_type]["right"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost[question_type]["wrong"] += per_question_cost
+                    cost_original[question_type]["wrong"].append(per_question_cost)
         
-        cost_original[question_type].append(per_question_cost) ###
         logs.append({"Question Type": question_type})
         logs.append({"Cost": per_question_cost})
         logs.append({"LLM Answer": llm_answer})
@@ -395,12 +388,12 @@ if __name__ == "__main__":
             writer.write(row)
 
     for key in performance.keys():
-        if key in ["1","2","3","4","5","6","8"]: 
+        if key in [1,2,3,4,5,6,8]: 
             if count[key]==errors[key]:
                 performance[key] = 0
             else:
                 performance[key] = performance[key] / (count[key]-errors[key])
-        elif key in ["7"]: 
+        elif key in [7]: 
             print("before", performance[key])
             actual_mean = sum(performance[key][1]) / len(performance[key][1])
             print("actual_mean", actual_mean)
@@ -410,16 +403,19 @@ if __name__ == "__main__":
             performance[key] = 1 - performance[key][0]/sstot
             print("after", performance[key])
     for key in errors.keys():
-        errors[key] = errors[key] / count[key]
-    for key in cost.keys():
-        cost[key]["right"] = cost[key]["right"] / (count[key]-count[key]*errors[key]) if errors[key]!=1 else 0  
-        cost[key]["wrong"] = cost[key]["wrong"] / (count[key]*errors[key]) if errors[key]!=0 else 0
+        errors[key] = errors[key] / count[key]    
     performance = dict(sorted(performance.items())) # between 0 and 1
     errors = dict(sorted(errors.items()))
-    cost = dict(sorted(cost.items()))
     cost_original = dict(sorted(cost_original.items()))
+    for key in cost_original.keys():
+        cost[key] = {"right": 0, "wrong": 0}
+        cost[key]["right"] = sum(cost_original[key]["right"]) / (count[key]-count[key]*errors[key]) if errors[key]!=1 else 0
+        cost[key]["wrong"] = sum(cost_original[key]["wrong"]) / (count[key]*errors[key]) if errors[key]!=0 else 0
+    cost = dict(sorted(cost.items()))
     count = dict(sorted(count.items()))
-    agg_cost = round(total_cost / total_count, 2)
+    agg_cost = {"right": 0, "wrong": 0}
+    agg_cost["right"] = sum([sum(cost_original[key]["right"]) for key in performance.keys()]) / sum([count[key]-count[key]*errors[key] for key in performance.keys()])
+    agg_cost["wrong"] = sum([sum(cost_original[key]["wrong"]) for key in performance.keys()]) / sum([count[key]*errors[key] for key in performance.keys()])
     
     # save the result
     result = {'performance': performance, 'error': errors, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'count': count, 'total_count': total_count, 'args': vars(args)}
