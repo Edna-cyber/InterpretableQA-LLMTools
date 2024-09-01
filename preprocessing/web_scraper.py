@@ -4,7 +4,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
-url = 'https://neurips.cc/virtual/2023/papers.html?filter=titles&search=#tab-browse'
+# url = 'https://neurips.cc/virtual/2023/papers.html?filter=titles&search=#tab-browse'
 
 # # Send a GET request to the webpage
 # response = requests.get(url)
@@ -122,36 +122,40 @@ url = 'https://neurips.cc/virtual/2023/papers.html?filter=titles&search=#tab-bro
 # df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_New_Papers.csv', index=False)
 
 # Have to manually add missing data due to the browser's shuffling way of presentation.
-df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_New_Papers.csv')
-print(df.dtypes)
-ind = df.index[df['Title'] == 'Minigrid & Miniworld: Modular & Customizable Reinforcement Learning Environments for Goal-Oriented Tasks'][0]
-df.at[ind,'Topic'] = 'Reinforcement Learning'
-df.at[ind,'Poster Session'] = float('6')
-ind = df.index[df['Title'] == 'Diversify \\& Conquer: Outcome-directed Curriculum RL via Out-of-Distribution Disagreement'][0]
-df.at[ind,'Topic'] = 'Reinforcement Learning/Everything Else'
-df.at[ind,'Poster Session'] = float('5')
-ind = df.index[df['Title'] == 'Masked Two-channel Decoupling Framework for Incomplete Multi-view Weak Multi-label Learning'][0]
-df.at[ind,'Topic'] = 'Deep Learning/Everything Else'
-ind = df.index[df['Title'] == 'Reproducibility Study of "Label-Free Explainability for Unsupervised Models"'][0]
-df.at[ind,'Topic'] = 'Social Aspects/Accountability, Transparency and Interpretability'
-df.at[ind,'Poster Session'] = float('6')
-ind = df.index[df['Title'] == 'Attentive Transfer Entropy to Exploit Transient Emergence of Coupling Effect'][0]
-df.at[ind,'Topic'] = 'Deep Learning/Attention Mechanisms'
-df.at[ind,'Poster Session'] = float('3')
-ind = df.index[df['Title'] == 'Robust Bayesian Satisficing'][0]
-df.at[ind,'Topic'] = 'Optimization/Zero-order and Black-box Optimization'
-df.at[ind,'Poster Session'] = float('6')
-ind = df.index[df['Title'] == 'Graph Clustering with Graph Neural Networks'][0]
-df.at[ind,'Topic'] = 'Deep Learning/Graph Neural Networks'
-df.at[ind,'Poster Session'] = float('6')
-ind = df.index[df['Title'] == 'Quantifying & Modeling Multimodal Interactions: An Information Decomposition Framework'][0]
-df.at[ind,'Topic'] = 'Deep Learning/Other Representation Learning'
-df.at[ind,'Poster Session'] = float('3')
-ind = df.index[df['Title'] == 'TopP&R: Robust Support Estimation Approach for Evaluating Fidelity and Diversity in Generative Models'][0]
-df.at[ind,'Topic'] = 'Deep Learning/Generative Models and Autoencoders'
-df.at[ind,'Poster Session'] = float('2')
-ind = df.index[df['Title'] == 'Marich: A Query-efficient Distributionally Equivalent Model Extraction Attack'][0]
-df.at[ind,'Topic'] = 'Social Aspects/Privacy-preserving Statistics and Machine Learning'
-df.at[ind,'Poster Session'] = float('4')
+# df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_New_Papers.csv')
+# print(df.dtypes)
+# ind = df.index[df['Title'] == 'Minigrid & Miniworld: Modular & Customizable Reinforcement Learning Environments for Goal-Oriented Tasks'][0]
+# df.at[ind,'Topic'] = 'Reinforcement Learning'
+# df.at[ind,'Poster Session'] = float('6')
+# ind = df.index[df['Title'] == 'Diversify \\& Conquer: Outcome-directed Curriculum RL via Out-of-Distribution Disagreement'][0]
+# df.at[ind,'Topic'] = 'Reinforcement Learning/Everything Else'
+# df.at[ind,'Poster Session'] = float('5')
+# ind = df.index[df['Title'] == 'Masked Two-channel Decoupling Framework for Incomplete Multi-view Weak Multi-label Learning'][0]
+# df.at[ind,'Topic'] = 'Deep Learning/Everything Else'
+# ind = df.index[df['Title'] == 'Reproducibility Study of "Label-Free Explainability for Unsupervised Models"'][0]
+# df.at[ind,'Topic'] = 'Social Aspects/Accountability, Transparency and Interpretability'
+# df.at[ind,'Poster Session'] = float('6')
+# ind = df.index[df['Title'] == 'Attentive Transfer Entropy to Exploit Transient Emergence of Coupling Effect'][0]
+# df.at[ind,'Topic'] = 'Deep Learning/Attention Mechanisms'
+# df.at[ind,'Poster Session'] = float('3')
+# ind = df.index[df['Title'] == 'Robust Bayesian Satisficing'][0]
+# df.at[ind,'Topic'] = 'Optimization/Zero-order and Black-box Optimization'
+# df.at[ind,'Poster Session'] = float('6')
+# ind = df.index[df['Title'] == 'Graph Clustering with Graph Neural Networks'][0]
+# df.at[ind,'Topic'] = 'Deep Learning/Graph Neural Networks'
+# df.at[ind,'Poster Session'] = float('6')
+# ind = df.index[df['Title'] == 'Quantifying & Modeling Multimodal Interactions: An Information Decomposition Framework'][0]
+# df.at[ind,'Topic'] = 'Deep Learning/Other Representation Learning'
+# df.at[ind,'Poster Session'] = float('3')
+# ind = df.index[df['Title'] == 'TopP&R: Robust Support Estimation Approach for Evaluating Fidelity and Diversity in Generative Models'][0]
+# df.at[ind,'Topic'] = 'Deep Learning/Generative Models and Autoencoders'
+# df.at[ind,'Poster Session'] = float('2')
+# ind = df.index[df['Title'] == 'Marich: A Query-efficient Distributionally Equivalent Model Extraction Attack'][0]
+# df.at[ind,'Topic'] = 'Social Aspects/Privacy-preserving Statistics and Machine Learning'
+# df.at[ind,'Poster Session'] = float('4')
 # df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Newest_Papers.csv', index=False)
 
+# Topic / Subtopic
+# df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv')
+# df[['Topic', 'Subtopic']] = df['Topic'].str.split('/', expand=True)
+# df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Newest_Papers.csv', index=False)

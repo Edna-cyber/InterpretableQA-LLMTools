@@ -163,14 +163,16 @@ class table_toolkits():
     
         def preprocess_hupd(start_year, end_year):
             def convert_date(series):
-                if series.dtype==np.float64:
+                if series.dtype == np.float64:
                     series = series.astype('Int64')
+                series = series.replace('<NA>', pd.NA)
                 series = series.astype(str)
-                if series.str.contains("-").any(): 
-                    series = pd.to_datetime(series)
-                else:
-                    series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
-                return series
+                formats = ["%Y-%m-%d", "%Y%m%d", "%d/%m/%Y"]
+                for fmt in formats:
+                    parsed_dates = pd.to_datetime(series, format=fmt, errors='coerce')
+                    if not parsed_dates.isna().all():
+                        return parsed_dates
+                return pd.to_datetime(series, errors='coerce')
             
             if not start_year and not end_year:
                 return None
@@ -224,8 +226,8 @@ class table_toolkits():
             # remove rows where the predicted target is NA
             if outcome_col!="None":
                 df = df.dropna(subset=[outcome_col])
-            return df   
-           
+            return df  
+                   
         if target_db=="hupd":
             if train_end>=2013 and test_duration!="None":
                 return "Error: The end year of the training dataframe cannot be later than year 2012."
@@ -259,9 +261,9 @@ class table_toolkits():
                 else:
                     i = 0
                     example_data = self.data.at[i, column]
-                    while not isinstance(example_data, list) and pd.isna(example_data):
-                        i += 1
+                    while i<len(self.data) and not isinstance(example_data, list) and pd.isna(example_data):
                         example_data = self.data.at[i, column]
+                        i += 1
                     if isinstance(example_data, str) and len(example_data)>=10:
                         example_data = str(example_data[:10])+"..."
                     examples_lst.append("'"+column+"'"+"(e.g."+str(example_data)+", {})".format(type(example_data)))
@@ -280,46 +282,142 @@ class table_toolkits():
             self.dataset_dict = DatasetDict({"train": train_dataset, "test": test_dataset})
             self.data = None
             return "We have successfully loaded the {} dataset dict that has the following structure: {}".format(target_db, self.dataset_dict)
-        
-    def test_sampler(self, indices):
-        if not self.dataset_dict or not self.dataset_dict["test"]:
-            return "Error: There is no test set available for sampling."
-        test_df = self.dataset_dict["test"].to_pandas()
-        indices_lst = indices.split(",")
-        new_test_df = test_df[test_df["Unique_ID"].isin(indices_lst)]
-        new_test_dataset = Dataset.from_pandas(new_test_df)
-        self.dataset_dict["test"] = new_test_dataset
-        return "Done sampling the test set according to the specified indices."
     
+    # new 
+    # def db_loader(self, target_db, duration="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
+    #     """
+    #     Loads the needed dataframe(s).
+    #     """     
+        
+    #     def extract_start_end(duration):
+    #         if duration=="None":
+    #             return None, None
+    #         hyphen_ind = duration.index("-")
+    #         start = int(duration[:hyphen_ind])
+    #         end = int(duration[hyphen_ind+1:])
+    #         return start, end
+    #     start, end = extract_start_end(duration)
+    
+    #     def preprocess_hupd(start_year, end_year):
+    #         def convert_date(series):
+    #             if series.dtype == np.float64:
+    #                 series = series.astype('Int64')
+    #             series = series.astype(str)
+    #             series = pd.to_datetime(series, errors='coerce')
+    #             if series.isna().any():
+    #                 series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
+    #             return series
+            
+    #         if not start_year and not end_year:
+    #             return None
+    #         df = []
+    #         for sub in range(start_year, end_year+1):
+    #             file_path = "{}/data/external_corpus/hupd/hupd_{}.csv".format(self.path, sub)
+    #             df_raw = pd.read_csv(file_path)
+    #             df_raw['patent_number'] = pd.to_numeric(df_raw['patent_number'], errors='coerce').astype('Int64').replace(0, pd.NA) # so that the LLM is aware of which patent numbers are invalid 
+    #             df_raw['examiner_id'] = pd.to_numeric(df_raw['examiner_id'], errors='coerce').astype('Int64') 
+                
+    #             df_raw['filing_date'] = convert_date(df_raw['filing_date'])
+    #             df_raw['patent_issue_date'] = convert_date(df_raw['patent_issue_date'])
+    #             df_raw['date_published'] = convert_date(df_raw['date_published'])
+                
+    #             df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
+    #             df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
+    #             df_raw.drop(columns=["main_ipcr_label", "main_cpc_label"], inplace=True)
+    #             # print(df_raw.dtypes)
+    #             # print(df_raw.head())
+    #             df.append(df_raw)
+    #         df = pd.concat(df, ignore_index=True)
+    #         df = df.reset_index(drop=False)
+    #         return df
+        
+    #     def preprocess_neurips(start_row, end_row):
+    #         if not start_row and not end_row:
+    #             return None
+    #         file_path = "{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv".format(self.path)
+    #         df = pd.read_csv(file_path)
+    #         # print(df.dtypes)
+    #         df = df.iloc[start_row:end_row+1]
+    #         df['Authors'] = df['Authors'].str.split(' · ')
+    #         df['Authors_Num'] = df['Authors'].apply(len)
+    #         column_names = ["'"+x+"'" for x in df.columns.tolist()]
+    #         column_names_str = ', '.join(column_names)
+    #         return df   
+           
+    #     if target_db=="hupd":
+    #         # if end>=2013: # uncomment for medium and hard tasks
+    #         #     return "Error: The end year of the dataframe cannot be later than year 2012 for prediction tasks."
+    #         df = preprocess_hupd(start, end)
+    #     elif target_db=="neurips":
+    #         if end>3585:
+    #             return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
+    #         # if end>3000: # uncomment for medium and hard tasks
+    #         #     return "Error: The end year of the dataframe cannot exceed row 3000 for prediction tasks."
+    #         df = preprocess_neurips(start, end)
+    #     else:
+    #         return "Error: the only possible choices for target_db are hupd (a patent dataset) and neurips (a papers dataset)."
+        
+    #     # outcome_col not in columns error
+    #     if isinstance(df, str) and "Error:" in df:
+    #         return df
+        
+    #     self.data = df
+    #     length = len(self.data)
+    #     examples_lst = []
+    #     for column in self.data.columns:
+    #         if column=="decision":
+    #             examples_lst.append("'"+column+"'"+"(e.g.'ACCEPTED', <class 'str'>)")
+    #         else:
+    #             i = 0
+    #             example_data = self.data.at[i, column]
+    #             while i<len(self.data) and not isinstance(example_data, list) and pd.isna(example_data):
+    #                 i += 1
+    #                 example_data = self.data.at[i, column]
+    #             if isinstance(example_data, str) and len(example_data)>=10:
+    #                 example_data = str(example_data[:10])+"..."
+    #             examples_lst.append("'"+column+"'"+"(e.g."+str(example_data)+", {})".format(type(example_data)))
+    #     examples_lst_str = ', '.join(examples_lst)
+    #     return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, examples_lst_str)+"\nIt has {} rows.".format(length)
+        
     def pandas_interpreter(self, pandas_code): 
         """
         Executes the provided Pandas code.
         """
         if self.dataset_dict is not None:
-            global_var = {"df": self.dataset_dict["train"].to_pandas()}
+            local_df = self.dataset_dict["train"].to_pandas()
+            global_var = {"df": local_df}
         elif self.data is not None:
-            global_var = {"df": self.data.copy()}
+            local_df = self.data.copy()
+            global_var = {"df": local_df}
         else:
             return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
+        # if self.data is not None:
+        #     global_var = {"df": self.data.copy()}
+        # else:
+        #     return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
         try: 
             exec(pandas_code, globals(), global_var)
             variable_values = {}
+            excluded_types = (types.ModuleType, types.FunctionType, type, pd.DataFrame)
             for var_name, var_value in locals().items(): 
                 if var_name in ["self", "pandas_code","variable_values"]:
                     continue
-                elif var_name=="global_var":
+                elif var_name=="global_var" and isinstance(var_value, dict):
                     for global_var_name, global_var_value in var_value.items(): 
-                        excluded_types = (types.ModuleType, types.FunctionType, type, pd.DataFrame)
                         if global_var_name not in ["__builtins__", "quit", "copyright", "credit", "license", "help"] and not isinstance(global_var_value, excluded_types):
-                            if isinstance(global_var_value, pd.Series):
+                            if global_var_value is None:
+                                continue
+                            elif isinstance(global_var_value, pd.Series):
                                 variable_values[global_var_name] = global_var_value.head().to_dict()
                             elif isinstance(global_var_value, (list, np.ndarray)):
                                 variable_values[global_var_name] = global_var_value[:10]
-                            elif isinstance(var_value, dict):
+                            elif isinstance(global_var_value, dict):
                                 variable_values[global_var_name] = dict(list(global_var_value.items())[:10])
                             else:
                                 variable_values[global_var_name] = global_var_value
-                elif not var_name.startswith('__') and not isinstance(var_value, excluded_types):
+                elif not var_name.startswith('__') and not isinstance(var_value, excluded_types) and var_name!='excluded_types':
+                    if var_value is None:
+                        continue
                     if isinstance(var_value, pd.Series):
                         variable_values[var_name] = var_value.head().to_dict()
                     elif isinstance(var_value, (list, dict, np.ndarray)):
@@ -330,106 +428,45 @@ class table_toolkits():
         except KeyError as e:
             column_names = ["'"+x+"'" for x in global_var["df"].columns.tolist()]
             column_names_str = ', '.join(column_names)
-            return "Error: "+str(e)+"column does not exist.\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(self.data.head())
+            return "Error: "+str(e)+" column does not exist.\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(local_df.head())
         except NameError as e:
             if "'pd'" in str(e):
                 return "Error: "+str(e)+"\nImport the pandas library using the pandas_interpreter."
+            else:
+                return "Error: "+str(e)
         except Exception as e:
             return "Error: "+str(e)
         # other exceptions
-    
-    # def numerical_classifier(self, model_name, feature, target):
-    #     combined_series = pd.concat([self.train_groundtruth, self.test_groundtruth])
-    #     value_counts = combined_series.value_counts().to_dict()
-    #     unique_classes = combined_series.unique().tolist()
-    #     num_classes = len(unique_classes)
-    #     class_weights = []
-    #     for ind in range(num_classes):
-    #         class_weights.append(1/value_counts[unique_classes[ind]])
-    #     class_weights = [x/sum(class_weights) for x in class_weights]
-    #     print("BEFORE", class_weights)
-    #     target_to_label = {} 
-    #     for ind in range(num_classes):
-    #         target_to_label[unique_classes[ind]] = ind
-    #     max_occurrence = max(value_counts.values())
-    #     min_occurrence = min(value_counts.values())
-    #     if max_occurrence / min_occurrence>10:
-    #         for k in range(len(unique_classes)):
-    #             unique_class = unique_classes[k]
-    #             if value_counts[unique_class] < min_occurrence * 5:
-    #             # if class_weights[target_to_label[unique_class]]<1/20:
-    #                 train_dataset = self.dataset_dict["train"]
-    #                 df = train_dataset.to_pandas()
-    #                 subset_df = df[df[target] == unique_class]
-    #                 repeated_df = pd.concat([subset_df] * 5, ignore_index=True)
-    #                 class_weights[k] /= 6 
-    #                 # class_weights[k] *= 6 
-    #                 repeated_dataset = Dataset.from_pandas(repeated_df)
-    #                 combined_dataset = concatenate_datasets([train_dataset, repeated_dataset])
-    #                 self.dataset_dict["train"] = combined_dataset.shuffle(seed=RANDOM_SEED)
-    #     class_weights = [x/sum(class_weights) for x in class_weights]
-    #     class_weights_dic = {}
-    #     for i in range(num_classes):
-    #         class_weights_dic[i] = class_weights[i]
-    #     CLASS_WEIGHTS = class_weights_dic
-    #     print("AFTER", CLASS_WEIGHTS)
-        
-    #     scaler = MinMaxScaler()
-    #     df_train = self.dataset_dict["train"].to_pandas()
-    #     df_test = self.dataset_dict["test"].to_pandas()
-    #     X_train = df_train[[feature]]
-    #     X_test = df_test[[feature]]
-    #     scaler.fit(X_train)
-    #     X_train_scaled = scaler.transform(X_train)
-    #     X_test_scaled = scaler.transform(X_test)
-    #     y_train = self.dataset_dict["train"].to_pandas()[target]
-    #     if model_name == "decision_tree":
-    #         dt_model = DecisionTreeClassifier(class_weight=CLASS_WEIGHTS, random_state=42)
-    #         dt_model.fit(X_train_scaled, y_train)
-    #         preds = dt_model.predict(X_test_scaled)
-    #     elif model_name=="random_forest":
-    #         rf_model = RandomForestClassifier(class_weight=CLASS_WEIGHTS, n_estimators=100, random_state=42)
-    #         rf_model.fit(X_train_scaled, y_train)
-    #         preds = rf_model.predict(X_test_scaled)
-    #     elif model_name=="svm":
-    #         svm_model = SVC(class_weight=CLASS_WEIGHTS, kernel='linear', probability=True, random_state=42)
-    #         svm_model.fit(X_train_scaled, y_train)
-    #         preds = svm_model.predict(X_test_scaled)
-    #     # print(len(probabilities))
-    #     return preds
             
-    def textual_classifier(self, model_name, section, target, one_v_all="None"): # text instead of section
+    def textual_classifier(self, database, model_name, section, target, one_v_all="None"): # text instead of section
         """
         Runs a classificaiton prediction task given a textual input.
         """
         if not self.dataset_dict:
             return "Error: Dataset_dict does not exist."
-        if section not in self.dataset_dict["train"].features:
-            return "Error: {} column does not exist.\nThe dataset_dict has the following features: {}".format(section, self.dataset_dict["train"].features)
         if target not in self.dataset_dict["train"].features:
             return "Error: {} column does not exist.\nThe dataset_dict has the following features: {}".format(target, self.dataset_dict["train"].features)
-                
+        
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         combined_series = pd.concat([self.train_groundtruth, self.test_groundtruth])
+        
         if one_v_all!="None":
             unique_classes = ["not "+one_v_all, one_v_all]
             combined_series_df = pd.DataFrame(combined_series)
             combined_series_df["contains_"+one_v_all] = combined_series_df[target].str.contains(one_v_all).astype(int)
-            ind_value_counts = combined_series_df.groupby("contains_"+one_v_all).count().to_dict()[target]
-            value_counts = {}
-            for key in ind_value_counts.keys():
-                value_counts[unique_classes[key]] = ind_value_counts[key]
             num_classes = 2
         else:
-            value_counts = combined_series.value_counts().to_dict()
             unique_classes = combined_series.unique().tolist()
+            print("unique_classes", unique_classes)
             num_classes = len(unique_classes)
         CLASSES = num_classes
         CLASS_NAMES = [i for i in range(CLASSES)]
-            
+        print("CLASS_NAMES", CLASS_NAMES)
+        
         target_to_label = {} 
         for ind in range(num_classes):
             target_to_label[unique_classes[ind]] = ind
+        print("target_to_label", target_to_label)
         
         vocab_size = 10000
         batch_size=64
@@ -459,42 +496,21 @@ class table_toolkits():
             return np.array(arr)
 
         # Create model and tokenizer
-        def create_model_and_tokenizer(model_name=model_name, dataset=self.dataset_dict, section=section, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512): #'bert-base-uncased'
-            special_tokens = ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"]
+        def create_model_and_tokenizer(model_name=model_name, dataset=self.dataset_dict, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512): #'bert-base-uncased'
             # Finetune
-            if model_name in ['bert-base-uncased', 'distilbert-base-uncased', 'roberta-base', 'gpt2']:
-                config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
+            if model_name == 'bert-base-uncased':
+                # config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
                 tokenizer = AutoTokenizer.from_pretrained(model_name)
-                if model_name == 'gpt2':
-                    tokenizer.pad_token = tokenizer.eos_token
                 tokenizer.max_length = max_length
                 tokenizer.model_max_length = max_length
-                model = AutoModelForSequenceClassification.from_config(config=config)
+                # model = AutoModelForSequenceClassification.from_config(config=config)
+                model = AutoModelForSequenceClassification.from_pretrained("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/bert_model.pkl")
+                # model.save_pretrained("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/bert_model.pkl")
             elif model_name in ['cnn', 'logistic_regression']:
-                # # Word-level tokenizer
-                # tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))
-                # # Normalizers
-                # tokenizer.normalizer = normalizers.Sequence([NFD(), Lowercase(), StripAccents()])
-                # # World-level trainer
-                # trainer = WordLevelTrainer(vocab_size=vocab_size, min_frequency=3, show_progress=True, 
-                #     special_tokens=special_tokens)
-                # # Whitespace (pre-tokenizer)
-                # tokenizer.pre_tokenizer = Whitespace()
-                # # Train from iterator
-                # tokenizer.train_from_iterator(dataset['train'][section], trainer=trainer)                
-                # # Update the vocab size
-                # vocab_size = tokenizer.get_vocab_size()
-                # # [PAD] idx
-                # pad_idx = tokenizer.encode('[PAD]').ids[0]
-
-                # tokenizer.enable_padding(pad_type_id=pad_idx)
-                # tokenizer.pad_token = '[PAD]'
-                # vocab_size = vocab_size
-
-                # tokenizer.model_max_length = max_length
-                # tokenizer.max_length = max_length
-                # tokenizer.save("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/temp_tokenizer.json")  # <YOUR_OWN_PATH>
-                tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/hupd_tokenizer.json") # <YOUR_OWN_PATH>
+                if database=="hupd":
+                    tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/hupd_tokenizer.json") # <YOUR_OWN_PATH>
+                if database=="neurips":
+                    tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/neurips_tokenizer.json") # <YOUR_OWN_PATH>
                 pad_idx = tokenizer.encode('[PAD]')[0]
 
                 tokenizer.model_max_length = max_length
@@ -506,18 +522,15 @@ class table_toolkits():
 
                 model = None
                 if model_name == 'logistic_regression':
-                    # model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=n_classes, pad_idx=pad_idx)
                     with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/logistic_regression_model.pkl', 'rb') as file:
                         model = pickle.load(file)
                 elif model_name == 'cnn':
-                    model = BasicCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=n_classes, n_filters=n_filters, filter_sizes=filter_sizes[0], dropout=dropout)
+                    with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/cnn_model.pkl', 'rb') as file:
+                        model = pickle.load(file)
             else:
                 raise NotImplementedError()
                     
-            if model == 'distilbert-base-uncased':
-                print(f'Model name: {model_name} \nModel params: {model.num_parameters()}')
-            else:
-                print(model)
+            print(model)
             return tokenizer, dataset, model, vocab_size
 
         # Map target2string
@@ -538,7 +551,6 @@ class table_toolkits():
             data_loaders = []
             for name in ["train", "test"]:
                 dataset = self.dataset_dict[name]
-                print("3", self.dataset_dict["train"]) ###
                 print('*** Tokenizing...')
                 # Tokenize the input
                 zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
@@ -561,9 +573,10 @@ class table_toolkits():
                     batched=True
                 )
                 # Set the dataset format
-                gt_list = self.test_groundtruth.to_list()
-                gt_list = map_groundtruth_to_label(gt_list)
-                dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
+                if name=="test":
+                    gt_list = self.test_groundtruth.to_list()
+                    gt_list = map_groundtruth_to_label(gt_list)
+                    dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
                 dataset.set_format(type='torch', 
                     columns=['input_ids', 'attention_mask', 'output'])
                 data_loaders.append(DataLoader(dataset, batch_size=batch_size))
@@ -589,6 +602,44 @@ class table_toolkits():
         # Convert ids2string
         def convert_ids_to_string(tokenizer, input):
             return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
+        
+        def train(data_loaders, epoch_n, model, optim, criterion, device): ###
+            print('\n>>>Training starts...')
+            # Training mode is on
+            model.train()
+        
+            for epoch in range(epoch_n):
+                total_train_loss = 0.
+                # Loop over the examples in the training set.
+                for i, batch in enumerate(tqdm(data_loaders[0])):
+                    inputs, decisions = batch['input_ids'], batch['output']
+                    inputs = inputs.to(device, non_blocking=True)
+                    decisions = decisions.to(device, non_blocking=True)
+                    
+                    # Forward pass
+                    if model_name in ['cnn', 'logistic_regression']:
+                        outputs = model (input_ids=inputs)
+                    else:
+                        outputs = model(input_ids=inputs, labels=decisions).logits
+                    loss = criterion(outputs, decisions) #outputs.logits
+                    total_train_loss += loss.cpu().item()
+
+                    # Backward pass
+                    loss.backward()
+                    optim.step()
+                    optim.zero_grad()
+
+                    # Print the loss every test_every step
+                    if i % test_every == 0:
+                        print(f'*** Loss: {loss}')
+                        print(f'*** Input: {convert_ids_to_string(tokenizer, inputs[0])}')
+                        model.train()
+
+            # Training is complete!
+            print(f'\n ~ The End ~')
+            
+            with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_model.pkl'.format(database, model_name, target), 'wb') as file:
+                pickle.dump(model, file)
 
         # Evaluation procedure (for the neural models)
         def test(test_loader, model, criterion, device, name='test'): # processed_text
@@ -662,7 +713,6 @@ class table_toolkits():
         tokenizer, self.dataset_dict, model, vocab_size = create_model_and_tokenizer(
             model_name = model_name, 
             dataset = self.dataset_dict,
-            section = section,
             vocab_size = vocab_size,
             embed_dim = embed_dim,
             n_classes = CLASSES,
@@ -691,6 +741,7 @@ class table_toolkits():
         # Loss function 
         criterion = torch.nn.CrossEntropyLoss() 
         # Train and validate
+        train(data_loaders, epoch_n, model, optim, criterion, device)
         predictions = test(data_loaders[1], model, criterion, device, name='test') # preprocessed_text
         predictions_to_categories = [unique_classes[x] for x in predictions]
         return {"predictions": predictions_to_categories[:10]} # limit to the first 10 values to prevent content limit exceeded
@@ -706,43 +757,56 @@ if __name__ == "__main__":
 # """
     # print(db.pandas_interpreter(pandas_code))
     
-    # print("1")
-    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    # db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
-    # print("2")
-    db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    db.textual_classifier('logistic_regression', 'summary', 'decision', 'ACCEPTED')
-    print("separate")
-    db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    db.textual_classifier('logistic_regression', 'summary', 'decision', 'ACCEPTED')
-    # print("3")
-    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    # db.textual_classifier('cnn', 'summary', 'decision', 'ACCEPTED')
-    # print("4")
-    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    # db.textual_classifier('distilbert-base-uncased', 'summary', 'decision', 'ACCEPTED')
-    # print("5")
-    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    # db.textual_classifier('logistic_regression', 'summary', 'decision', 'ACCEPTED')
-    # print("6")
-    # db.db_loader('hupd', '2004-2012', '2013-2018', 'decision')
-    # db.textual_classifier('distilbert-base-uncased', 'summary', 'decision', 'ACCEPTED')
-    # print("")
-    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
-    # db.textual_classifier('cnn', 'Abstract', 'Oral')
-    # print("7")
-    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
-    # db.textual_classifier('cnn', 'Abstract', 'Oral')
-    # print("8")
-    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
-    # db.textual_classifier('cnn', 'Abstract', 'Oral')
-    # print("9")
-    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
-    # db.textual_classifier('distilbert-base-uncased', 'Abstract', 'Oral')
-    # print("10")
-    # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
-    # db.textual_classifier('logistic_regression', 'Abstract', 'Oral')
-    # logistic_regression, distilbert-base-uncased, cnn hupd: # title, abstract, summary, claims, background, full_description # decision    
+    # passed
+    # print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
+    # print(db.textual_classifier('hupd', 'logistic_regression', 'abstract', 'decision', 'ACCEPTED'))
+    # print("here 1")
+    # print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
+    # print(db.textual_classifier('hupd', 'cnn', 'abstract', 'decision', 'ACCEPTED'))
+    # print("here 2")
+    # print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
+    # print(db.textual_classifier('hupd', 'bert-base-uncased', 'abstract', 'decision', 'ACCEPTED'))
+    # print("here 3")
+        
+    print(db.db_loader('neurips', '0-3000', '3001-3585', 'Topic'))
+    print(db.textual_classifier('neurips', 'logistic_regression', 'Title', 'Topic'))
+    print("here 4")
+    
+    print(db.db_loader('neurips', '0-3000', 'None', 'None'))
+    print(db.pandas_interpreter("""
+authors_list = df['Authors']
+authors_dict = {}
+for authors in authors_list:
+    for author in authors:
+        if 'Large Language Models' in df[df['Authors'].apply(lambda x: 'Large Language Models' in x)]['Title'].values:
+            if author in authors_dict:
+                authors_dict[author] += 1
+            else:
+                authors_dict[author] = 1
+sorted_authors = sorted(authors_dict.items(), key=lambda x: x[1], reverse=True)
+top_4_authors = [author[0] for author in sorted_authors[:4]]
+"""))
+    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
+    # print(db.textual_classifier('neurips', 'logistic_regression', 'Abstract', 'Oral'))
+    # print("here 5")
+    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Topic'))
+    # print(db.textual_classifier('neurips', 'cnn', 'Title', 'Topic'))
+    # print("here 6")
+    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
+    # print(db.textual_classifier('neurips', 'cnn', 'Abstract', 'Oral'))
+    # print("here 7")
+    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Topic'))
+    # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Title', 'Topic'))
+    # print("here 8")
+    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
+    # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Abstract', 'Oral'))
+    # print("here 9")
+    
+    # db.db_loader('neurips', '0-3000', '3001-3585', 'Poster Session')
+    # db.textual_classifier('neurips', 'cnn', 'Location', 'Poster Session')
+    # print("11")
+    # print("new")
+    # logistic_regression, bert-base-uncased, cnn hupd: # title, abstract, summary, claims, background, full_description # decision    
 
     # db.db_loader('neurips', '0-1000', 'None', 'None')
     # db.db_loader('neurips', '0-1000', '1001-3585', 'Oral')
