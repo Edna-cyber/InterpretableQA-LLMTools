@@ -346,7 +346,7 @@ if __name__ == "__main__":
                 except:
                     errors[question_type] += 1
                     cost_original[question_type]["wrong"].append(per_question_cost)
-            elif question_type in [4]: # within set
+            elif question_type in [4]: # within list
                 try:
                     performance[question_type] += int(llm_answer in gt_answer)
                     cost_original[question_type]["right"].append(per_question_cost)
