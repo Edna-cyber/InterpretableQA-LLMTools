@@ -48,23 +48,6 @@ tools_gpt = [
     {
         "type": "function",
         "function": {
-            "name": "TestSampler",
-            "description": "Shrink the test set to include only the samples specified by the indices",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "indices": {
-                        "type": "string",
-                        "description": "The indices from the original test set to be selected. A string in the format of e.g. ID-1,ID-5,ID-1000"
-                    }
-                },
-                "required": ["indices"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
             "name": "TFIDF",
             "description": "Find the most relevant document for a given query or to identify pairs of documents that are most relevant to each other",
             "parameters": {
@@ -150,6 +133,10 @@ tools_gpt = [
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "database": {
+                        "type": "string",
+                        "description": "The name of the database that this classification task is conducted on. The only choices are hupd and neurips."
+                    },
                     "model_name": {
                         "type": "string",
                         "description": "The model_name can be logistic_regression, distilbert-base-uncased, cnn, or naive_bayes.",
@@ -167,7 +154,7 @@ tools_gpt = [
                         "description": "The class label for a one-vs-all classification task. When it's set to default value None, the model will predict all possible classes.",
                     }
                 },
-                "required": ["model_name", "section", "target"], 
+                "required": ["database", "model_name", "section", "target"], 
             },
         },
     }, 
