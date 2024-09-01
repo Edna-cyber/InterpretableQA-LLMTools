@@ -16,18 +16,6 @@ def forecast(n):
     first_n = first_few_months.head(n).tolist()
     return first_n
 
-# NeurIPS Template 4: Train the model with the first {num} NeurIPS papers and then predict whether the papers with indices {indices} in the index column will be accepted as oral presentations.
-def predict_oral(num):
-    df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
-    df = df.iloc[num+1:]
-    def oral_or_not(string):
-        if string=="True":
-            return "oral"
-        else:
-            return "not oral"
-    df["presentation"] = df["Oral"].apply(oral_or_not)
-    return df["presentation"].tolist()
-
 question_id = 1
 question_type_count = {7:100, 8:100, 9:100, 10:100}
 question_types = [7,8,9,10]
