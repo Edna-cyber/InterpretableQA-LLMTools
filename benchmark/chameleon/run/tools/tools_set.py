@@ -129,7 +129,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "TextualClassifier",
-            "description": "Run a specified classifier model on the given textual predictorSection to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
+            "description": "Run a specified binary classifier model on the given textual predictorSection to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -151,10 +151,10 @@ tools_gpt = [
                     },
                     "one_v_all": {
                         "type": "string",
-                        "description": "The class label for a one-vs-all classification task. When it's set to default value None, the model will predict all possible classes.",
+                        "description": "The class label for a one-vs-all classification task.",
                     }
                 },
-                "required": ["database", "model_name", "section", "target"], 
+                "required": ["database", "model_name", "section", "target", "one_v_all"], 
             },
         },
     }, 
@@ -351,7 +351,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "TextualClassifier",
-        "description": "Run a specified classifier model on the given textual predictor section to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
+        "description": "Run a specified binary classifier model on the given textual predictor section to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -369,7 +369,7 @@ tools_gemini = [
             },
             "one_v_all": {
               "type": "string",
-              "description": "The class label for a one-vs-all classification task. When it's set to default value None, the model will predict all possible classes."
+              "description": "The class label for a one-vs-all classification task."
             }
           },
           "required": ["model_name", "section", "target"]

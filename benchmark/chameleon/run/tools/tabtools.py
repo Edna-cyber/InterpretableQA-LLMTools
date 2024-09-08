@@ -438,7 +438,7 @@ class table_toolkits():
             return "Error: "+str(e)
         # other exceptions
             
-    def textual_classifier(self, database, model_name, section, target, one_v_all="None"): # text instead of section
+    def textual_classifier(self, database, model_name, section, target, one_v_all): # text instead of section
         """
         Runs a classificaiton prediction task given a textual input.
         """
@@ -448,25 +448,10 @@ class table_toolkits():
             return "Error: {} column does not exist.\nThe dataset_dict has the following features: {}".format(target, self.dataset_dict["train"].features)
         
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        combined_series = pd.concat([self.train_groundtruth, self.test_groundtruth])
         
-        if one_v_all!="None":
-            unique_classes = ["not "+one_v_all, one_v_all]
-            combined_series_df = pd.DataFrame(combined_series)
-            combined_series_df["contains_"+one_v_all] = combined_series_df[target].str.contains(one_v_all).astype(int)
-            num_classes = 2
-        else:
-            unique_classes = combined_series.unique().tolist()
-            print("unique_classes", unique_classes)
-            num_classes = len(unique_classes)
-        CLASSES = num_classes
-        CLASS_NAMES = [i for i in range(CLASSES)]
-        print("CLASS_NAMES", CLASS_NAMES)
-        
-        target_to_label = {} 
-        for ind in range(num_classes):
-            target_to_label[unique_classes[ind]] = ind
-        print("target_to_label", target_to_label)
+        unique_classes = ["not "+one_v_all, one_v_all]
+        CLASSES = 2
+        CLASS_NAMES = [0,1]
         
         vocab_size = 10000
         batch_size=64
@@ -486,10 +471,7 @@ class table_toolkits():
             arr = []
             for i in range(input.shape[0]):
                 query = input[i]
-                if num_classes==2:
-                    features = [0] * vocab_size
-                else:
-                    features = [1] * vocab_size
+                features = [0] * vocab_size
                 for j in range(query.shape[0]):
                     features[query[j]] += 1 
                 arr.append(features)
@@ -499,13 +481,11 @@ class table_toolkits():
         def create_model_and_tokenizer(model_name=model_name, dataset=self.dataset_dict, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512): #'bert-base-uncased'
             # Finetune
             if model_name == 'bert-base-uncased':
-                # config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
+                config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
                 tokenizer = AutoTokenizer.from_pretrained(model_name)
                 tokenizer.max_length = max_length
                 tokenizer.model_max_length = max_length
-                # model = AutoModelForSequenceClassification.from_config(config=config)
-                model = AutoModelForSequenceClassification.from_pretrained("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/bert_model.pkl")
-                # model.save_pretrained("/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/bert_model.pkl")
+                model = AutoModelForSequenceClassification.from_config(config=config)
             elif model_name in ['cnn', 'logistic_regression']:
                 if database=="hupd":
                     tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/hupd_tokenizer.json") # <YOUR_OWN_PATH>
@@ -522,11 +502,9 @@ class table_toolkits():
 
                 model = None
                 if model_name == 'logistic_regression':
-                    with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/logistic_regression_model.pkl', 'rb') as file:
-                        model = pickle.load(file)
+                    model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=CLASSES, pad_idx=pad_idx)
                 elif model_name == 'cnn':
-                    with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/cnn_model.pkl', 'rb') as file:
-                        model = pickle.load(file)
+                    model = BasicCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=CLASSES, n_filters=n_filters, filter_sizes=filter_sizes[0], dropout=dropout)
             else:
                 raise NotImplementedError()
                     
@@ -535,51 +513,43 @@ class table_toolkits():
 
         # Map target2string
         def map_target_to_label(example):
-            if one_v_all!="None":
-                return {'output': int(one_v_all in example[target])}
-            else:
-                return {'output': target_to_label[example[target]]}
-        
+            return {'output': int(one_v_all==example[target])}
+            
         def map_groundtruth_to_label(lst):
-            if one_v_all!="None":
-                return [int(one_v_all in x) for x in lst]
-            else:
-                return [target_to_label[x] for x in lst]
+            return [int(one_v_all==x) for x in lst]
         
         # Create dataset
         def create_dataset(tokenizer, section=section):
             data_loaders = []
-            for name in ["train", "test"]:
-                dataset = self.dataset_dict[name]
-                print('*** Tokenizing...')
-                # Tokenize the input
-                zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
-                dataset = dataset.map(
-                    lambda e: {
-                        section: [
-                            tokenizer(text, truncation=True, padding='max_length', max_length=max_length) if text is not None else zero_encoding
-                            for text in e[section]
-                        ]
-                    },
-                    batched=True
-                )
+            dataset = self.dataset_dict["test"]
+            print('*** Tokenizing...')
+            # Tokenize the input
+            zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
+            dataset = dataset.map(
+                lambda e: {
+                    section: [
+                        tokenizer(text, truncation=True, padding='max_length', max_length=max_length) if text is not None else zero_encoding
+                        for text in e[section]
+                    ]
+                },
+                batched=True
+            )
 
-                # Flatten the lists of dictionaries into separate columns
-                dataset = dataset.map(
-                    lambda e: {
-                        'input_ids': torch.tensor([item['input_ids'] for item in e[section]]),
-                        'attention_mask': torch.tensor([item['attention_mask'] for item in e[section]]),
-                    },
-                    batched=True
-                )
-                # Set the dataset format
-                if name=="test":
-                    gt_list = self.test_groundtruth.to_list()
-                    gt_list = map_groundtruth_to_label(gt_list)
-                    dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
-                dataset.set_format(type='torch', 
-                    columns=['input_ids', 'attention_mask', 'output'])
-                data_loaders.append(DataLoader(dataset, batch_size=batch_size))
+            # Flatten the lists of dictionaries into separate columns
+            dataset = dataset.map(
+                lambda e: {
+                    'input_ids': torch.tensor([item['input_ids'] for item in e[section]]),
+                    'attention_mask': torch.tensor([item['attention_mask'] for item in e[section]]),
+                },
+                batched=True
+            )
+            # Set the dataset format
+            gt_list = self.test_groundtruth.to_list()
+            gt_list = map_groundtruth_to_label(gt_list)
+            dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
+            dataset.set_format(type='torch', 
+                columns=['input_ids', 'attention_mask', 'output'])
+            data_loaders.append(DataLoader(dataset, batch_size=batch_size))
             return data_loaders
         
         # def create_data(tokenizer, text=text):
@@ -602,47 +572,11 @@ class table_toolkits():
         # Convert ids2string
         def convert_ids_to_string(tokenizer, input):
             return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
-        
-        def train(data_loaders, epoch_n, model, optim, criterion, device): ###
-            print('\n>>>Training starts...')
-            # Training mode is on
-            model.train()
-        
-            for epoch in range(epoch_n):
-                total_train_loss = 0.
-                # Loop over the examples in the training set.
-                for i, batch in enumerate(tqdm(data_loaders[0])):
-                    inputs, decisions = batch['input_ids'], batch['output']
-                    inputs = inputs.to(device, non_blocking=True)
-                    decisions = decisions.to(device, non_blocking=True)
-                    
-                    # Forward pass
-                    if model_name in ['cnn', 'logistic_regression']:
-                        outputs = model (input_ids=inputs)
-                    else:
-                        outputs = model(input_ids=inputs, labels=decisions).logits
-                    loss = criterion(outputs, decisions) #outputs.logits
-                    total_train_loss += loss.cpu().item()
-
-                    # Backward pass
-                    loss.backward()
-                    optim.step()
-                    optim.zero_grad()
-
-                    # Print the loss every test_every step
-                    if i % test_every == 0:
-                        print(f'*** Loss: {loss}')
-                        print(f'*** Input: {convert_ids_to_string(tokenizer, inputs[0])}')
-                        model.train()
-
-            # Training is complete!
-            print(f'\n ~ The End ~')
-            
-            with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_model.pkl'.format(database, model_name, target), 'wb') as file:
-                pickle.dump(model, file)
 
         # Evaluation procedure (for the neural models)
         def test(test_loader, model, criterion, device, name='test'): # processed_text
+            with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_{}_model.pkl'.format(database, model_name, section, target), 'rb') as file:
+                model = pickle.load(file)
             model.eval()
             total_loss = 0.
             total_correct = 0
@@ -705,9 +639,6 @@ class table_toolkits():
             print(f'*** Confusion matrix:\n{total_confusion}')
             
             return predictions
-        
-        self.dataset_dict['train'] = self.dataset_dict['train'].filter(lambda e: e[section] is not None)
-        self.dataset_dict['train'] = self.dataset_dict['train'].map(map_target_to_label) 
             
         # Create a model and an appropriate tokenizer
         tokenizer, self.dataset_dict, model, vocab_size = create_model_and_tokenizer(
@@ -740,9 +671,8 @@ class table_toolkits():
             optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
         # Loss function 
         criterion = torch.nn.CrossEntropyLoss() 
-        # Train and validate
-        train(data_loaders, epoch_n, model, optim, criterion, device)
-        predictions = test(data_loaders[1], model, criterion, device, name='test') # preprocessed_text
+        # Test
+        predictions = test(data_loaders[0], model, criterion, device, name='test') # preprocessed_text
         predictions_to_categories = [unique_classes[x] for x in predictions]
         return {"predictions": predictions_to_categories[:10]} # limit to the first 10 values to prevent content limit exceeded
 
@@ -758,54 +688,25 @@ if __name__ == "__main__":
     # print(db.pandas_interpreter(pandas_code))
     
     # passed
-    # print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
-    # print(db.textual_classifier('hupd', 'logistic_regression', 'abstract', 'decision', 'ACCEPTED'))
-    # print("here 1")
-    # print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
-    # print(db.textual_classifier('hupd', 'cnn', 'abstract', 'decision', 'ACCEPTED'))
-    # print("here 2")
-    # print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
-    # print(db.textual_classifier('hupd', 'bert-base-uncased', 'abstract', 'decision', 'ACCEPTED'))
-    # print("here 3")
-        
-    print(db.db_loader('neurips', '0-3000', '3001-3585', 'Topic'))
-    print(db.textual_classifier('neurips', 'logistic_regression', 'Title', 'Topic'))
+    print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
+    print(db.textual_classifier('hupd', 'logistic_regression', 'abstract', 'decision', 'ACCEPTED'))
+    print("here 1")
+    print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
+    print(db.textual_classifier('hupd', 'cnn', 'abstract', 'decision', 'ACCEPTED'))
+    print("here 2")
+    print(db.db_loader('hupd', '2004-2012', '2013-2018', 'decision'))
+    print(db.textual_classifier('hupd', 'bert-base-uncased', 'abstract', 'decision', 'ACCEPTED'))
+    print("here 3")
+    print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
+    print(db.textual_classifier('neurips', 'logistic_regression', 'Abstract', 'Oral', 'oral'))
     print("here 4")
+    print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
+    print(db.textual_classifier('neurips', 'cnn', 'Abstract', 'Oral', 'oral'))
+    print("here 5")
+    print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
+    print(db.textual_classifier('neurips', 'bert-base-uncased', 'Abstract', 'Oral', 'oral'))
+    print("here 6")
     
-    print(db.db_loader('neurips', '0-3000', 'None', 'None'))
-    print(db.pandas_interpreter("""
-authors_list = df['Authors']
-authors_dict = {}
-for authors in authors_list:
-    for author in authors:
-        if 'Large Language Models' in df[df['Authors'].apply(lambda x: 'Large Language Models' in x)]['Title'].values:
-            if author in authors_dict:
-                authors_dict[author] += 1
-            else:
-                authors_dict[author] = 1
-sorted_authors = sorted(authors_dict.items(), key=lambda x: x[1], reverse=True)
-top_4_authors = [author[0] for author in sorted_authors[:4]]
-"""))
-    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
-    # print(db.textual_classifier('neurips', 'logistic_regression', 'Abstract', 'Oral'))
-    # print("here 5")
-    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Topic'))
-    # print(db.textual_classifier('neurips', 'cnn', 'Title', 'Topic'))
-    # print("here 6")
-    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
-    # print(db.textual_classifier('neurips', 'cnn', 'Abstract', 'Oral'))
-    # print("here 7")
-    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Topic'))
-    # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Title', 'Topic'))
-    # print("here 8")
-    # print(db.db_loader('neurips', '0-3000', '3001-3585', 'Oral'))
-    # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Abstract', 'Oral'))
-    # print("here 9")
-    
-    # db.db_loader('neurips', '0-3000', '3001-3585', 'Poster Session')
-    # db.textual_classifier('neurips', 'cnn', 'Location', 'Poster Session')
-    # print("11")
-    # print("new")
     # logistic_regression, bert-base-uncased, cnn hupd: # title, abstract, summary, claims, background, full_description # decision    
 
     # db.db_loader('neurips', '0-1000', 'None', 'None')
@@ -821,8 +722,4 @@ top_4_authors = [author[0] for author in sorted_authors[:4]]
     # # print(len(actual))
     # f1_macro = f1_score(actual, preds, average='macro') 
     # print("omo cnn nb", f1_macro)
-
-    # db.db_loader('neurips', "0-2000", "2001-3585", "Poster Session")
-    # db.test_sampler("ID-2001,ID-2500,ID-2486,ID-2759,ID-3300")
-    # print(db.textual_classifier("logistic_regression", "Abstract", "Poster Session", "None"))
     
