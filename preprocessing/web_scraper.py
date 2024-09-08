@@ -1,5 +1,6 @@
 import time
 import requests 
+import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
@@ -159,3 +160,8 @@ from playwright.sync_api import sync_playwright
 # df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv')
 # df[['Topic', 'Subtopic']] = df['Topic'].str.split('/', expand=True)
 # df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Newest_Papers.csv', index=False)
+
+# oral / not oral
+df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv')
+df['Oral'] = df['Oral'].replace({np.bool_(True): "oral", np.bool_(False): "not oral"})
+df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Newest_Papers.csv', index=False)

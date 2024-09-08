@@ -442,10 +442,20 @@ class table_toolkits():
         """
         Runs a classificaiton prediction task given a textual input.
         """
-        if not self.dataset_dict:
-            return "Error: Dataset_dict does not exist."
-        if target not in self.dataset_dict["train"].features:
-            return "Error: {} column does not exist.\nThe dataset_dict has the following features: {}".format(target, self.dataset_dict["train"].features)
+        if database=="hupd":
+            hupd_features = ["patent_number", "decision", "title", "abstract", "claims",
+                             "background", "summary", "full_description", "main_cpc_label", "main_ipcr_label", 
+                             "filing_date", "patent_issue_date", "date_published","examiner_id"]
+            if target not in hupd_features:
+                return "Error: {} column does not exist.\nPlease select target from the following features: {}".format(target, hupd_features)
+            if section not in hupd_features:
+                return "Error: {} column does not exist.\nPlease select section from the following features: {}".format(section, hupd_features)
+        if database=="neurips":
+            neurips_features = ["Title","Authors","Location","Abstract","Topic","Oral","Poster Session","Subtopic"]
+            if target not in hupd_features:
+                return "Error: {} column does not exist.\nPlease select target from the following features: {}".format(target, neurips_features)
+            if section not in hupd_features:
+                return "Error: {} column does not exist.\nPlease select section from the following features: {}".format(section, neurips_features)
         
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         
