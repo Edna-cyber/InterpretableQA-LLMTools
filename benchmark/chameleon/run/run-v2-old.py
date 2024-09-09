@@ -45,7 +45,7 @@ ACTION_LIST = {
     'PythonInterpreter': python_interpreter,
     'Forecaster': forecaster,
     'TextualClassifier': db.textual_classifier,
-    'LLMInterpreter': llm_inferencer,
+    'LLMInferencer': llm_inferencer,
     'Finish': finish
 }
 
@@ -104,13 +104,11 @@ def calc_cost1(function_type, function_arguments):
     if function_type=="TextualClassifier":
         if function_arguments["model_name"]=="logistic_regression":
             return 7
-        elif function_arguments["model_name"]=="naive_bayes":
-            return 8
         elif function_arguments["model_name"]=="cnn":
             return 15
-        elif function_arguments["model_name"]=="distilbert-base-uncased":
+        elif function_arguments["model_name"]=="bert-base-uncased":
             return 20
-    if function_type=="LLMInterpreter":
+    if function_type=="LLMInferencer":
         return 30
     if function_type=="Finish":
         return 0
@@ -166,13 +164,11 @@ def calc_cost2(function_type, function_arguments):
     if function_type=="TextualClassifier":
         if function_arguments["model_name"]=="logistic_regression":
             return 5
-        elif function_arguments["model_name"]=="naive_bayes":
-            return 5
         elif function_arguments["model_name"]=="cnn":
             return 15
-        elif function_arguments["model_name"]=="distilbert-base-uncased":
+        elif function_arguments["model_name"]=="bert-base-uncased":
             return 10
-    if function_type=="LLMInterpreter":
+    if function_type=="LLMInferencer":
         return 20
     if function_type=="Finish":
         return 0
@@ -361,15 +357,19 @@ if __name__ == "__main__":
                 except:
                     errors[question_type] += 1
                     cost_original[question_type]["wrong"].append(per_question_cost)
-            elif question_type in [8]: # macro F1
-                if isinstance(gt_answer, str):
-                    gt_answer = ast.literal_eval(gt_answer)
+            elif question_type in [8,9,10]: # exact match macro F1
                 try:
-                    performance[question_type] += f1_score(gt_answer, llm_answer, average='macro')
+                    performance[question_type] += int(llm_answer==gt_answer)
                     cost_original[question_type]["right"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
                     cost_original[question_type]["wrong"].append(per_question_cost)
+                # try:
+                #     performance[question_type] += f1_score(gt_answer, llm_answer, average='macro')
+                #     cost_original[question_type]["right"].append(per_question_cost)
+                # except:
+                #     errors[question_type] += 1
+                #     cost_original[question_type]["wrong"].append(per_question_cost)
         
         logs.append({"Question Type": question_type})
         logs.append({"Cost": per_question_cost})
