@@ -80,9 +80,9 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             index = random.sample(indices_to_choose,1)
             abstract_content = df.at[index,"Abstract"]
             if df.at[index,"Oral"]:
-                oral = "Oral"
+                oral = "oral"
             else:
-                oral = "not Oral"
+                oral = "not oral"
             question = "For a NeurIPS 2023 paper with abstract {}, predict whether it will be accepted as an oral presentation? Return either ‘oral’ or ‘not oral’.".format(abstract_content)
             answer = oral
             if answer:
