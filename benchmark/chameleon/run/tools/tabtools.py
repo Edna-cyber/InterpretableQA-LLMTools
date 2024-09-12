@@ -124,16 +124,11 @@ class BasicCNNModel (nn.Module):
         
     def forward(self, input_ids):
         embed = self.embedding(input_ids)
-        # embed = [batch size, sent len, emb dim]
         embed = embed.unsqueeze(1)
-        # embed = [batch size, 1, sent len, emb dim]
         conved = [F.relu(conv(embed)).squeeze(3) for conv in self.convs]    
-        # conved_n = [batch size, n_filters, sent len - filter_sizes[n] + 1]
         pooled = [F.max_pool1d(conv, conv.shape[2]).squeeze(2) for conv in conved]
-        # pooled_n = [batch size, n_filters]
         cat = self.dropout(torch.cat(pooled, dim = 1))
-        # cat = [batch size, n_filters * len(filter_sizes)]
-        output = self.fc(cat) #.sigmoid ().squeeze()
+        output = self.fc(cat) 
         return output
 
 class table_toolkits():

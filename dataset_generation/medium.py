@@ -20,7 +20,7 @@ question_id = 1
 question_type_count = {7:100, 8:100, 9:100, 10:100}
 question_types = [7,8,9,10]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/medium.jsonl', mode='w') as writer:
-    while question_id<=10: # 400
+    while question_id<=40: # 400
         question_type = random.choice(question_types) 
         if question_type==7:
             # Based on the patent applications per month from {} to 2012, estimate the percentage of patents filed in the first {} months of 2013 that will be accepted. Return a list of percentages, with each value between 0 and 100.
@@ -41,7 +41,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             year_not_in_the_range = random.randint(2013,2018)
             df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv").format(year_not_in_the_range))
             indices_to_choose = df.index[(df['decision']=="ACCEPTED") | (df['decision']=="REJECTED")].to_list()
-            index = random.sample(indices_to_choose,1)
+            index = random.choice(indices_to_choose)
             abstract_content = df.at[index,"abstract"]
             decision = df.at[index,"decision"]
             question = "For a patent application with an abstract {}, predict whether it will get accepted. Return either 'ACCEPTED' or 'REJECTED'.".format(abstract_content)
@@ -58,7 +58,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
             df = df.iloc[3001:]
             indices_to_choose = df.index[df["Topic"].notna()].to_list()
-            index = random.sample(indices_to_choose,1)
+            index = random.choice(indices_to_choose)
             title_content = df.at[index,"Title"]
             if topic in df.at[index,"Topic"]:
                 belong = topic
@@ -77,7 +77,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
             df = df.iloc[3001:]
             indices_to_choose = df.index[df["Oral"].notna()].to_list()
-            index = random.sample(indices_to_choose,1)
+            index = random.choice(indices_to_choose)
             abstract_content = df.at[index,"Abstract"]
             if df.at[index,"Oral"]:
                 oral = "oral"
@@ -86,7 +86,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             question = "For a NeurIPS 2023 paper with abstract {}, predict whether it will be accepted as an oral presentation? Return either ‘oral’ or ‘not oral’.".format(abstract_content)
             answer = oral
             if answer:
-                writer.write({"qid": "hard-hupd-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
+                writer.write({"qid": "medium-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":str(answer)})
                 question_type_count[10] -= 1
                 if question_type_count[10]==0:
                     question_types.remove(10)

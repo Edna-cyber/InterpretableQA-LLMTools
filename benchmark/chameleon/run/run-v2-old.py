@@ -294,7 +294,16 @@ if __name__ == "__main__":
                     }
                     messages.append(response_without_tools) 
                     logs.append(response_without_tools)
-                    break
+                    iterations += 1
+                    if iterations==1:
+                        follow_up_message = {
+                            "role": "user",
+                            "content": "Please finish your thought."
+                        }
+                        messages.append(follow_up_message)
+                        logs.append(follow_up_message)
+                    else:
+                        break
                     
             except Exception as e:
                 print(f"An error occurred: {e}")

@@ -55,7 +55,10 @@ def top_accepted_category(category, year):
     max_acceptance_sum = acceptance_sums[0]
     if max_acceptance_sum==0:
         return None, None
-    max_2_acceptance_sum = max([x for x in acceptance_sums if x!=max_acceptance_sum])
+    remaining = [x for x in acceptance_sums if x!=max_acceptance_sum]
+    if len(remaining)==0:
+        return None, None
+    max_2_acceptance_sum = max(remaining)
     cnt = 0
     while cnt<len(acceptance_sums):
         if acceptance_sums[cnt]==max_acceptance_sum:
@@ -142,117 +145,116 @@ def author_num(compare,n):
     del df
     return papers / total_papers
 
-print(longest_time(2005,2017))
 
-# question_id = 1
-# question_type_count = {1:100, 2:100, 3:100, 4:100, 5:100, 6:100}
-# question_types = [1,2,3,4,5,6]
-# with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
-#     while question_id<=60:
-#         question_type = random.choice(question_types) 
-#         if question_type == 1:
-#             # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
-#             start_year = random.randint(2004,2018)
-#             end_year = random.randint(start_year,2018)
-#             question_phrasings = ["What was the average time between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
-#                                 "What was the average duration between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
-#                                 "What was the typical time span between the submission and approval of patents from {} to {}? Return a float representing the number of days."]
-#             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
-#             answer = average_pendency(start_year, end_year)
-#             # use None to signify not adding to the questions / answers
-#             if answer and not np.isnan(answer):
-#                 writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
-#                 question_type_count[1] -= 1
-#                 if question_type_count[1]==0:
-#                     question_types.remove(1)
-#                 question_id += 1
-#         elif question_type == 2:
-#             # What were the top {#} {IPCR/CPC categories} with the highest number of accepted patents in {year}? Return them as a list of {IPCR/CPC categories}.
-#             category = random.choice(["IPCR categories", "CPC categories"]) 
-#             year = random.randint(2004,2018) 
-#             question_choice = random.randint(0,1)
-#             num, answer = top_accepted_category(category, year)
-#             if not answer or num!=len(answer): # deal with some datasets with missing values
-#                 continue
-#             if question_choice==0:
-#                 if num==1:
-#                     question = "What was the top {} {} with the highest number of accepted patents in {}? Return it as a list of {}.".format(num, category.replace("ies","y"), year, category.replace("ies","y"))
-#                 else:
-#                     question = "What were the top {} {} with the highest number of accepted patents in {}? Return them as a list of {}.".format(num, category, year, category)
-#             else:
-#                 if num==1:
-#                     question = "Which {} was among the top {} with the highest number of accepted patents in {}? Return the top category with the highest approval rates as a list of {}.".format(category.replace("ies","y"), num, year, category.replace("ies","y"))
-#                 else:
-#                     question = "Which {} were among the top {} with the highest number of accepted patents in {}? Return the top categories with the highest approval rates as a list of {}.".format(category, num, year, category)
-#             writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
-#             question_type_count[2] -= 1
-#             if question_type_count[2]==0:
-#                 question_types.remove(2)
-#             question_id += 1
-#         elif question_type == 3:
-#             # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
-#             year_1 = random.randint(2004,2018)
-#             year_2 = random.randint(2004,2018)
-#             while year_2==year_1:
-#                 year_2 = random.randint(2004,2018)
-#             question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}? Return a number.".format(year_1, year_2)
-#             answer = compare_applications_year(year_1, year_2)
-#             if answer and not np.isnan(answer):
-#                 writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
-#                 question_type_count[3] -= 1
-#                 if question_type_count[3]==0:
-#                     question_types.remove(3)
-#                 question_id += 1
-#         elif question_type == 4:
-#             # What is the title of the patent filed between {start_year} and {end_year} that took the longest number of days to be published?
-#             start_year = random.randint(2004,2017) # not include 2018, as most applications are still pending
-#             end_year = random.randint(start_year,2017)
-#             question_phrasings = ["What is the title of the patent filed between {} and {} that took the longest number of days to be published?", "What is the title of the patent filed between {} and {} that had the longest publication delay in terms of number of days?", "What is the title of the patent filed between {} and {} with the longest number of days elapsed between filing and publication?"]
-#             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
-#             answer = longest_time(start_year, end_year)
-#             if answer:
-#                 writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
-#                 question_type_count[4] -= 1
-#                 if question_type_count[4]==0:
-#                     question_types.remove(4)
-#                 question_id += 1
-#         elif question_type == 5:
-#             # Who were the top {#} authors with the most publications at NeurIPS? 
-#             all_bool = random.choices([True,False], weights=[0.1,0.9], k=1)[0]
-#             if all_bool:
-#                 row_num = 3585
-#             else:
-#                 row_num = random.choice(list(range(1000, 3600, 100))) 
-#             llm_keyword = random.choice([True, False])
-#             new_num, answer = top_authors(row_num, llm_keyword)
-#             if new_num==1:
-#                 question_phrasings = ["Who was the top {} author with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author.", "Who was the top {} author with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author.", "Which {} author had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author."]
-#             else:
-#                 question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Who were the top {} authors with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Which {} authors had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors."]
-#             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(new_num)
-#             if llm_keyword:
-#                 insert_pos = question.find("publications")+len("publications")
-#                 question = question[:insert_pos]+" containing 'Large Language Models' in the title"+question[insert_pos:]
-#             if not all_bool:
-#                 insert_pos = question.find("at NeurIPS")
-#                 question = question[:insert_pos]+"amongst the first {} papers ".format(row_num)+question[insert_pos:]
-#             if answer:
-#                 writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
-#                 question_type_count[5] -= 1
-#                 if question_type_count[5]==0:
-#                     question_types.remove(5)
-#                 question_id += 1
-#         else:
-#             # What proportion of papers have {compare} {n} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.
-#             compare = random.choice(["more than", "fewer than", "exactly", "greater than or equal to", "fewer than or equal to"]) 
-#             n = random.randint(2,10)
-#             question_phrasings = ["What proportion of papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What percentage of papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What's the ratio of papers that have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1."] 
-#             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(compare,n)
-#             answer = author_num(compare,n)
-#             if answer and not np.isnan(answer):
-#                 writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
-#                 question_type_count[6] -= 1
-#                 if question_type_count[6]==0:
-#                     question_types.remove(6)
-#                 question_id += 1
+question_id = 1
+question_type_count = {1:100, 2:100, 3:100, 4:100, 5:100, 6:100}
+question_types = [1,2,3,4,5,6]
+with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
+    while question_id<=60:
+        question_type = random.choice(question_types) 
+        if question_type == 1:
+            # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
+            start_year = random.randint(2004,2018)
+            end_year = random.randint(start_year,2018)
+            question_phrasings = ["What was the average time between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
+                                "What was the average duration between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
+                                "What was the typical time span between the submission and approval of patents from {} to {}? Return a float representing the number of days."]
+            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
+            answer = average_pendency(start_year, end_year)
+            # use None to signify not adding to the questions / answers
+            if answer and not np.isnan(answer):
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[1] -= 1
+                if question_type_count[1]==0:
+                    question_types.remove(1)
+                question_id += 1
+        elif question_type == 2:
+            # What were the top {#} {IPCR/CPC categories} with the highest number of accepted patents in {year}? Return them as a list of {IPCR/CPC categories}.
+            category = random.choice(["IPCR categories", "CPC categories"]) 
+            year = random.randint(2004,2018) 
+            question_choice = random.randint(0,1)
+            num, answer = top_accepted_category(category, year)
+            if not answer or num!=len(answer): # deal with some datasets with missing values
+                continue
+            if question_choice==0:
+                if num==1:
+                    question = "What was the top {} {} with the highest number of accepted patents in {}? Return it as a list of {}.".format(num, category.replace("ies","y"), year, category.replace("ies","y"))
+                else:
+                    question = "What were the top {} {} with the highest number of accepted patents in {}? Return them as a list of {}.".format(num, category, year, category)
+            else:
+                if num==1:
+                    question = "Which {} was among the top {} with the highest number of accepted patents in {}? Return the top category with the highest approval rates as a list of {}.".format(category.replace("ies","y"), num, year, category.replace("ies","y"))
+                else:
+                    question = "Which {} were among the top {} with the highest number of accepted patents in {}? Return the top categories with the highest approval rates as a list of {}.".format(category, num, year, category)
+            writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+            question_type_count[2] -= 1
+            if question_type_count[2]==0:
+                question_types.remove(2)
+            question_id += 1
+        elif question_type == 3:
+            # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
+            year_1 = random.randint(2004,2018)
+            year_2 = random.randint(2004,2018)
+            while year_2==year_1:
+                year_2 = random.randint(2004,2018)
+            question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}? Return a number.".format(year_1, year_2)
+            answer = compare_applications_year(year_1, year_2)
+            if answer and not np.isnan(answer):
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[3] -= 1
+                if question_type_count[3]==0:
+                    question_types.remove(3)
+                question_id += 1
+        elif question_type == 4:
+            # What is the title of the patent filed between {start_year} and {end_year} that took the longest number of days to be published?
+            start_year = random.randint(2004,2017) # not include 2018, as most applications are still pending
+            end_year = random.randint(start_year,2017)
+            question_phrasings = ["What is the title of the patent filed between {} and {} that took the longest number of days to be published?", "What is the title of the patent filed between {} and {} that had the longest publication delay in terms of number of days?", "What is the title of the patent filed between {} and {} with the longest number of days elapsed between filing and publication?"]
+            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
+            answer = longest_time(start_year, end_year)
+            if answer:
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[4] -= 1
+                if question_type_count[4]==0:
+                    question_types.remove(4)
+                question_id += 1
+        elif question_type == 5:
+            # Who were the top {#} authors with the most publications at NeurIPS? 
+            all_bool = random.choices([True,False], weights=[0.1,0.9], k=1)[0]
+            if all_bool:
+                row_num = 3585
+            else:
+                row_num = random.choice(list(range(1000, 3600, 100))) 
+            llm_keyword = random.choice([True, False])
+            new_num, answer = top_authors(row_num, llm_keyword)
+            if new_num==1:
+                question_phrasings = ["Who was the top {} author with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author.", "Who was the top {} author with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author.", "Which {} author had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author."]
+            else:
+                question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Who were the top {} authors with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Which {} authors had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors."]
+            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(new_num)
+            if llm_keyword:
+                insert_pos = question.find("publications")+len("publications")
+                question = question[:insert_pos]+" containing 'Large Language Models' in the title"+question[insert_pos:]
+            if not all_bool:
+                insert_pos = question.find("at NeurIPS")
+                question = question[:insert_pos]+"amongst the first {} papers ".format(row_num)+question[insert_pos:]
+            if answer:
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[5] -= 1
+                if question_type_count[5]==0:
+                    question_types.remove(5)
+                question_id += 1
+        else:
+            # What proportion of papers have {compare} {n} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.
+            compare = random.choice(["more than", "fewer than", "exactly", "greater than or equal to", "fewer than or equal to"]) 
+            n = random.randint(2,10)
+            question_phrasings = ["What proportion of papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What percentage of papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What's the ratio of papers that have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1."] 
+            question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(compare,n)
+            answer = author_num(compare,n)
+            if answer and not np.isnan(answer):
+                writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
+                question_type_count[6] -= 1
+                if question_type_count[6]==0:
+                    question_types.remove(6)
+                question_id += 1
 
