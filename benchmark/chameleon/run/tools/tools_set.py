@@ -20,7 +20,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "LoadDB",
-            "description": "Load a database specified by the DBName, train and test subsets, and a column to be predicted. Normally, we only use LoadDB when the question requires data from a specific structured database.",
+            "description": "Load a database specified by the DBName and a subset. Normally, we only use LoadDB when the question requires data from a specific structured database.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -28,20 +28,12 @@ tools_gpt = [
                         "type": "string",
                         "description": "The name of the database to be loaded. The only choices for target_db are hupd (a patent dataset) and neurips (a papers dataset).",
                     },
-                    "train_duration": {
+                    "duration": {
                         "type": "string",
-                        "description": "The training subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2004-2006. When target_db is neurips, specify the range of rows in the format 0-endRow, e.g. 0-2000. When the task does not involve prediction and the target_db is neurips, use the default range 0-3585.",
-                    },
-                    "test_duration": {
-                        "type": "string",
-                        "description": "The testing subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2016-2018. When target_db is neurips, specify the range of rows in the format startRow-3585, e.g. 2001-3585, where startRow must be one more than the endRow of train_duration. When the task does not involve prediction, set this value to None.",
-                    },
-                    "outcome_col": {
-                        "type": "string",
-                        "description": "The column to predict if the task involves making a prediction. If no prediction is required, set this value to None.",
+                        "description": "The subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2004-2006. When target_db is neurips, specify the range of rows in the format startRow-endRow, e.g. 0-2000. When the task does not involve prediction and the target_db is neurips, use the default range 0-3585.",
                     }
                 },
-                "required": ["target_db", "train_duration"],
+                "required": ["target_db", "duration"],
             },
         },
     },
@@ -129,21 +121,25 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "TextualClassifier",
-            "description": "Run a specified binary classifier model on the given textual predictorSection to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
+            "description": "Run a specified binary classifier model on the given textual predictor section to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "database": {
                         "type": "string",
-                        "description": "The name of the database that this classification task is conducted on. The only choices are hupd and neurips."
+                        "description": "The database used for the prediction task. The only choices are hupd and neurips."
                     },
                     "model_name": {
                         "type": "string",
-                        "description": "The model_name can be logistic_regression, distilbert-base-uncased, cnn, or naive_bayes.",
+                        "description": "The model_name can be logistic_regression, bert-base-uncased, or cnn.",
                     },
                     "section": {
                         "type": "string",
-                        "description": "The predictor variable of the classifier model, which is a column that consists of natural language requiring tokenization.",
+                        "description": "The predictor variable of the classifier model, which is a column that consists of natural language.",
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "The specific instance of text used as input for the predictor variable in the model.",
                     },
                     "target": {
                         "type": "string",
@@ -151,10 +147,10 @@ tools_gpt = [
                     },
                     "one_v_all": {
                         "type": "string",
-                        "description": "The class label for a one-vs-all classification task.",
+                        "description": "The positive class label for a one-vs-all classification task.",
                     }
                 },
-                "required": ["database", "model_name", "section", "target", "one_v_all"], 
+                "required": ["database", "model_name", "section", "text", "target", "one_v_all"], 
             },
         },
     }, 
@@ -219,7 +215,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "LoadDB",
-        "description": "Load a database specified by the DBName, train and test subsets, and a column to be predicted. Normally, we only use LoadDB when the question requires data from a specific structured database.",
+        "description": "Load a database specified by the DBName and a subset. Normally, we only use LoadDB when the question requires data from a specific structured database.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -227,20 +223,12 @@ tools_gemini = [
               "type": "string",
               "description": "The name of the database to be loaded. The only choices for target_db are hupd (a patent dataset) and neurips (a papers dataset)."
             },
-            "train_duration": {
+            "duration": {
               "type": "string",
-              "description": "The training subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2004-2006. When target_db is neurips, specify the range of rows in the format 0-endRow, e.g. 0-2000. When the task does not involve prediction and the target_db is neurips, use the default range 0-3585."
-            },
-            "test_duration": {
-              "type": "string",
-              "description": "The testing subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2016-2018. When target_db is neurips, specify the range of rows in the format startRow-3585, e.g. 2001-3585, where startRow must be one more than the endRow of train_duration. When the task does not involve prediction, set this value to None."
-            },
-            "outcome_col": {
-              "type": "string",
-              "description": "The column to predict if the task involves making a prediction. If no prediction is required, set this value to None."
+              "description": "The subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2004-2006. When target_db is neurips, specify the range of rows in the format startRow-endRow, e.g. 0-2000. When the task does not involve prediction and the target_db is neurips, use the default range 0-3585."
             }
           },
-          "required": ["target_db", "train_duration"]
+          "required": ["target_db", "duration"]
         }
       }
     ]
@@ -350,18 +338,26 @@ tools_gemini = [
   {
     "function_declarations": [
       {
-        "name": "TextualClassifier",
+        "name": "TextualClassifier", 
         "description": "Run a specified binary classifier model on the given textual predictor section to predict the target. Normally, we use the TextualClassifier module for classification tasks that work with textual data as its input.",
         "parameters": {
           "type": "object",
           "properties": {
+            "database": {
+              "type": "string",
+              "description": "The database used for the prediction task. The only choices are hupd and neurips."
+            },
             "model_name": {
               "type": "string",
-              "description": "The model_name can be logistic_regression, distilbert-base-uncased, cnn, or naive_bayes."
+              "description": "The model_name can be logistic_regression, bert-base-uncased, or cnn."
             },
             "section": {
               "type": "string",
-              "description": "The predictor variable of the classifier model, which is a column that consists of natural language requiring tokenization."
+              "description": "The predictor variable of the classifier model, which is a column that consists of natural language."
+            },
+            "text": {
+              "type": "string",
+              "description": "The specific instance of text used as input for the predictor variable in the model."
             },
             "target": {
               "type": "string",
@@ -369,10 +365,10 @@ tools_gemini = [
             },
             "one_v_all": {
               "type": "string",
-              "description": "The class label for a one-vs-all classification task."
+              "description": "The positive class label for a one-vs-all classification task."
             }
           },
-          "required": ["model_name", "section", "target"]
+          "required": ["database", "model_name", "section", "text", "target", "one_v_all"]
         }
       }
     ]

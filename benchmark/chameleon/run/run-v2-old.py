@@ -8,7 +8,7 @@ import argparse
 import random
 import pandas as pd
 from tqdm import tqdm
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, r2_score
 from demos import prompt_policy
 from openai import OpenAI
 from collections import defaultdict
@@ -176,17 +176,10 @@ def calc_cost2(function_type, function_arguments):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_root', type=str, default='../results')
-    parser.add_argument('--model', type=str, default='chameleon')
     parser.add_argument('--label', type=str, default='chameleon_chatgpt')
-    parser.add_argument('--test_split', type=str, default='test1k', 
-                        choices=['dev', 'dev1k', 'test', 'test1k'])
-    parser.add_argument('--seed', type=int, default=0)
     parser.add_argument("--hardness", type=str, default="easy")
-    parser.add_argument("--version", type=str, default="v3")
     parser.add_argument("--prompt", type=str, default="clean")
     parser.add_argument("--formula", type=str, default="")
-    # module prediction
-    parser.add_argument('--modules', nargs='+', default=None, help='default modules') 
     parser.add_argument('--policy_engine', type=str, default="gpt-3.5-turbo", help='engine for module prediction')
     parser.add_argument('--policy_temperature', type=float, default=0., help='temperature for module prediction')
     parser.add_argument('--policy_max_tokens', type=int, default=128, help='max tokens for module prediction')
@@ -245,6 +238,8 @@ if __name__ == "__main__":
         iterations = 0
 
         while iterations<10:
+            if args.hardness!="easy":
+                db.prediction = True
             try:
                 response = client.chat.completions.create(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice="auto")
                 # print("response", response) 
@@ -309,7 +304,10 @@ if __name__ == "__main__":
         gt_answer = example["answer"]
         
         if question_type not in performance:
-            performance[question_type] = 0
+            if question_type in [7,8,9,10]:
+                performance[question_type] = [[],[]]
+            else:
+                performance[question_type] = 0
         if question_type not in cost_original:
             cost_original[question_type] = {"right":[], "wrong":[]}
         
@@ -349,27 +347,14 @@ if __name__ == "__main__":
                 except:
                     errors[question_type] += 1
                     cost_original[question_type]["wrong"].append(per_question_cost)
-            elif question_type in [7]: # R2
+            elif question_type in [7,8,9,10]: # R2, F1
                 try:
-                    performance[question_type][0] += (llm_answer-gt_answer)**2
-                    performance[question_type][1].append(gt_answer)
+                    performance[question_type][0].append(gt_answer)
+                    performance[question_type][1].append(llm_answer)
                     cost_original[question_type]["right"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
                     cost_original[question_type]["wrong"].append(per_question_cost)
-            elif question_type in [8,9,10]: # exact match macro F1
-                try:
-                    performance[question_type] += int(llm_answer==gt_answer)
-                    cost_original[question_type]["right"].append(per_question_cost)
-                except:
-                    errors[question_type] += 1
-                    cost_original[question_type]["wrong"].append(per_question_cost)
-                # try:
-                #     performance[question_type] += f1_score(gt_answer, llm_answer, average='macro')
-                #     cost_original[question_type]["right"].append(per_question_cost)
-                # except:
-                #     errors[question_type] += 1
-                #     cost_original[question_type]["wrong"].append(per_question_cost)
         
         logs.append({"Question Type": question_type})
         logs.append({"Cost": per_question_cost})
@@ -388,20 +373,16 @@ if __name__ == "__main__":
             writer.write(row)
 
     for key in performance.keys():
-        if key in [1,2,3,4,5,6,8]: 
-            if count[key]==errors[key]:
-                performance[key] = 0
-            else:
-                performance[key] = performance[key] / (count[key]-errors[key])
+        if count[key]==errors[key]:
+            performance[key] = 0
+            continue
+        if key in [1,2,3,4,5,6]: 
+            performance[key] = performance[key] / (count[key]-errors[key])
         elif key in [7]: 
-            print("before", performance[key])
-            actual_mean = sum(performance[key][1]) / len(performance[key][1])
-            print("actual_mean", actual_mean)
-            sstot = sum((x-actual_mean)**2 for x in performance[key][1])
-            print("sstot", sstot)
-            print("performance[key][0]", performance[key][0])
-            performance[key] = 1 - performance[key][0]/sstot
-            print("after", performance[key])
+            performance[key] = r2_score(performance[key][0], performance[key][1])
+        elif key in [8,9,10]:
+            performance[key] = f1_score(performance[key][0], performance[key][1])
+        
     for key in errors.keys():
         errors[key] = errors[key] / count[key]    
     performance = dict(sorted(performance.items())) # between 0 and 1
@@ -414,8 +395,14 @@ if __name__ == "__main__":
     cost = dict(sorted(cost.items()))
     count = dict(sorted(count.items()))
     agg_cost = {"right": 0, "wrong": 0}
-    agg_cost["right"] = sum([sum(cost_original[key]["right"]) for key in performance.keys()]) / sum([count[key]-count[key]*errors[key] for key in performance.keys()])
-    agg_cost["wrong"] = sum([sum(cost_original[key]["wrong"]) for key in performance.keys()]) / sum([count[key]*errors[key] for key in performance.keys()])
+    try:
+        agg_cost["right"] = sum([sum(cost_original[key]["right"]) for key in performance.keys()]) / sum([count[key]-count[key]*errors[key] for key in performance.keys()])
+    except:
+        agg_cost["right"] = 0
+    try:
+        agg_cost["wrong"] = sum([sum(cost_original[key]["wrong"]) for key in performance.keys()]) / sum([count[key]*errors[key] for key in performance.keys()])
+    except:
+        agg_cost["wrong"] = 0
     
     # save the result
     result = {'performance': performance, 'error': errors, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'count': count, 'total_count': total_count, 'args': vars(args)}

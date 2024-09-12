@@ -139,10 +139,10 @@ class BasicCNNModel (nn.Module):
 class table_toolkits():
     def __init__(self):
         self.data = None
+        self.prediction = False
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
     
-    # new 
-    def db_loader(self, target_db, duration="None"): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
+    def db_loader(self, target_db, duration): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
         """
         Loads the needed dataframe(s).
         """     
@@ -203,14 +203,14 @@ class table_toolkits():
             return df   
            
         if target_db=="hupd":
-            # if end>=2013: # uncomment for medium and hard tasks
-            #     return "Error: The end year of the dataframe cannot be later than year 2012 for prediction tasks."
+            if self.prediction and end>=2013: # uncomment for medium and hard tasks
+                return "Error: The end year of the dataframe cannot be later than year 2012 for prediction tasks."
             df = preprocess_hupd(start, end)
         elif target_db=="neurips":
             if end>3585:
                 return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
-            # if end>3000: # uncomment for medium and hard tasks
-            #     return "Error: The end year of the dataframe cannot exceed row 3000 for prediction tasks."
+            if self.prediction and end>3000: # uncomment for medium and hard tasks
+                return "Error: The end year of the dataframe cannot exceed row 3000 for prediction tasks."
             df = preprocess_neurips(start, end)
         else:
             return "Error: the only possible choices for target_db are hupd (a patent dataset) and neurips (a papers dataset)."
@@ -277,7 +277,7 @@ class table_toolkits():
         except KeyError as e:
             column_names = ["'"+x+"'" for x in global_var["df"].columns.tolist()]
             column_names_str = ', '.join(column_names)
-            return "Error: "+str(e)+" column does not exist.\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(local_df.head())
+            return "Error: "+str(e)+" column does not exist.\nThe dataframe contains the following columns: "+column_names_str+". It has the following structure: {}".format(self.data.head())
         except NameError as e:
             if "'pd'" in str(e):
                 return "Error: "+str(e)+"\nImport the pandas library using the pandas_interpreter."
@@ -287,7 +287,7 @@ class table_toolkits():
             return "Error: "+str(e)
         # other exceptions
             
-    def textual_classifier(self, database, model_name, text, section, target, one_v_all): 
+    def textual_classifier(self, database, model_name, section, text, target, one_v_all): 
         """
         Runs a classificaiton prediction task given a textual input.
         """
@@ -324,17 +324,6 @@ class table_toolkits():
         embed_dim=200
         max_length=512 #256
         alpha_smooth_val = 1.0
-                                                    
-        # Create a BoW (Bag-of-Words) representation
-        def text2bow(input, vocab_size):
-            arr = []
-            for i in range(input.shape[0]):
-                query = input[i]
-                features = [0] * vocab_size
-                for j in range(query.shape[0]):
-                    features[query[j]] += 1 
-                arr.append(features)
-            return np.array(arr)
 
         # Create model and tokenizer
         def create_model_and_tokenizer(model_name=model_name, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512): #'bert-base-uncased'
@@ -372,44 +361,9 @@ class table_toolkits():
 
         # Map target2string
         def map_target_to_label(example):
+            if not isinstance(example[target], str):
+                return {'output': int(one_v_all==str(int(example[target])))}
             return {'output': int(one_v_all==example[target])}
-            
-        def map_groundtruth_to_label(lst):
-            return [int(one_v_all==x) for x in lst]
-        
-        # Create dataset
-        # def create_dataset(tokenizer, section=section):
-        #     data_loaders = []
-        #     dataset = self.dataset_dict["test"]
-        #     print('*** Tokenizing...')
-        #     # Tokenize the input
-        #     zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
-        #     dataset = dataset.map(
-        #         lambda e: {
-        #             section: [
-        #                 tokenizer(text, truncation=True, padding='max_length', max_length=max_length) if text is not None else zero_encoding
-        #                 for text in e[section]
-        #             ]
-        #         },
-        #         batched=True
-        #     )
-
-        #     # Flatten the lists of dictionaries into separate columns
-        #     dataset = dataset.map(
-        #         lambda e: {
-        #             'input_ids': torch.tensor([item['input_ids'] for item in e[section]]),
-        #             'attention_mask': torch.tensor([item['attention_mask'] for item in e[section]]),
-        #         },
-        #         batched=True
-        #     )
-        #     # Set the dataset format
-        #     gt_list = self.test_groundtruth.to_list()
-        #     gt_list = map_groundtruth_to_label(gt_list)
-        #     dataset = dataset.map(lambda example, idx: {'output': torch.tensor(gt_list[idx])}, with_indices=True)
-        #     dataset.set_format(type='torch', 
-        #         columns=['input_ids', 'attention_mask', 'output'])
-        #     data_loaders.append(DataLoader(dataset, batch_size=batch_size))
-        #     return data_loaders
         
         def create_data(tokenizer, text=text):
             zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
@@ -421,27 +375,18 @@ class table_toolkits():
             attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0)
             return {'input_ids': input_ids, 'attention_mask': attention_mask}
 
-        def measure_accuracy(outputs, labels):
-            preds = np.argmax(outputs, axis=1).flatten()
-            labels = labels.flatten()
-            correct = np.sum(preds == labels)
-            c_matrix = confusion_matrix(labels, preds, labels=CLASS_NAMES)
-            return correct, len(labels), c_matrix
-
         # Convert ids2string
         def convert_ids_to_string(tokenizer, input):
             return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
 
         # Evaluation procedure (for the neural models)
         def test(processed_text, model, criterion, device): 
-            with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_{}_model.pkl'.format(database, model_name, section, target), 'rb') as file:
-                model = pickle.load(file)
+            try:
+                with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_{}_model.pkl'.format(database, model_name, section, target), 'rb') as file:
+                    model = pickle.load(file)
+            except:
+                return "Error: no pretrained model is available for the specified task. Please use other tools to solve the problem."
             model.eval()
-            total_loss = 0.
-            total_correct = 0
-            total_sample = 0
-            total_confusion = np.zeros((CLASSES, CLASSES))
-            predictions = []
             
             inputs = processed_text['input_ids']
             inputs = inputs.to(device)
@@ -450,35 +395,8 @@ class table_toolkits():
                     outputs = model(input_ids=inputs)
                 else:
                     outputs = model(input_ids=inputs).logits
-                preds = torch.argmax(outputs, dim=1)
-                predictions.extend(preds.cpu().numpy().tolist())
-            return predictions
-            
-            # Loop over the examples in the test set
-            # for i, batch in enumerate(tqdm(test_loader)):                
-            #     inputs, decisions = batch['input_ids'], batch['output']
-            #     inputs = inputs.to(device)
-            #     decisions = decisions.to(device)
-            #     with torch.no_grad():
-            #         if model_name in ['cnn', 'logistic_regression']:
-            #             outputs = model(input_ids=inputs)
-            #         else:
-            #             outputs = model(input_ids=inputs, labels=decisions).logits
-            #     preds = torch.argmax(outputs, dim=1)
-            #     predictions.extend(preds.cpu().numpy().tolist())
-            #     loss = criterion(outputs, decisions) 
-            #     logits = outputs 
-            #     total_loss += loss.cpu().item()
-            #     correct_n, sample_n, c_matrix = measure_accuracy(logits.cpu().numpy(), decisions.cpu().numpy())
-            #     total_confusion += c_matrix
-            #     total_correct += correct_n
-            #     total_sample += sample_n
-                    
-            # # Print the performance of the model on the test set 
-            # print(f'*** Accuracy on the {name} set: {total_correct/total_sample}')
-            # print(f'*** Confusion matrix:\n{total_confusion}')
-            
-            return predictions
+                prediction = torch.argmax(outputs, dim=1)[0].item()
+            return prediction
             
         # Create a model and an appropriate tokenizer
         tokenizer, model, vocab_size = create_model_and_tokenizer(
@@ -492,11 +410,6 @@ class table_toolkits():
         # GPU specifications 
         model.to(device)
 
-        # Load the dataset
-        # data_loaders = create_dataset(
-        #     tokenizer = tokenizer, 
-        #     section = section
-        #     )
         processed_text = create_data(
             tokenizer = tokenizer, 
             text = text
@@ -510,9 +423,10 @@ class table_toolkits():
         # Loss function 
         criterion = torch.nn.CrossEntropyLoss() 
         # Test
-        predictions = test(processed_text, model, criterion, device)
-        predictions_to_categories = [unique_classes[x] for x in predictions]
-        return {"predictions": predictions_to_categories[:10]} # limit to the first 10 values to prevent content limit exceeded
+        prediction = test(processed_text, model, criterion, device)
+        if isinstance(prediction, str) and prediction.startswith("Error:"):
+            return prediction
+        return {"prediction": unique_classes[prediction]} 
 
 if __name__ == "__main__":
     db = table_toolkits()
@@ -524,10 +438,21 @@ if __name__ == "__main__":
 # """
     # print(db.pandas_interpreter(pandas_code))
 
-    # print(db.textual_classifier('hupd', 'logistic_regression', abstract, 'abstract', 'decision', 'ACCEPTED'))
-    # print(db.textual_classifier('hupd', 'cnn', abstract, 'abstract', 'decision', 'ACCEPTED'))
-    # print(db.textual_classifier('hupd', 'bert-base-uncased', abstract, 'abstract', 'decision', 'ACCEPTED'))
-    # print(db.textual_classifier('neurips', 'logistic_regression', abstract, 'Abstract', 'Oral', 'oral'))
-    # print(db.textual_classifier('neurips', 'cnn', abstract, 'Abstract', 'Oral', 'oral'))
-    # print(db.textual_classifier('neurips', 'bert-base-uncased', abstract, 'Abstract', 'Oral', 'oral'))
+    # print(db.textual_classifier('hupd', 'logistic_regression', 'abstract', abstract, 'decision', 'ACCEPTED'))
+    # print(db.textual_classifier('hupd', 'cnn', 'abstract', abstract, 'decision', 'ACCEPTED'))
+    # print(db.textual_classifier('hupd', 'bert-base-uncased', 'abstract', abstract, 'decision', 'ACCEPTED'))
+    # print(db.textual_classifier('neurips', 'logistic_regression', 'Abstract', abstract, 'Oral', 'oral'))
+    # print(db.textual_classifier('neurips', 'cnn', 'Abstract', abstract, 'Oral', 'oral'))
+    # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Abstract', abstract, 'Oral', 'oral'))
+    
+    db.db_loader('hupd', '2007-2015')
+    code = """
+print(df[df['title']=='FUEL CARTRIDGE AND FUEL CELL USING THE SAME']["filing_date"])
+print(df[df['title']=='FUEL CARTRIDGE AND FUEL CELL USING THE SAME']["date_published"])
+df['days_elapsed'] = (df['date_published'] - df['filing_date']).dt.days
+print(df[df['title']=='FUEL CARTRIDGE AND FUEL CELL USING THE SAME']["days_elapsed"])
+max_days_elapsed = df.loc[df['days_elapsed'].idxmax()]['title']
+"""
+    print(db.pandas_interpreter(code))
+
     

@@ -82,7 +82,7 @@ ans = solution(19)
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2016-2016", "test_duration": "None", "outcome_col": "None"
+                        "target_db": "hupd", "duration": "2016-2016"
                     })
                 },
                 'type': 'function'
@@ -150,7 +150,7 @@ month = df['filing_month'].mode()[0]
     },
     {
         'role': 'user',
-        'content': 'Train a model using the first 2000 rows of NeurIPS papers dataset and then use it to predict the poster sessions for the papers with unique indices ID-2001,ID-2500,ID-2486,ID-2759,ID-3300.'
+        'content': "Determine if a NeurIPS 2023 paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.'"
     },
     {
         'role': 'assistant',
@@ -159,9 +159,9 @@ month = df['filing_month'].mode()[0]
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'TextualClassifier',
                     'arguments': json.dumps({
-                        "target_db": "neurips", "train_duration": "0-2000", "test_duration": "2001-3585", "outcome_col": "Poster Session"
+                        "database": "neurips", "model_name": "logistic_regression", "section": "Abstract", "text": "We propose a Bayesian encoder ... and has state-of-the-art predictive performance.", "target": "Poster Session", "one_v_all": "2"
                     })
                 },
                 'type': 'function'
@@ -171,8 +171,8 @@ month = df['filing_month'].mode()[0]
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
-        'content': "We have successfully loaded the neurips dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', 'Poster Session', '__index_level_0__'],num_rows: 1981}) test: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', '__index_level_0__'],num_rows: 1571})})"
+        'name': 'TextualClassifier',
+        'content': "{'prediction': '2'}"
     },
     {
         'role': 'assistant',
@@ -181,9 +181,9 @@ month = df['filing_month'].mode()[0]
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'TestSampler',
+                    'name': 'Finish',
                     'arguments': json.dumps({
-                        "indices": "ID-2001,ID-2500,ID-2486,ID-2759,ID-3300"
+                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string"
                     })
                 },
                 'type': 'function'
@@ -193,56 +193,12 @@ month = df['filing_month'].mode()[0]
     {
         'tool_call_id': 'call_1',
         'role': 'tool',
-        'name': 'TestSampler',
-        'content': "Done sampling the test set according to the specified unique indices."
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_2',
-                'function': {
-                    'name': 'TextualClassifier',
-                    'arguments': json.dumps({
-                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session", "one_v_all": "None"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_2',
-        'role': 'tool',
-        'name': 'TextualClassifier',
-        'content': "{'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_3',
-                'function': {
-                    'name': 'Finish',
-                    'arguments': json.dumps({
-                        "variable_values": "{'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}", "answer_variable": "predictions", "answer_type": "list"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_3',
-        'role': 'tool',
         'name': 'Finish',
-        'content': "[4.0, 2.0, 6.0, 2.0, 4.0]"
+        'content': "2"
     },
     {
         'role': 'assistant',
-        'content': "The predicted poster sessions for the remaining papers in the dataset are: 4.0, 2.0, 6.0, 2.0, and 4.0."
+        'content': "This paper is predicted to be assigned to Poster Session 2."
     },
     {
         'role': 'user',
@@ -257,7 +213,7 @@ month = df['filing_month'].mode()[0]
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2007-2009", "test_duration": "2010-2011", "outcome_col": "claims"
+                        "target_db": "hupd", "duration": "2007-2009"
                     })
                 },
                 'type': 'function'
@@ -614,9 +570,9 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+        'content': """Modules1: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)
-Modules2: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Modules2: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\ncounter = Counter(df['filing_month'])\nmonth = counter.most_common()[0][0]), Finish({'month':12}, month, integer)
 
 Cost Analysis:
@@ -631,7 +587,7 @@ PandasInterpreter: 4 (lines) * 1.5 (packages) = 6
 Finish: 0
 Total: 3 + 6 + 0 = 9
 
-Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Best Modules: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)""",
         'tool_calls': [
             {
@@ -639,7 +595,7 @@ Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pand
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2016-2016", "test_duration": "None", "outcome_col": "None"
+                        "target_db": "hupd", "duration": "2016-2016"
                     })
                 },
                 'type': 'function'
@@ -706,49 +662,108 @@ month = df['filing_month'].mode()[0]
     },
     {
         'role': 'user',
-        'content': 'Train a model using the first 2000 rows of NeurIPS papers dataset and then use it to predict the poster sessions for the papers with unique indices ID-2001,ID-2500,ID-2486,ID-2759,ID-3300.'
+        'content': "Determine if a NeurIPS 2023 paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.'"
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(logistic_regression, Abstract, Poster Session), Finish({'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}, predictions, list)
-Modules2: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(distilbert-base-uncased, Abstract, Poster Session), Finish({'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}, predictions, list)
-Modules3: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(naive_bayes, Title, Poster Session), Finish({'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}, predictions, list)
-Modules4: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(cnn, Topic, Poster Session), Finish({'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}, predictions, list)
+        'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+Modules3: LoadDB(neurips, 0-3000), PandasInterpreter('''import torch
+from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+# Define constants
+text = 'We propose a Bayesian encoder for metric learning...'
+section = 'Abstract'
+target = 'Poster Session'
+unique_classes = ["not 2", "2"]
+CLASSES = 2
+max_length = 512
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Configure model and tokenizer
+config = AutoConfig.from_pretrained("bert-base-uncased", num_labels=CLASSES)
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", model_max_length=max_length)
+model = AutoModelForSequenceClassification.from_config(config=config).to(device)
+
+# Tokenize input text
+def tokenize_text(text, tokenizer, max_length):
+    return tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
+
+encoded_text = tokenize_text(text, tokenizer, max_length)
+input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0).to(device)
+attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0).to(device)
+processed_text = {'input_ids': input_ids, 'attention_mask': attention_mask}
+
+# DataLoader setup for training
+def prepare_data(df, section, tokenizer, target, batch_size=64):
+    zero_encoding = tokenize_text('', tokenizer, max_length)
+    df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
+    df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
+    df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
+    df['output'] = df[target].apply(lambda x: int(x == "2"))  # Simplified binary mapping
+    dataset = df[['input_ids', 'attention_mask', 'output']].apply(
+        lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
+    )
+    return DataLoader(list(dataset), batch_size=batch_size)
+
+# Train the model
+def train_model(model, data_loader, epochs=5, learning_rate=2e-5):
+    optimizer = torch.optim.AdamW(params=model.parameters(), lr=learning_rate)
+    criterion = torch.nn.CrossEntropyLoss()
+    model.train()
+    for epoch in range(epochs):
+        for batch in tqdm(data_loader):
+            inputs, labels = batch['input_ids'].to(device), batch['output'].to(device)
+            outputs = model(input_ids=inputs, labels=labels).logits
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+# Evaluate the model on the input text
+def predict(model, processed_text, unique_classes):
+    model.eval()
+    inputs = processed_text['input_ids']
+    with torch.no_grad():
+        outputs = model(input_ids=inputs).logits
+        prediction = torch.argmax(outputs, dim=1).item()
+    return {"prediction": unique_classes[prediction]}
+
+data_loader = prepare_data(df, section, tokenizer, target)
+train_model(model, data_loader)
+prediction = predict(model, processed_text, unique_classes)
+return prediction'''), Finish({'predictions': '2'}, predictions, string)
+Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 3
-TestSampler: 2
 TextualClassifier (logistic_regression): 7
 Finish: 0
-Total: 3 + 2 + 7 + 0 = 12
+Total: 7 + 0 = 7
 Modules2 Cost:
-LoadDB: 3
-TestSampler: 2
-TextualClassifier (distilbert-base-uncased): 20
+TextualClassifier (bert-base-uncased): 20
 Finish: 0
-Total: 3 + 2 + 20 + 0 = 25
+Total: 20 + 0 = 20
 Modules3 Cost:
 LoadDB: 3
-TestSampler: 2
-TextualClassifier (naive_bayes): 8
+PandasInterpreter: 15 (lines) * 2 (packages) = 30
 Finish: 0
-Total: 3 + 2 + 8 + 0 = 13
+Total: 3 + 30 + 0 = 33
 Modules4 Cost:
-LoadDB: 3
-TestSampler: 2
 TextualClassifier (cnn): 15
 Finish: 0
-Total: 3 + 2 + 15 + 0 = 20
+Total: 15 + 0 = 15
 
-Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(logistic_regression, Abstract, Poster Session), Finish({'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}, predictions, list)""",
+Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'TextualClassifier',
                     'arguments': json.dumps({
-                        "target_db": "neurips", "train_duration": "0-2000", "test_duration": "2001-3585", "outcome_col": "Poster Session"
+                        "database": "neurips", "model_name": "logistic_regression", "section": "Abstract", "text": "We propose a Bayesian encoder ... and has state-of-the-art predictive performance.", "target": "Poster Session", "one_v_all": "2"
                     })
                 },
                 'type': 'function'
@@ -758,8 +773,8 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
-        'content': "We have successfully loaded the neurips dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', 'Poster Session', '__index_level_0__'],num_rows: 1981}) test: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', '__index_level_0__'],num_rows: 1571})})"
+        'name': 'TextualClassifier',
+        'content': "{'prediction': '2'}"
     },
     {
         'role': 'assistant',
@@ -768,9 +783,9 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'TestSampler',
+                    'name': 'Finish',
                     'arguments': json.dumps({
-                        "indices": "ID-2001,ID-2500,ID-2486,ID-2759,ID-3300"
+                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string"
                     })
                 },
                 'type': 'function'
@@ -780,56 +795,12 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
     {
         'tool_call_id': 'call_1',
         'role': 'tool',
-        'name': 'TestSampler',
-        'content': "Done sampling the test set according to the specified unique indices."
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_2',
-                'function': {
-                    'name': 'TextualClassifier',
-                    'arguments': json.dumps({
-                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session", "one_v_all": "None"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_2',
-        'role': 'tool',
-        'name': 'TextualClassifier',
-        'content': "{'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_3',
-                'function': {
-                    'name': 'Finish',
-                    'arguments': json.dumps({
-                        "variable_values": "{'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}", "answer_variable": "predictions", "answer_type": "list"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_3',
-        'role': 'tool',
         'name': 'Finish',
-        'content': "[4.0, 2.0, 6.0, 2.0, 4.0]"
+        'content': "2"
     },
     {
         'role': 'assistant',
-        'content': "The predicted poster sessions for the remaining papers in the dataset are: 4.0, 2.0, 6.0, 2.0, and 4.0."
+        'content': "This paper is predicted to be assigned to Poster Session 2."
     },
     {
         'role': 'user',
@@ -837,9 +808,9 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules2: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules3: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+        'content': """Modules1: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules2: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules3: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 
 Cost Analysis:
 Modules1 Cost:
@@ -862,14 +833,14 @@ Total: 3 + 4 + 6 + 0 = 13
 
 Reasoning: Modules1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Modules: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+Best Modules: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2007-2009", "test_duration": "2010-2011", "outcome_col": "claims"
+                        "target_db": "hupd", "duration": "2007-2009"
                     })
                 },
                 'type': 'function'
@@ -1260,9 +1231,9 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+        'content': """Modules1: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish(..., ..., integer)
-Modules2: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Modules2: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\ncounter = Counter(df['filing_month'])\nmonth = counter.most_common()[0][0]), Finish(..., ..., integer)
 
 Cost Analysis:
@@ -1277,7 +1248,7 @@ PandasInterpreter: 5 (lines) * 2 (packages) = 10
 Finish: 0
 Total: 3 + 10 + 0 = 13
 
-Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Best Modules: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish(..., ..., integer)""",
         'tool_calls': [
             {
@@ -1285,7 +1256,7 @@ Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pand
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2016-2016", "test_duration": "None", "outcome_col": "None"
+                        "target_db": "hupd", "duration": "2016-2016"
                     })
                 },
                 'type': 'function'
@@ -1352,49 +1323,108 @@ month = df['filing_month'].mode()[0]
     },
     {
         'role': 'user',
-        'content': 'Train a model using the first 2000 rows of NeurIPS papers dataset and then use it to predict the poster sessions for the papers with unique indices ID-2001,ID-2500,ID-2486,ID-2759,ID-3300.'
+        'content': "Determine if a NeurIPS 2023 paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.'"
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(logistic_regression, Abstract, Poster Session), Finish(..., ..., list)
-Modules2: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(distilbert-base-uncased, Abstract, Poster Session), Finish(..., ..., list)
-Modules3: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(naive_bayes, Title, Poster Session), Finish(..., ..., list)
-Modules4: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(cnn, Topic, Poster Session), Finish(..., ..., list)
+        'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+Modules3: LoadDB(neurips, 0-3000), PandasInterpreter('''import torch
+from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+# Define constants
+text = 'We propose a Bayesian encoder for metric learning...'
+section = 'Abstract'
+target = 'Poster Session'
+unique_classes = ["not 2", "2"]
+CLASSES = 2
+max_length = 512
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Configure model and tokenizer
+config = AutoConfig.from_pretrained("bert-base-uncased", num_labels=CLASSES)
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", model_max_length=max_length)
+model = AutoModelForSequenceClassification.from_config(config=config).to(device)
+
+# Tokenize input text
+def tokenize_text(text, tokenizer, max_length):
+    return tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
+
+encoded_text = tokenize_text(text, tokenizer, max_length)
+input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0).to(device)
+attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0).to(device)
+processed_text = {'input_ids': input_ids, 'attention_mask': attention_mask}
+
+# DataLoader setup for training
+def prepare_data(df, section, tokenizer, target, batch_size=64):
+    zero_encoding = tokenize_text('', tokenizer, max_length)
+    df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
+    df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
+    df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
+    df['output'] = df[target].apply(lambda x: int(x == "2"))  # Simplified binary mapping
+    dataset = df[['input_ids', 'attention_mask', 'output']].apply(
+        lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
+    )
+    return DataLoader(list(dataset), batch_size=batch_size)
+
+# Train the model
+def train_model(model, data_loader, epochs=5, learning_rate=2e-5):
+    optimizer = torch.optim.AdamW(params=model.parameters(), lr=learning_rate)
+    criterion = torch.nn.CrossEntropyLoss()
+    model.train()
+    for epoch in range(epochs):
+        for batch in tqdm(data_loader):
+            inputs, labels = batch['input_ids'].to(device), batch['output'].to(device)
+            outputs = model(input_ids=inputs, labels=labels).logits
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+# Evaluate the model on the input text
+def predict(model, processed_text, unique_classes):
+    model.eval()
+    inputs = processed_text['input_ids']
+    with torch.no_grad():
+        outputs = model(input_ids=inputs).logits
+        prediction = torch.argmax(outputs, dim=1).item()
+    return {"prediction": unique_classes[prediction]}
+
+data_loader = prepare_data(df, section, tokenizer, target)
+train_model(model, data_loader)
+prediction = predict(model, processed_text, unique_classes)
+return prediction'''), Finish({'predictions': '2'}, predictions, string)
+Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 3
-TestSampler: 2
-TextualClassifier (logistic_regression): 7
+TextualClassifier (logistic_regression): 5
 Finish: 0
-Total: 3 + 2 + 7 + 0 = 12
+Total: 5 + 0 = 5
 Modules2 Cost:
-LoadDB: 3
-TestSampler: 2
-TextualClassifier (distilbert-base-uncased): 20
+TextualClassifier (bert-base-uncased): 10
 Finish: 0
-Total: 3 + 2 + 20 + 0 = 25
+Total: 10 + 0 = 10
 Modules3 Cost:
 LoadDB: 3
-TestSampler: 2
-TextualClassifier (naive_bayes): 8
+PandasInterpreter: 15 (lines) * 3 (packages) = 45
 Finish: 0
-Total: 3 + 2 + 8 + 0 = 13
+Total: 3 + 45 + 0 = 48
 Modules4 Cost:
-LoadDB: 3
-TestSampler: 2
 TextualClassifier (cnn): 15
 Finish: 0
-Total: 3 + 2 + 15 + 0 = 20
+Total: 15 + 0 = 15
 
-Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID-2001,ID-2500,ID-2486,ID-2759,ID-3300), TextualClassifier(logistic_regression, Abstract, Poster Session), Finish(..., ..., list)""",
+Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'TextualClassifier',
                     'arguments': json.dumps({
-                        "target_db": "neurips", "train_duration": "0-2000", "test_duration": "2001-3585", "outcome_col": "Poster Session"
+                        "database": "neurips", "model_name": "logistic_regression", "section": "Abstract", "text": "We propose a Bayesian encoder ... and has state-of-the-art predictive performance.", "target": "Poster Session", "one_v_all": "2"
                     })
                 },
                 'type': 'function'
@@ -1404,8 +1434,8 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
-        'content': "We have successfully loaded the neurips dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', 'Poster Session', '__index_level_0__'],num_rows: 1981}) test: Dataset({features: ['Title', 'Authors', 'Location', 'Abstract', 'Topic', 'Oral', '__index_level_0__'],num_rows: 1571})})"
+        'name': 'TextualClassifier',
+        'content': "{'prediction': '2'}"
     },
     {
         'role': 'assistant',
@@ -1414,9 +1444,9 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'TestSampler',
+                    'name': 'Finish',
                     'arguments': json.dumps({
-                        "indices": "ID-2001,ID-2500,ID-2486,ID-2759,ID-3300"
+                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string"
                     })
                 },
                 'type': 'function'
@@ -1426,56 +1456,12 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
     {
         'tool_call_id': 'call_1',
         'role': 'tool',
-        'name': 'TestSampler',
-        'content': "Done sampling the test set according to the specified unique indices."
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_2',
-                'function': {
-                    'name': 'TextualClassifier',
-                    'arguments': json.dumps({
-                        "model_name": "logistic_regression", "section": "Abstract", "target": "Poster Session", "one_v_all": "None"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_2',
-        'role': 'tool',
-        'name': 'TextualClassifier',
-        'content': "{'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_3',
-                'function': {
-                    'name': 'Finish',
-                    'arguments': json.dumps({
-                        "variable_values": "{'predictions': [4.0, 2.0, 6.0, 2.0, 4.0]}", "answer_variable": "predictions", "answer_type": "list"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_3',
-        'role': 'tool',
         'name': 'Finish',
-        'content': "[4.0, 2.0, 6.0, 2.0, 4.0]"
+        'content': "2"
     },
     {
         'role': 'assistant',
-        'content': "The predicted poster sessions for the remaining papers in the dataset are: 4.0, 2.0, 6.0, 2.0, and 4.0."
+        'content': "This paper is predicted to be assigned to Poster Session 2."
     },
     {
         'role': 'user',
@@ -1483,9 +1469,9 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish(..., ..., list)
-Modules2: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish(..., ..., list)
-Modules3: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish(..., ..., list)
+        'content': """Modules1: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish(..., ..., list)
+Modules2: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish(..., ..., list)
+Modules3: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish(..., ..., list)
 
 Cost Analysis:
 Modules1 Cost:
@@ -1508,14 +1494,14 @@ Total: 3 + 5 + 5 + 0 = 13
 
 Reasoning: Modules1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Modules: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish(..., ..., list)""",
+Best Modules: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish(..., ..., list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2007-2009", "test_duration": "2010-2011", "outcome_col": "claims"
+                        "target_db": "hupd", "duration": "2007-2009"
                     })
                 },
                 'type': 'function'
@@ -1907,9 +1893,9 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+        'content': """Modules1: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish(..., ..., integer)
-Modules2: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Modules2: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\ncounter = Counter(df['filing_month'])\nmonth = counter.most_common()[0][0]), Finish(..., ..., integer)
 
 Cost Analysis:
@@ -1924,7 +1910,7 @@ PandasInterpreter: 4 (lines) * 1.5 (packages) = 6
 Finish: 0
 Total: 3 + 6 + 0 = 9
 
-Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Best Modules: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish(..., ..., integer)""",
         'tool_calls': [
             {
@@ -1932,7 +1918,7 @@ Best Modules: LoadDB(hupd, 2016-2016, None, None), PandasInterpreter(import pand
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2016-2016", "test_duration": "None", "outcome_col": "None"
+                        "target_db": "hupd", "duration": "2016-2016"
                     })
                 },
                 'type': 'function'
@@ -2041,7 +2027,7 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "neurips", "train_duration": "0-2000", "test_duration": "2001-3585", "outcome_col": "Poster Session"
+                        "target_db": "neurips", "duration": "0-2000", "test_duration": "2001-3585", "outcome_col": "Poster Session"
                     })
                 },
                 'type': 'function'
@@ -2130,9 +2116,9 @@ Best Modules: LoadDB(neurips, 0-2000, 2001-3585, Poster Session), TestSampler(ID
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish(..., ..., list)
-Modules2: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish(..., ..., list)
-Modules3: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish(..., ..., list)
+        'content': """Modules1: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish(..., ..., list)
+Modules2: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish(..., ..., list)
+Modules3: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish(..., ..., list)
 
 Cost Analysis:
 Modules1 Cost:
@@ -2155,14 +2141,14 @@ Total: 3 + 4 + 6 + 0 = 13
 
 Reasoning: Modules1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Modules: LoadDB(hupd, 2007-2009, 2010-2011, claims), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish(..., ..., list)""",
+Best Modules: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish(..., ..., list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'LoadDB',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "train_duration": "2007-2009", "test_duration": "2010-2011", "outcome_col": "claims"
+                        "target_db": "hupd", "duration": "2007-2009"
                     })
                 },
                 'type': 'function'
