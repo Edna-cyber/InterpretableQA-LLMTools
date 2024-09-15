@@ -90,11 +90,11 @@ def calc_cost1(function_type, function_arguments):
 
 def calc_cost2(function_type, function_arguments):
     if function_type=="Calculate":
-        return 5
-    if function_type=="TFIDF":
-        return 3
+        return 48
     if function_type=="LoadDB":
-        return 2   
+        return 47
+    if function_type=="TFIDF":
+        return 45
     if function_type=="PandasInterpreter" or function_type=="PythonInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
         num_lines = len(lines) 
@@ -104,21 +104,21 @@ def calc_cost2(function_type, function_arguments):
                 num_packages += 1
             elif "import" in line:
                 num_packages += len(line.split(","))
-        return math.sqrt(num_lines)*max(num_packages,1)
+        return 50-math.sqrt(num_lines)*max(num_packages,1)
     if function_type=="Forecaster":
         if function_arguments["model_name"]=="linear_regression":
-            return 8
+            return 44
         elif function_arguments["model_name"]=="ARIMA":
-            return 6
+            return 42
     if function_type=="TextualClassifier":
         if function_arguments["model_name"]=="logistic_regression":
-            return 20
+            return 43
         elif function_arguments["model_name"]=="cnn":
-            return 15
+            return 35
         elif function_arguments["model_name"]=="bert-base-uncased":
-            return 7
+            return 30
     if function_type=="LLMInferencer":
-        return 10
+        return 20
     if function_type=="Finish":
         return 0
 

@@ -21,3 +21,4 @@ if __name__ == "__main__":
     # answer = forecast("linear_regression", previous_data, 4)
     answer = forecast("ARIMA", previous_data, 4)
     print(answer)
+    
