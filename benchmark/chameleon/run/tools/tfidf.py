@@ -2,14 +2,17 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 def tfidf(query, document):
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform([query, document])
-    similarity_matrix = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
-    similarity_score = similarity_matrix[0][0] 
-    if similarity_score>0.1:
-        return {"match": 1}
-    else:
-        return {"match": 0}
+    try:
+        vectorizer = TfidfVectorizer()
+        tfidf_matrix = vectorizer.fit_transform([query, document])
+        similarity_matrix = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
+        similarity_score = similarity_matrix[0][0] 
+        if similarity_score>0.1:
+            return {"match": 1}
+        else:
+            return {"match": 0}
+    except Exception as e:
+        return "Error: "+str(e)
 
 if __name__ == "__main__":
     query = "Fastener-Free Idler Pulley"

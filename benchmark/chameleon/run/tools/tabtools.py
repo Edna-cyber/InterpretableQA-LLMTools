@@ -141,7 +141,6 @@ class table_toolkits():
         """
         Loads the needed dataframe(s).
         """     
-        
         def extract_start_end(duration):
             if duration=="None":
                 return None, None
@@ -196,40 +195,43 @@ class table_toolkits():
             column_names = ["'"+x+"'" for x in df.columns.tolist()]
             column_names_str = ', '.join(column_names)
             return df   
-           
-        if target_db=="hupd":
-            if self.prediction and end>=2013: # uncomment for medium and hard tasks
-                return "Error: The end year of the dataframe cannot be later than year 2012 for prediction tasks."
-            df = preprocess_hupd(start, end)
-        elif target_db=="neurips":
-            if end>3585:
-                return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
-            if self.prediction and end>3000: # uncomment for medium and hard tasks
-                return "Error: The end year of the dataframe cannot exceed row 3000 for prediction tasks."
-            df = preprocess_neurips(start, end)
-        else:
-            return "Error: the only possible choices for target_db are hupd (a patent dataset) and neurips (a papers dataset)."
         
-        if isinstance(df, str) and "Error:" in df:
-            return df
-        
-        self.data = df
-        length = len(self.data)
-        examples_lst = []
-        for column in self.data.columns:
-            if column=="decision":
-                examples_lst.append("'"+column+"'"+"(e.g.'ACCEPTED', <class 'str'>)")
+        try:   
+            if target_db=="hupd":
+                if self.prediction and end>=2013: # uncomment for medium and hard tasks
+                    return "Error: The end year of the dataframe cannot be later than year 2012 for prediction tasks."
+                df = preprocess_hupd(start, end)
+            elif target_db=="neurips":
+                if end>3585:
+                    return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
+                if self.prediction and end>3000: # uncomment for medium and hard tasks
+                    return "Error: The end year of the dataframe cannot exceed row 3000 for prediction tasks."
+                df = preprocess_neurips(start, end)
             else:
-                i = 0
-                example_data = self.data.at[i, column]
-                while i<len(self.data) and not isinstance(example_data, list) and pd.isna(example_data):
-                    i += 1
+                return "Error: the only possible choices for target_db are hupd (a patent dataset) and neurips (a papers dataset)."
+            
+            if isinstance(df, str) and "Error:" in df:
+                return df
+            
+            self.data = df
+            length = len(self.data)
+            examples_lst = []
+            for column in self.data.columns:
+                if column=="decision":
+                    examples_lst.append("'"+column+"'"+"(e.g.'ACCEPTED', <class 'str'>)")
+                else:
+                    i = 0
                     example_data = self.data.at[i, column]
-                if isinstance(example_data, str) and len(example_data)>=10:
-                    example_data = str(example_data[:10])+"..."
-                examples_lst.append("'"+column+"'"+"(e.g."+str(example_data)+", {})".format(type(example_data)))
-        examples_lst_str = ', '.join(examples_lst)
-        return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, examples_lst_str)+"\nIt has {} rows.".format(length)
+                    while i<len(self.data) and not isinstance(example_data, list) and pd.isna(example_data):
+                        i += 1
+                        example_data = self.data.at[i, column]
+                    if isinstance(example_data, str) and len(example_data)>=10:
+                        example_data = str(example_data[:10])+"..."
+                    examples_lst.append("'"+column+"'"+"(e.g."+str(example_data)+", {})".format(type(example_data)))
+            examples_lst_str = ', '.join(examples_lst)
+            return "We have successfully loaded the {} dataframe, including the following columns: {}.".format(target_db, examples_lst_str)+"\nIt has {} rows.".format(length)
+        except Exception as e:
+            return "Error: "+str(e)
         
     def pandas_interpreter(self, pandas_code): 
         """
@@ -280,148 +282,150 @@ class table_toolkits():
                 return "Error: "+str(e)
         except Exception as e:
             return "Error: "+str(e)
-        # other exceptions
             
     def textual_classifier(self, database, model_name, section, text, target, one_v_all): 
         """
         Runs a classificaiton prediction task given a textual input.
         """
-        if database=="hupd":
-            hupd_features = ["patent_number", "decision", "title", "abstract", "claims",
-                             "background", "summary", "full_description", "main_cpc_label", "main_ipcr_label", 
-                             "filing_date", "patent_issue_date", "date_published","examiner_id"]
-            if target not in hupd_features:
-                return "Error: {} column does not exist.\nPlease select target from the following features: {}".format(target, hupd_features)
-            if section not in hupd_features:
-                return "Error: {} column does not exist.\nPlease select section from the following features: {}".format(section, hupd_features)
-        if database=="neurips":
-            neurips_features = ["Title","Authors","Location","Abstract","Topic","Oral","Poster Session","Subtopic"]
-            if target not in neurips_features:
-                return "Error: {} column does not exist.\nPlease select target from the following features: {}".format(target, neurips_features)
-            if section not in neurips_features:
-                return "Error: {} column does not exist.\nPlease select section from the following features: {}".format(section, neurips_features)
-        
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        
-        unique_classes = ["not "+one_v_all, one_v_all]
-        CLASSES = 2
-        CLASS_NAMES = [0,1]
-        
-        vocab_size = 10000
-        batch_size=64
-        test_every=500
-        n_filters=25
-        filter_sizes=[[3,4,5], [5,6,7], [7,9,11]]
-        dropout=0.25
-        epoch_n=5
-        lr=2e-5
-        eps=1e-8
-        embed_dim=200
-        max_length=512 #256
-        alpha_smooth_val = 1.0
-
-        # Create model and tokenizer
-        def create_model_and_tokenizer(model_name=model_name, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512): #'bert-base-uncased'
-            # Finetune
-            if model_name == 'bert-base-uncased':
-                config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
-                tokenizer = AutoTokenizer.from_pretrained(model_name)
-                tokenizer.max_length = max_length
-                tokenizer.model_max_length = max_length
-                model = AutoModelForSequenceClassification.from_config(config=config)
-            elif model_name in ['cnn', 'logistic_regression']:
-                if database=="hupd":
-                    tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/hupd_tokenizer.json") # <YOUR_OWN_PATH>
-                if database=="neurips":
-                    tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/neurips_tokenizer.json") # <YOUR_OWN_PATH>
-                pad_idx = tokenizer.encode('[PAD]')[0]
-
-                tokenizer.model_max_length = max_length
-                tokenizer.max_length = max_length
-                tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-                tokenizer.pad_token = '[PAD]'
-                tokenizer.add_special_tokens({'sep_token': '[SEP]'})
-                tokenizer.sep_token = '[SEP]'
-
-                model = None
-                if model_name == 'logistic_regression':
-                    model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=CLASSES, pad_idx=pad_idx)
-                elif model_name == 'cnn':
-                    model = BasicCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=CLASSES, n_filters=n_filters, filter_sizes=filter_sizes[0], dropout=dropout)
-            else:
-                raise NotImplementedError()
-                    
-            print(model)
-            return tokenizer, model, vocab_size
-
-        # Map target2string
-        def map_target_to_label(example):
-            if not isinstance(example[target], str):
-                return {'output': int(one_v_all==str(int(example[target])))}
-            return {'output': int(one_v_all==example[target])}
-        
-        def create_data(tokenizer, text=text):
-            zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
-            if text is None:
-                encoded_text = zero_encoding
-            else:
-                encoded_text = tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
-            input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0)
-            attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0)
-            return {'input_ids': input_ids, 'attention_mask': attention_mask}
-
-        # Convert ids2string
-        def convert_ids_to_string(tokenizer, input):
-            return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
-
-        # Evaluation procedure (for the neural models)
-        def test(processed_text, model, criterion, device): 
-            try:
-                with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_{}_model.pkl'.format(database, model_name, section, target), 'rb') as file:
-                    model = pickle.load(file)
-            except:
-                return "Error: no pretrained model is available for the specified task. Please use other tools to solve the problem."
-            model.eval()
+        try:
+            if database=="hupd":
+                hupd_features = ["patent_number", "decision", "title", "abstract", "claims",
+                                "background", "summary", "full_description", "main_cpc_label", "main_ipcr_label", 
+                                "filing_date", "patent_issue_date", "date_published","examiner_id"]
+                if target not in hupd_features:
+                    return "Error: {} column does not exist.\nPlease select target from the following features: {}".format(target, hupd_features)
+                if section not in hupd_features:
+                    return "Error: {} column does not exist.\nPlease select section from the following features: {}".format(section, hupd_features)
+            if database=="neurips":
+                neurips_features = ["Title","Authors","Location","Abstract","Topic","Oral","Poster Session","Subtopic"]
+                if target not in neurips_features:
+                    return "Error: {} column does not exist.\nPlease select target from the following features: {}".format(target, neurips_features)
+                if section not in neurips_features:
+                    return "Error: {} column does not exist.\nPlease select section from the following features: {}".format(section, neurips_features)
             
-            inputs = processed_text['input_ids']
-            inputs = inputs.to(device)
-            with torch.no_grad():
-                if model_name in ['cnn', 'logistic_regression']:
-                    outputs = model(input_ids=inputs)
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            
+            unique_classes = ["not "+one_v_all, one_v_all]
+            CLASSES = 2
+            CLASS_NAMES = [0,1]
+            
+            vocab_size = 10000
+            batch_size=64
+            test_every=500
+            n_filters=25
+            filter_sizes=[[3,4,5], [5,6,7], [7,9,11]]
+            dropout=0.25
+            epoch_n=5
+            lr=2e-5
+            eps=1e-8
+            embed_dim=200
+            max_length=512 #256
+            alpha_smooth_val = 1.0
+
+            # Create model and tokenizer
+            def create_model_and_tokenizer(model_name=model_name, vocab_size=10000, embed_dim=200, n_classes=CLASSES, max_length=512): #'bert-base-uncased'
+                # Finetune
+                if model_name == 'bert-base-uncased':
+                    config = AutoConfig.from_pretrained(model_name, num_labels=CLASSES, output_hidden_states=False)
+                    tokenizer = AutoTokenizer.from_pretrained(model_name)
+                    tokenizer.max_length = max_length
+                    tokenizer.model_max_length = max_length
+                    model = AutoModelForSequenceClassification.from_config(config=config)
+                elif model_name in ['cnn', 'logistic_regression']:
+                    if database=="hupd":
+                        tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/hupd_tokenizer.json") # <YOUR_OWN_PATH>
+                    if database=="neurips":
+                        tokenizer = PreTrainedTokenizerFast(tokenizer_file="/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/neurips_tokenizer.json") # <YOUR_OWN_PATH>
+                    pad_idx = tokenizer.encode('[PAD]')[0]
+
+                    tokenizer.model_max_length = max_length
+                    tokenizer.max_length = max_length
+                    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+                    tokenizer.pad_token = '[PAD]'
+                    tokenizer.add_special_tokens({'sep_token': '[SEP]'})
+                    tokenizer.sep_token = '[SEP]'
+
+                    model = None
+                    if model_name == 'logistic_regression':
+                        model = LogisticRegression(vocab_size=vocab_size, embed_dim=embed_dim, n_classes=CLASSES, pad_idx=pad_idx)
+                    elif model_name == 'cnn':
+                        model = BasicCNNModel(vocab_size=vocab_size, embed_dim=embed_dim, pad_idx=pad_idx, n_classes=CLASSES, n_filters=n_filters, filter_sizes=filter_sizes[0], dropout=dropout)
                 else:
-                    outputs = model(input_ids=inputs).logits
-                prediction = torch.argmax(outputs, dim=1)[0].item()
-            return prediction
+                    raise NotImplementedError()
+                        
+                print(model)
+                return tokenizer, model, vocab_size
+
+            # Map target2string
+            def map_target_to_label(example):
+                if not isinstance(example[target], str):
+                    return {'output': int(one_v_all==str(int(example[target])))}
+                return {'output': int(one_v_all==example[target])}
             
-        # Create a model and an appropriate tokenizer
-        tokenizer, model, vocab_size = create_model_and_tokenizer(
-            model_name = model_name, 
-            vocab_size = vocab_size,
-            embed_dim = embed_dim,
-            n_classes = CLASSES,
-            max_length=max_length
+            def create_data(tokenizer, text=text):
+                zero_encoding = tokenizer('', truncation=True, padding='max_length', max_length=max_length)
+                if text is None:
+                    encoded_text = zero_encoding
+                else:
+                    encoded_text = tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
+                input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0)
+                attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0)
+                return {'input_ids': input_ids, 'attention_mask': attention_mask}
+
+            # Convert ids2string
+            def convert_ids_to_string(tokenizer, input):
+                return ' '.join(tokenizer.convert_ids_to_tokens(input)) # tokenizer.decode(input)
+
+            # Evaluation procedure (for the neural models)
+            def test(processed_text, model, criterion, device): 
+                try:
+                    with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_{}_model.pkl'.format(database, model_name, section, target), 'rb') as file:
+                        model = pickle.load(file)
+                except:
+                    return "Error: no pretrained model is available for the specified task. Please use other tools to solve the problem."
+                model.eval()
+                
+                inputs = processed_text['input_ids']
+                inputs = inputs.to(device)
+                with torch.no_grad():
+                    if model_name in ['cnn', 'logistic_regression']:
+                        outputs = model(input_ids=inputs)
+                    else:
+                        outputs = model(input_ids=inputs).logits
+                    prediction = torch.argmax(outputs, dim=1)[0].item()
+                return prediction
+                
+            # Create a model and an appropriate tokenizer
+            tokenizer, model, vocab_size = create_model_and_tokenizer(
+                model_name = model_name, 
+                vocab_size = vocab_size,
+                embed_dim = embed_dim,
+                n_classes = CLASSES,
+                max_length=max_length
+                )
+
+            # GPU specifications 
+            model.to(device)
+
+            processed_text = create_data(
+                tokenizer = tokenizer, 
+                text = text
             )
-
-        # GPU specifications 
-        model.to(device)
-
-        processed_text = create_data(
-            tokenizer = tokenizer, 
-            text = text
-        )
-            
-        # Optimizer
-        if model_name in ['logistic_regression', 'cnn']:
-            optim = torch.optim.Adam(params=model.parameters())
-        else:
-            optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
-        # Loss function 
-        criterion = torch.nn.CrossEntropyLoss() 
-        # Test
-        prediction = test(processed_text, model, criterion, device)
-        if isinstance(prediction, str) and prediction.startswith("Error:"):
-            return prediction
-        return {"prediction": unique_classes[prediction]} 
+                
+            # Optimizer
+            if model_name in ['logistic_regression', 'cnn']:
+                optim = torch.optim.Adam(params=model.parameters())
+            else:
+                optim = torch.optim.AdamW(params=model.parameters(), lr=lr, eps=eps)
+            # Loss function 
+            criterion = torch.nn.CrossEntropyLoss() 
+            # Test
+            prediction = test(processed_text, model, criterion, device)
+            if isinstance(prediction, str) and prediction.startswith("Error:"):
+                return prediction
+            return {"prediction": unique_classes[prediction]} 
+        except Exception as e:
+            return "Error: "+str(e)
 
 if __name__ == "__main__":
     db = table_toolkits()
@@ -449,5 +453,8 @@ print(df[df['title']=='FUEL CARTRIDGE AND FUEL CELL USING THE SAME']["days_elaps
 max_days_elapsed = df.loc[df['days_elapsed'].idxmax()]['title']
 """
     print(db.pandas_interpreter(code))
+
+
+    
 
     

@@ -173,7 +173,7 @@ tools_gpt = [
                 "properties": {
                     "variable_values": {
                         "type": "string",
-                        "description": "A string that evaluates to a dictionary of variables and their corresponding values.",
+                        "description": "A string that evaluates to a dictionary of variables and their corresponding values, which is the same as the output from the previous tool call",
                     },
                     "answer_variable": {
                         "type": "string",
@@ -391,7 +391,7 @@ tools_gemini = [
           "properties": {
             "variable_values": {
               "type": "string",
-              "description": "A string that evaluates to a dictionary of variables and their corresponding values."
+              "description": "A string that evaluates to a dictionary of variables and their corresponding values, which is the same as the output from the previous tool call"
             },
             "answer_variable": {
               "type": "string",
