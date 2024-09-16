@@ -19,6 +19,8 @@ def execute(python_code):
                     variable_values[var_name] = var_value[:10]
                 else:
                     variable_values[var_name] = var_value
+        if variable_values=={}:
+            return "Error: the return value is empty. Ensure that the solution is assigned to a variable in the code."
         return variable_values
     except Exception as e:
         if "'df'" in str(e):

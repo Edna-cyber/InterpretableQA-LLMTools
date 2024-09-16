@@ -223,8 +223,8 @@ class table_toolkits():
                     i = 0
                     example_data = self.data.at[i, column]
                     while i<len(self.data) and not isinstance(example_data, list) and pd.isna(example_data):
-                        i += 1
                         example_data = self.data.at[i, column]
+                        i += 1
                     if isinstance(example_data, str) and len(example_data)>=10:
                         example_data = str(example_data[:10])+"..."
                     examples_lst.append("'"+column+"'"+"(e.g."+str(example_data)+", {})".format(type(example_data)))
@@ -270,6 +270,8 @@ class table_toolkits():
                         variable_values[var_name] = var_value[:10]
                     else:
                         variable_values[var_name] = var_value
+            if variable_values=={}:
+                return "Error: the return value is empty. Ensure that the solution is assigned to a variable in the code."
             return variable_values
         except KeyError as e:
             column_names = ["'"+x+"'" for x in global_var["df"].columns.tolist()]
@@ -429,13 +431,13 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    # db.db_loader('hupd', '2016-2016')
+#     db.db_loader('hupd', '2016-2016')
 #     pandas_code = """
 # import pandas as pd
 # df['filing_month'] = df['filing_date'].apply(lambda x: x.month)
 # month = df['filing_month'].mode()[0]
 # """
-    # print(db.pandas_interpreter(pandas_code))
+#     print(db.pandas_interpreter(pandas_code))
 
     # print(db.textual_classifier('hupd', 'logistic_regression', 'abstract', abstract, 'decision', 'ACCEPTED'))
     # print(db.textual_classifier('hupd', 'cnn', 'abstract', abstract, 'decision', 'ACCEPTED'))
@@ -443,18 +445,4 @@ if __name__ == "__main__":
     # print(db.textual_classifier('neurips', 'logistic_regression', 'Abstract', abstract, 'Oral', 'oral'))
     # print(db.textual_classifier('neurips', 'cnn', 'Abstract', abstract, 'Oral', 'oral'))
     # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Abstract', abstract, 'Oral', 'oral'))
-    
-    db.db_loader('hupd', '2007-2015')
-    code = """
-print(df[df['title']=='FUEL CARTRIDGE AND FUEL CELL USING THE SAME']["filing_date"])
-print(df[df['title']=='FUEL CARTRIDGE AND FUEL CELL USING THE SAME']["date_published"])
-df['days_elapsed'] = (df['date_published'] - df['filing_date']).dt.days
-print(df[df['title']=='FUEL CARTRIDGE AND FUEL CELL USING THE SAME']["days_elapsed"])
-max_days_elapsed = df.loc[df['days_elapsed'].idxmax()]['title']
-"""
-    print(db.pandas_interpreter(code))
 
-
-    
-
-    

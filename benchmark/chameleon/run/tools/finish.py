@@ -12,9 +12,15 @@ def finish(variable_values, answer_variable, answer_type):
             return "Error: The final answer should be of type {} not {}".format(answer_type, type(variable_values[answer_variable]))
         return variable_values[answer_variable]
     except Exception as e:
+        if "malformed node or string" in str(e):
+            return "Error: "+str(e)+" variable_values needs to be a string representation of a dictionary"
         return "Error: "+str(e)
         
 
 if __name__ == "__main__":
-    arguments = {"variable_values":"{\'approval_rates\':   cpc_category  decision\\n0          H01       0.0, \'top_categories\': [\'H01\']}","answer_variable":"top_categories","answer_type":"list"}
+    arguments = {
+    "variable_values": "{'approval_rates': 'cpc_category  decision\\n0          H01       0.0', 'top_categories': ['H01']}",
+    "answer_variable": "top_categories",
+    "answer_type": "list"
+}
     print(finish(**arguments))
