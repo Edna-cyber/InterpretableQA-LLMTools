@@ -1,4 +1,5 @@
 import ast
+from sklearn.metrics import f1_score
 
 def finish(variable_values, answer_variable, answer_type):
     try:
@@ -24,3 +25,5 @@ if __name__ == "__main__":
     "answer_type": "list"
 }
     print(finish(**arguments))
+    
+    

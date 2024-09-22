@@ -3,6 +3,7 @@ import re
 import ast
 import sys
 import math
+import statistics
 import json
 import jsonlines
 import argparse
@@ -33,6 +34,7 @@ from api.gemini import call_gemini_pro
 from api.claude import call_claude3
 
 from tools.tools_set import tools_gpt, tools_gemini
+from cost_functions import calc_cost1, calc_cost2, calc_cost3, calc_cost4
 
 current_datetime = datetime.datetime.now()
 datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
@@ -54,74 +56,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
 
-def calc_cost1(function_type, function_arguments):
-    if function_type=="Calculate":
-        return 2
-    if function_type=="LoadDB":
-        return 3   
-    if function_type=="TFIDF":
-        return 5
-    if function_type=="PandasInterpreter" or function_type=="PythonInterpreter":
-        lines = function_arguments["pandas_code"].splitlines()
-        num_lines = len(lines) 
-        num_packages = 0
-        for line in lines:
-            if "from" and "import" in line:
-                num_packages += 1
-            elif "import" in line:
-                num_packages += len(line.split(","))
-        return math.sqrt(num_lines)*max(num_packages,1)
-    if function_type=="Forecaster":
-        if function_arguments["model_name"]=="linear_regression":
-            return 6
-        elif function_arguments["model_name"]=="ARIMA":
-            return 8
-    if function_type=="TextualClassifier":
-        if function_arguments["model_name"]=="logistic_regression":
-            return 7
-        elif function_arguments["model_name"]=="cnn":
-            return 15
-        elif function_arguments["model_name"]=="bert-base-uncased":
-            return 20
-    if function_type=="LLMInferencer":
-        return 30
-    if function_type=="Finish":
-        return 0
-
-def calc_cost2(function_type, function_arguments):
-    if function_type=="Calculate":
-        return 48
-    if function_type=="LoadDB":
-        return 47
-    if function_type=="TFIDF":
-        return 45
-    if function_type=="PandasInterpreter" or function_type=="PythonInterpreter":
-        lines = function_arguments["pandas_code"].splitlines()
-        num_lines = len(lines) 
-        num_packages = 0
-        for line in lines:
-            if "from" and "import" in line:
-                num_packages += 1
-            elif "import" in line:
-                num_packages += len(line.split(","))
-        return 50-math.sqrt(num_lines)*max(num_packages,1)
-    if function_type=="Forecaster":
-        if function_arguments["model_name"]=="linear_regression":
-            return 44
-        elif function_arguments["model_name"]=="ARIMA":
-            return 42
-    if function_type=="TextualClassifier":
-        if function_arguments["model_name"]=="logistic_regression":
-            return 43
-        elif function_arguments["model_name"]=="cnn":
-            return 35
-        elif function_arguments["model_name"]=="bert-base-uncased":
-            return 30
-    if function_type=="LLMInferencer":
-        return 20
-    if function_type=="Finish":
-        return 0
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_root', type=str, default='../results')
@@ -141,7 +75,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    random.seed(args.seed)
+    random.seed(1111)
 
     # Build the solver
     solver = solver(args)
@@ -155,11 +89,16 @@ if __name__ == "__main__":
     cache = []
     if args.formula=="formula1":
         cost_function = calc_cost1
-    if args.formula=="formula2":
+    elif args.formula=="formula2":
         cost_function = calc_cost2
+    elif args.formula=="formula3":
+        cost_function = calc_cost3
+    elif args.formula=="formula4":
+        cost_function = calc_cost4
 
     total_count = 0
-    count, performance, errors, cost, cost_original = defaultdict(int), {}, defaultdict(int), defaultdict(int), {}
+    count, valid_performance, errors, cost, cost_original = defaultdict(int), {}, defaultdict(int), defaultdict(int), {}
+    tool_count, avg_tool_cost = defaultdict(int), defaultdict(int)
     pids = solver.pids
     
     for pid in tqdm(pids): # pids
@@ -176,9 +115,18 @@ if __name__ == "__main__":
         count[question_type] += 1
 
         if args.prompt=="clean":
-            messages = prompt_policy.messages.copy() # Change with experiment
+            messages = prompt_policy.messages.copy() 
+        elif args.prompt=="subset":
+            messages = prompt_policy.messages_subset.copy()
         elif args.prompt=="interp":
-            messages = prompt_policy.messages_formula_1.copy() ###
+            if args.formula=="formula1":
+                messages = prompt_policy.messages_formula_1.copy()
+            elif args.formula=="formula2":
+                messages = prompt_policy.messages_formula_2.copy()
+            elif args.formula=="formula3":
+                messages = prompt_policy.messages_formula_3.copy()
+            elif args.formula=="formula4":
+                messages = prompt_policy.messages_formula_4.copy()
         
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
@@ -222,8 +170,11 @@ if __name__ == "__main__":
                     function = ACTION_LIST[function_type]
                     function_arguments = json.loads(tool_call.function.arguments)
                     function_response = function(**function_arguments)
+                    function_cost = cost_function(function_type, function_arguments)
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
-                        per_question_cost += cost_function(function_type, function_arguments)
+                        tool_count[function_type] += 1
+                        avg_tool_cost[function_type] += function_cost
+                        per_question_cost += function_cost
                     
                     tool_call_response = {
                         "tool_call_id": tool_call.id,
@@ -261,13 +212,13 @@ if __name__ == "__main__":
         
         gt_answer = example["answer"]
         
-        if question_type not in performance:
-            if question_type in [7,8,9,10]:
-                performance[question_type] = [[],[]]
+        if question_type not in valid_performance:
+            if question_type in [8,9,10,11,12]:
+                valid_performance[question_type] = [[],[]]
             else:
-                performance[question_type] = 0
+                valid_performance[question_type] = 0
         if question_type not in cost_original:
-            cost_original[question_type] = {"right":[], "wrong":[]}
+            cost_original[question_type] = {"valid":[], "invalid":[], "correct":[], "incorrect":[]}
         
         def is_json_serializable(obj):
             try:
@@ -277,42 +228,72 @@ if __name__ == "__main__":
                 return False
         if llm_answer is None:
             errors[question_type] += 1
-            cost_original[question_type]["wrong"].append(per_question_cost)
+            cost_original[question_type]["invalid"].append(per_question_cost)
         elif not is_json_serializable(llm_answer):
             llm_answer = None
             errors[question_type] += 1
-            cost_original[question_type]["wrong"].append(per_question_cost)
+            cost_original[question_type]["invalid"].append(per_question_cost)
         else:
-            # Calculate performance metric
+            # Calculate valid_performance metric
             if question_type in [1,3,6]: # threshold correct / incorrect
                 try:
-                    performance[question_type] += int(abs(llm_answer-gt_answer)<=0.005*gt_answer)
-                    cost_original[question_type]["right"].append(per_question_cost)
+                    metric = int(abs(llm_answer-gt_answer)<=0.005*gt_answer)
+                    valid_performance[question_type] += metric
+                    cost_original[question_type]["valid"].append(per_question_cost)
+                    if metric==1:
+                        cost_original[question_type]["correct"].append(per_question_cost)
+                    else:
+                        cost_original[question_type]["incorrect"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost_original[question_type]["wrong"].append(per_question_cost)
+                    cost_original[question_type]["invalid"].append(per_question_cost)
             elif question_type in [2,5]: # set intersection
                 try:
-                    performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
-                    cost_original[question_type]["right"].append(per_question_cost)
+                    valid_performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
+                    cost_original[question_type]["valid"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost_original[question_type]["wrong"].append(per_question_cost)
+                    cost_original[question_type]["invalid"].append(per_question_cost)
             elif question_type in [4]: # within list
                 try:
-                    performance[question_type] += int(llm_answer in gt_answer)
-                    cost_original[question_type]["right"].append(per_question_cost)
+                    metric = int(llm_answer in gt_answer)
+                    valid_performance[question_type] += metric
+                    cost_original[question_type]["valid"].append(per_question_cost)
+                    if metric==1:
+                        cost_original[question_type]["correct"].append(per_question_cost)
+                    else:
+                        cost_original[question_type]["incorrect"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost_original[question_type]["wrong"].append(per_question_cost)
-            elif question_type in [7,8,9,10]: # R2, F1
+                    cost_original[question_type]["invalid"].append(per_question_cost)
+            elif question_type in [7]: # average R2
+                try: 
+                    valid_performance[question_type] += r2_score(gt_answer,llm_answer)
+                    cost_original[question_type]["valid"].append(per_question_cost)
+                except:
+                    errors[question_type] += 1
+                    cost_original[question_type]["invalid"].append(per_question_cost)
+            elif question_type in [8,9,10,11,12]: # F1
                 try:
-                    performance[question_type][0].append(gt_answer)
-                    performance[question_type][1].append(llm_answer)
-                    cost_original[question_type]["right"].append(per_question_cost)
+                    valid_performance[question_type][0].append(gt_answer)
+                    valid_performance[question_type][1].append(llm_answer)
+                    cost_original[question_type]["valid"].append(per_question_cost)
                 except:
                     errors[question_type] += 1
-                    cost_original[question_type]["wrong"].append(per_question_cost)
+                    cost_original[question_type]["invalid"].append(per_question_cost)
+            else: # Exact match
+                try:
+                    metric = int(llm_answer==gt_answer)
+                    valid_performance[question_type] += metric
+                    cost_original[question_type]["valid"].append(per_question_cost)
+                    if metric==1:
+                        cost_original[question_type]["correct"].append(per_question_cost)
+                    else:
+                        cost_original[question_type]["incorrect"].append(per_question_cost)
+                except:
+                    errors[question_type] += 1
+                    cost_original[question_type]["invalid"].append(per_question_cost)
+                
         
         logs.append({"Question Type": question_type})
         logs.append({"Cost": per_question_cost})
@@ -330,39 +311,4 @@ if __name__ == "__main__":
         for row in cache:
             writer.write(row)
 
-    for key in performance.keys():
-        if count[key]==errors[key]:
-            performance[key] = 0
-            continue
-        if key in [1,2,3,4,5,6]: 
-            performance[key] = performance[key] / (count[key]-errors[key])
-        elif key in [7]: 
-            performance[key] = r2_score(performance[key][0], performance[key][1])
-        elif key in [8,9,10]:
-            performance[key] = f1_score(performance[key][0], performance[key][1])
-        
-    for key in errors.keys():
-        errors[key] = errors[key] / count[key]    
-    performance = dict(sorted(performance.items())) # between 0 and 1
-    errors = dict(sorted(errors.items()))
-    cost_original = dict(sorted(cost_original.items()))
-    for key in cost_original.keys():
-        cost[key] = {"right": 0, "wrong": 0}
-        cost[key]["right"] = sum(cost_original[key]["right"]) / (count[key]-count[key]*errors[key]) if errors[key]!=1 else 0
-        cost[key]["wrong"] = sum(cost_original[key]["wrong"]) / (count[key]*errors[key]) if errors[key]!=0 else 0
-    cost = dict(sorted(cost.items()))
-    count = dict(sorted(count.items()))
-    agg_cost = {"right": 0, "wrong": 0}
-    try:
-        agg_cost["right"] = sum([sum(cost_original[key]["right"]) for key in performance.keys()]) / sum([count[key]-count[key]*errors[key] for key in performance.keys()])
-    except:
-        agg_cost["right"] = 0
-    try:
-        agg_cost["wrong"] = sum([sum(cost_original[key]["wrong"]) for key in performance.keys()]) / sum([count[key]*errors[key] for key in performance.keys()])
-    except:
-        agg_cost["wrong"] = 0
     
-    # save the result
-    result = {'performance': performance, 'error': errors, 'cost': cost, 'agg_cost': agg_cost, 'cost_original': cost_original, 'count': count, 'total_count': total_count, 'args': vars(args)}
-    with open(result_file, 'w') as f:
-        json.dump(result, f, indent=4, separators=(',', ': '))

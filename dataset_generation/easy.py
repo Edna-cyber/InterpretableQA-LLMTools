@@ -7,6 +7,7 @@ import random
 import tqdm
 import jsonlines
 import ast
+import math
 
 corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
 
@@ -34,7 +35,7 @@ def average_pendency(start_year, end_year):
     df['duration'] = (df['patent_issue_date'] - df['filing_date']).dt.days
     average_duration = df['duration'].mean()
     
-    return average_duration
+    return math.floor(average_duration)
 
 # HUPD Template 2: What were the top {#} {IPCR/CPC categories} with the highest number of accepted patents in {year}? Return them as a list of {IPCR/CPC categories}. 
 def top_accepted_category(category, year):
@@ -74,10 +75,10 @@ def top_accepted_category(category, year):
 def compare_applications_year(year1, year2):
     df1 = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year1))))
     len_year1 = len(df1)
-    del df1
+    # del df1
     df2 = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year2))))
     len_year2 = len(df2)
-    del df2
+    # del df2
     return len_year1 / len_year2
 
 # HUPD Template 4: What is the title of the patent filed between {start_year} and {end_year} that took the longest number of days to be published?
@@ -100,7 +101,7 @@ def longest_time(start_year, end_year):
         i += 1
     return sorted_df["title"].tolist()[:i]
 
-# NeurIPS Template 1: Who were the top {#} authors with the most publications {containing 'Large Language Models' in the title} at NeurIPS? 
+# NeurIPS Template 1: Who were the top {#} authors with the most publications at NeurIPS? 
 def top_authors(row_num, llm_keyword):
     df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
     df = df.iloc[:row_num+1]
@@ -150,15 +151,15 @@ question_id = 1
 question_type_count = {1:100, 2:100, 3:100, 4:100, 5:100, 6:100}
 question_types = [1,2,3,4,5,6]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/easy.jsonl', mode='w') as writer:
-    while question_id<=60:
+    while question_id<=600:
         question_type = random.choice(question_types) 
         if question_type == 1:
-            # What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
+            # What was the average time between the filing and issuance of patents from {start_year} to {end_year}? Return an integer representing the number of days by truncating the decimal part.
             start_year = random.randint(2004,2018)
             end_year = random.randint(start_year,2018)
-            question_phrasings = ["What was the average time between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
-                                "What was the average duration between the filing and issuance of patents from {} to {}? Return a float representing the number of days.", 
-                                "What was the typical time span between the submission and approval of patents from {} to {}? Return a float representing the number of days."]
+            question_phrasings = ["What was the average time between the filing and issuance of patents from {} to {}? Return an integer representing the number of days by truncating the decimal part.", 
+                                "What was the average duration between the filing and issuance of patents from {} to {}? Return an integer representing the number of days by truncating the decimal part.", 
+                                "What was the typical time span between the submission and approval of patents from {} to {}? Return an integer representing the number of days by truncating the decimal part."]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
             answer = average_pendency(start_year, end_year)
             # use None to signify not adding to the questions / answers
@@ -206,10 +207,10 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(3)
                 question_id += 1
         elif question_type == 4:
-            # What is the title of the patent filed between {start_year} and {end_year} that took the longest number of days to be published?
+            # What is the title of the patent filed between {start_year} and {end_year} that took the longest number of days between the filing date and the publication date?
             start_year = random.randint(2004,2017) # not include 2018, as most applications are still pending
             end_year = random.randint(start_year,2017)
-            question_phrasings = ["What is the title of the patent filed between {} and {} that took the longest number of days to be published?", "What is the title of the patent filed between {} and {} that had the longest publication delay in terms of number of days?", "What is the title of the patent filed between {} and {} with the longest number of days elapsed between filing and publication?"]
+            question_phrasings = ["What is the title of the patent filed between {} and {} that took the longest number of days between the filing date and the publication date?", "What is the title of the patent filed between {} and {} that had the longest publication delay in terms of number of days between the filing date and the publication date?", "What is the title of the patent filed between {} and {} with the longest number of days elapsed between the filing date and the publication date?"]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(start_year, end_year)
             answer = longest_time(start_year, end_year)
             if answer:
@@ -219,7 +220,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(4)
                 question_id += 1
         elif question_type == 5:
-            # Who were the top {#} authors with the most publications at NeurIPS? 
+            # Who were the top {#} authors with the most publications {where the titles contain 'Large Language Models'} at NeurIPS? 
             all_bool = random.choices([True,False], weights=[0.1,0.9], k=1)[0]
             if all_bool:
                 row_num = 3585
@@ -228,13 +229,13 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             llm_keyword = random.choice([True, False])
             new_num, answer = top_authors(row_num, llm_keyword)
             if new_num==1:
-                question_phrasings = ["Who was the top {} author with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author.", "Who was the top {} author with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author.", "Which {} author had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list with a single author."]
+                continue
             else:
                 question_phrasings = ["Who were the top {} authors with the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Who were the top {} authors with the highest number of publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors.", "Which {} authors had the most publications at NeurIPS? In the authors column of the database, each entry is a list, not a single string. Return as a list of authors."]
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(new_num)
             if llm_keyword:
                 insert_pos = question.find("publications")+len("publications")
-                question = question[:insert_pos]+" containing 'Large Language Models' in the title"+question[insert_pos:]
+                question = question[:insert_pos]+" where the titles contain 'Large Language Models'"+question[insert_pos:]
             if not all_bool:
                 insert_pos = question.find("at NeurIPS")
                 question = question[:insert_pos]+"amongst the first {} papers ".format(row_num)+question[insert_pos:]

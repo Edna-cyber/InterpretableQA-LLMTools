@@ -156,12 +156,8 @@ from playwright.sync_api import sync_playwright
 # df.at[ind,'Poster Session'] = float('4')
 # df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Newest_Papers.csv', index=False)
 
-# Topic / Subtopic
+# Topic / Subtopic, oral / not oral
 # df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv')
 # df[['Topic', 'Subtopic']] = df['Topic'].str.split('/', expand=True)
+# df['Oral'] = df['Oral'].replace({np.bool_(True): "oral", np.bool_(False): "not oral"})
 # df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Newest_Papers.csv', index=False)
-
-# oral / not oral
-df = pd.read_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Papers.csv')
-df['Oral'] = df['Oral'].replace({np.bool_(True): "oral", np.bool_(False): "not oral"})
-df.to_csv('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/neurips/NeurIPS_2023_Newest_Papers.csv', index=False)

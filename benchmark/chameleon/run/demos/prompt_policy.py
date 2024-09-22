@@ -3045,3 +3045,156 @@ Best Modules: LLMInferencer(), Finish({'ans': 'Advanced Techniques for 3D Scene 
         'content': "A common theme that links these papers is 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'."
     }
 ]
+
+
+
+
+messages_subset = [
+    {
+        'role': 'system',
+        'content': """You need to act as a policy model, that given a question and a set of tools, determines the optimal sequence of tools that can be executed sequentially to answer the question as accurately as possible. Below are some examples that map the problem to the tools."""
+    },
+    {
+        'role': 'user',
+        'content': 'What is the 20th Fibonacci number?'
+    },
+    {
+        'role': 'assistant',
+        'content': "", 
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'PythonInterpreter',
+                    'arguments': json.dumps({
+                        "python_code": """
+def solution(n):
+    if n <= 0:
+        return 0
+    elif n == 1:
+        return 1
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+ans = solution(19)
+"""
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'PythonInterpreter',
+        'content': "{'ans': 4181}"
+    },
+    {
+        'role': 'assistant',
+        'content': "",
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": "{'ans': 4181}", "answer_variable": "ans", "answer_type": "integer"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "4181"
+    },
+    {
+        'role': 'assistant',
+        'content': 'The 20th Fibonacci number is 4181.'
+    },
+    {
+        'role': 'user',
+        'content': 'Which month had the highest number of patent applications in 2016?'
+    },
+    {
+        'role': 'assistant',
+        'content': "",
+        'tool_calls': [
+            {
+                'id': 'call_0',
+                'function': {
+                    'name': 'LoadDB',
+                    'arguments': json.dumps({
+                        "target_db": "hupd", "duration": "2016-2016"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_0',
+        'role': 'tool',
+        'name': 'LoadDB',
+        'content': "We have successfully loaded the hupd dataframe, including the following columns: 'patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'. It has the following structure: patent_number decision  ... icpr_category cpc_category 0 <NA>  PENDING  ... F16  F16 1 <NA>  PENDING  ... C12  C12 2 <NA>  PENDING  ... H04  H04 3 <NA>  PENDING  ... G06  G06 4 <NA>  PENDING  ... H02  H02"
+    },
+    {
+        'role': 'assistant',
+        'content': "",
+        'tool_calls': [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'PandasInterpreter',
+                    'arguments': json.dumps({
+                        "pandas_code": """
+import pandas as pd
+df['filing_month'] = df['filing_date'].apply(lambda x: x.month)
+month = df['filing_month'].mode()[0]
+"""
+
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_1',
+        'role': 'tool',
+        'name': 'PandasInterpreter',
+        'content': "{'month':12}"
+    },
+    {
+        'role': 'assistant',
+        'content': "",
+        'tool_calls': [
+            {
+                'id': 'call_2',
+                'function': {
+                    'name': 'Finish',
+                    'arguments': json.dumps({
+                        "variable_values": "{'month':12}", "answer_variable": "month", "answer_type": "integer"
+                    })
+                },
+                'type': 'function'
+            }
+        ]
+    },
+    {
+        'tool_call_id': 'call_2',
+        'role': 'tool',
+        'name': 'Finish',
+        'content': "12"
+    },
+    {
+        'role': 'assistant',
+        'content': 'The month with the highest number of patent applications in 2016 was December.'
+    }
+]
