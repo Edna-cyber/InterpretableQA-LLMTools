@@ -28,11 +28,11 @@ processed_text = {'input_ids': input_ids, 'attention_mask': attention_mask}
 
 # DataLoader setup for training
 def prepare_data(df, section, tokenizer, target, batch_size=64):
-    zero_encoding = tokenize_text('', tokenizer, max_length)  # Now it correctly references the function
+    zero_encoding = tokenize_text('', tokenizer, max_length)
     df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
     df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
     df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  # Simplified binary mapping
+    df['output'] = df[target].apply(lambda x: int(x == "2")) 
     dataset = df[['input_ids', 'attention_mask', 'output']].apply(
         lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
     )
@@ -59,6 +59,6 @@ def predict(model, processed_text, unique_classes):
     with torch.no_grad():
         outputs = model(input_ids=inputs).logits
         prediction = torch.argmax(outputs, dim=1).item()
-    return {"prediction": unique_classes[prediction]}
+    return unique_classes[prediction]
 
 ans = predict(model, processed_text, unique_classes)

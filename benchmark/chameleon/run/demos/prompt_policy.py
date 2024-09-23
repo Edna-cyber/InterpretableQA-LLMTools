@@ -700,7 +700,7 @@ def prepare_data(df, section, tokenizer, target, batch_size=64):
     df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
     df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
     df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  # Simplified binary mapping
+    df['output'] = df[target].apply(lambda x: int(x == "2"))  
     dataset = df[['input_ids', 'attention_mask', 'output']].apply(
         lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
     )
@@ -727,12 +727,9 @@ def predict(model, processed_text, unique_classes):
     with torch.no_grad():
         outputs = model(input_ids=inputs).logits
         prediction = torch.argmax(outputs, dim=1).item()
-    return {"prediction": unique_classes[prediction]}
+    return unique_classes[prediction]
 
-data_loader = prepare_data(df, section, tokenizer, target)
-train_model(model, data_loader)
-prediction = predict(model, processed_text, unique_classes)
-return prediction'''), Finish({'predictions': '2'}, predictions, string)
+ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string)
 Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 
 Cost Analysis:
@@ -746,9 +743,9 @@ Finish: 0
 Total: 20 + 0 = 20
 Modules3 Cost:
 LoadDB: 3
-PandasInterpreter: 8.19 (67 lines) * 4 (4 packages) = 32.76
+PandasInterpreter: 8 (64 lines) * 4 (4 packages) = 32
 Finish: 0
-Total: 3 + 32.76 + 0 = 35.76
+Total: 3 + 32 + 0 = 35
 Modules4 Cost:
 TextualClassifier (cnn): 15
 Finish: 0
@@ -1362,7 +1359,7 @@ def prepare_data(df, section, tokenizer, target, batch_size=64):
     df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
     df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
     df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  # Simplified binary mapping
+    df['output'] = df[target].apply(lambda x: int(x == "2"))  
     dataset = df[['input_ids', 'attention_mask', 'output']].apply(
         lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
     )
@@ -1389,12 +1386,9 @@ def predict(model, processed_text, unique_classes):
     with torch.no_grad():
         outputs = model(input_ids=inputs).logits
         prediction = torch.argmax(outputs, dim=1).item()
-    return {"prediction": unique_classes[prediction]}
+    return unique_classes[prediction]
 
-data_loader = prepare_data(df, section, tokenizer, target)
-train_model(model, data_loader)
-prediction = predict(model, processed_text, unique_classes)
-return prediction'''), Finish({'predictions': '2'}, predictions, string)
+ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string)
 Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 
 Cost Analysis:
@@ -1408,9 +1402,9 @@ Finish: 0
 Total: 30 + 0 = 30
 Modules3 Cost:
 LoadDB: 47
-PandasInterpreter: 50 - 8.19 (67 lines) * 4 (4 packages) = 17.24
+PandasInterpreter: 50 - 8 (64 lines) * 4 (4 packages) = 18
 Finish: 0
-Total: 47 + 17.24 + 0 = 64.24
+Total: 47 + 18 + 0 = 65
 Modules4 Cost:
 TextualClassifier (cnn): 35
 Finish: 0
@@ -1967,7 +1961,7 @@ def prepare_data(df, section, tokenizer, target, batch_size=64):
     df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
     df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
     df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  # Simplified binary mapping
+    df['output'] = df[target].apply(lambda x: int(x == "2"))  
     dataset = df[['input_ids', 'attention_mask', 'output']].apply(
         lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
     )
@@ -1994,12 +1988,9 @@ def predict(model, processed_text, unique_classes):
     with torch.no_grad():
         outputs = model(input_ids=inputs).logits
         prediction = torch.argmax(outputs, dim=1).item()
-    return {"prediction": unique_classes[prediction]}
+    return unique_classes[prediction]
 
-data_loader = prepare_data(df, section, tokenizer, target)
-train_model(model, data_loader)
-prediction = predict(model, processed_text, unique_classes)
-return prediction'''), Finish({'predictions': '2'}, predictions, string)
+ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string)
 Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 
 Cost Analysis:
@@ -2628,7 +2619,7 @@ def prepare_data(df, section, tokenizer, target, batch_size=64):
     df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
     df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
     df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  # Simplified binary mapping
+    df['output'] = df[target].apply(lambda x: int(x == "2"))  
     dataset = df[['input_ids', 'attention_mask', 'output']].apply(
         lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
     )
@@ -2655,12 +2646,9 @@ def predict(model, processed_text, unique_classes):
     with torch.no_grad():
         outputs = model(input_ids=inputs).logits
         prediction = torch.argmax(outputs, dim=1).item()
-    return {"prediction": unique_classes[prediction]}
+    return unique_classes[prediction]
 
-data_loader = prepare_data(df, section, tokenizer, target)
-train_model(model, data_loader)
-prediction = predict(model, processed_text, unique_classes)
-return prediction'''), Finish({'predictions': '2'}, predictions, string)
+ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string)
 Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 
 Cost Analysis:
