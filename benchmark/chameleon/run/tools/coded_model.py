@@ -28,7 +28,7 @@ processed_text = {'input_ids': input_ids, 'attention_mask': attention_mask}
 
 # DataLoader setup for training
 def prepare_data(df, section, tokenizer, target, batch_size=64):
-    zero_encoding = tokenize_text('', tokenizer, max_length)
+    zero_encoding = tokenize_text('', tokenizer, max_length)  # Now it correctly references the function
     df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
     df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
     df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
@@ -61,7 +61,4 @@ def predict(model, processed_text, unique_classes):
         prediction = torch.argmax(outputs, dim=1).item()
     return {"prediction": unique_classes[prediction]}
 
-data_loader = prepare_data(df, section, tokenizer, target)
-train_model(model, data_loader)
-prediction = predict(model, processed_text, unique_classes)
-return prediction
+ans = predict(model, processed_text, unique_classes)
