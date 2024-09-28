@@ -5,22 +5,29 @@ import random
 import jsonlines
 
 corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
+df_hupd = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd.csv"))
+df_hupd["patent_number"] = df_hupd["patent_number"].astype("Int64")
+df_hupd["filing_date"] = pd.to_datetime(df_hupd["filing_date"])
+df_hupd["patent_issue_date"] = pd.to_datetime(df_hupd["patent_issue_date"])
+df_hupd["date_published"] = pd.to_datetime(df_hupd["date_published"])
+df_hupd["examiner_id"] = df_hupd["patent_number"].astype("Int64")
 
-df_hupd_heldout = []
-for year in range(2013,2019):
-    df_year = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv").format(year))
-    df_hupd_heldout.append(df_year)
-df_hupd_heldout = pd.concat(df_hupd_heldout, axis=0, ignore_index=True)
-df_neurips_heldout = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv")).iloc[3001:]
+df_neurips = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
+df_neurips["Poster Session"] = df_neurips["Poster Session"].astype("float64")
+df_neurips["Authors"] = df_neurips["Authors"].apply(eval)
+df_neurips["Authors Num"] = df_neurips["Authors Num"].astype("Int64")
+
+df_hupd_heldout = df_hupd[df_hupd["filing_date"].dt.year.isin(list(range(2013,2019)))].reset_index(drop=True)
+df_neurips_heldout = df_neurips.iloc[3001:]
 
 question_id = 1
 question_type_count = {11:100, 12:100, 13:100}
-question_types = [11,12,13]
+question_types = [11] #[11,12,13]
 with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questions/hard.jsonl', mode='w') as writer:
-    while question_id<=30: # 300
+    while question_id<=10: # 300
         question_type = random.choice(question_types)
         if question_type==11:
-            # Do the following two patents belong to the same cpc category: {title1}, {title2}? Return 'Yes' or 'No'.
+            # Predict if the following two patents (not in the database) belong to the same cpc category: {title1}, {title2}? Return 'Yes' or 'No'.
             same = random.choice(["Yes", "No"])
             df_hupd_heldout["cpc_category"] = df_hupd_heldout["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
             not_na_indices = df_hupd_heldout.index[df_hupd_heldout["cpc_category"] is not None and df_hupd_heldout["cpc_category"]!=np.nan].tolist()
@@ -32,7 +39,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             else:
                 new_indices = df_hupd_heldout.index[(df_hupd_heldout["cpc_category"].notna()) & (df_hupd_heldout["cpc_category"] != first_category)].tolist()
             title2 = df_hupd_heldout.at[random.choice(new_indices), "title"]
-            question = "Do the following two patents belong to the same cpc category: {}, {}? Return 'Yes' or 'No'.".format(title1,title2)
+            question = "Predict if the following two patents (not in the database) belong to the same cpc category: {}, {}? Return 'Yes' or 'No'.".format(title1,title2)
             answer = same
             # use None to signify not adding to the questions / answers
             if answer:
@@ -42,7 +49,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(11)
                 question_id += 1
         elif question_type==12:
-            # Determine if this abstract-title pair is from the same submission: Abstract: {abstract}. Title: {title}
+            # Predict if this abstract-title pair (not in the database) is from the same submission: Abstract: {abstract}. Title: {title}
             n = len(df_neurips_heldout)
             abstract_id = random.randint(0,n-1)
             abstract = df_neurips_heldout.at[abstract_id,"Abstract"]
@@ -54,7 +61,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 while title_id==abstract_id:
                     title_id = random.randint(0,n-1)
                 title = df_neurips_heldout.at[title_id,"Title"]
-            question = "Determine if this abstract-title pair is from the same submission: Abstract: {}. Title: {}. Return 'Yes' or 'No'.".format(abstract,title)
+            question = "Predict if this abstract-title pair (not in the database) is from the same submission: Abstract: {}. Title: {}. Return 'Yes' or 'No'.".format(abstract,title)
             answer = yes_or_no
             if answer:
                 writer.write({"qid": "hard-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
@@ -63,7 +70,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(12)
                 question_id += 1
         else:
-            # Which topic amongst {topic1}, {topic2}, {topic3} is the best fit for title {title}?
+            # Predict the best fit topic for the title (not in the database): {title}. Options: {topic1}, {topic2}, {topic3}.
             n = len(df_neurips_heldout)
             title_id = random.randint(0,n-1)
             title = df_neurips_heldout.at[title_id, "Title"]
@@ -73,7 +80,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
             three_topics = random.sample(false_topics, 2)+[true_topics[0]]
             random.shuffle(three_topics)
             topic1, topic2, topic3 = three_topics
-            question = "Which topic amongst {}, {}, {} is the best fit for title {}?".format(topic1, topic2, topic3, title)
+            question = "Predict the best fit topic for the title (not in the database): {}. Options: {}, {}, {}.".format(title, topic1, topic2, topic3)
             answer = true_topics[0]
             if answer:
                 writer.write({"qid": "hard-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})

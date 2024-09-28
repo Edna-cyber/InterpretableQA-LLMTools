@@ -10,45 +10,35 @@ import ast
 import math
 
 corpus_dir = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/external_corpus/"
+df_hupd = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd.csv"))
+df_hupd["patent_number"] = df_hupd["patent_number"].astype("Int64")
+df_hupd["filing_date"] = pd.to_datetime(df_hupd["filing_date"])
+df_hupd["patent_issue_date"] = pd.to_datetime(df_hupd["patent_issue_date"])
+df_hupd["date_published"] = pd.to_datetime(df_hupd["date_published"])
+df_hupd["examiner_id"] = df_hupd["patent_number"].astype("Int64")
 
-def convert_date(series):
-    if series.dtype == np.float64:
-        series = series.astype('Int64')
-    series = series.replace('<NA>', pd.NA)
-    series = series.astype(str)
-    formats = ["%Y-%m-%d", "%Y%m%d", "%d/%m/%Y"]
-    for fmt in formats:
-        parsed_dates = pd.to_datetime(series, format=fmt, errors='coerce')
-        if not parsed_dates.isna().all():
-            return parsed_dates
-    return pd.to_datetime(series, errors='coerce')
+df_neurips = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
+df_neurips["Poster Session"] = df_neurips["Poster Session"].astype("float64")
+df_neurips["Authors"] = df_neurips["Authors"].apply(eval)
+df_neurips["Authors Num"] = df_neurips["Authors Num"].astype("Int64")
 
 # HUPD Template 1: What was the average time between the filing and issuance of patents from {start_year} to {end_year}?
 def average_pendency(start_year, end_year):
-    df_lst = []
-    for year in range(start_year, end_year+1):
-        df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
-        df["filing_date"] = convert_date(df['filing_date'])
-        df["patent_issue_date"] = convert_date(df['patent_issue_date'])
-        df_lst.append(df)
-    df = pd.concat(df_lst, ignore_index=True)
-    df['duration'] = (df['patent_issue_date'] - df['filing_date']).dt.days
-    average_duration = df['duration'].mean()
-    
+    df_filtered = df_hupd[df_hupd["filing_date"].dt.year.isin(list(range(start_year, end_year+1)))].reset_index(drop=True)
+    df_filtered['duration'] = (df_filtered['patent_issue_date'] - df_filtered['filing_date']).dt.days
+    average_duration = df_filtered['duration'].mean()
     return math.floor(average_duration)
 
 # HUPD Template 2: What were the top {#} {IPCR/CPC categories} with the highest number of accepted patents in {year}? Return them as a list of {IPCR/CPC categories}. 
 def top_accepted_category(category, year):
-    df = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
+    df_filtered = df_hupd[df_hupd["filing_date"].dt.year==year].reset_index(drop=True)
     if category=="IPCR categories":
-        cat = "main_ipcr_label"
+        col = "icpr_category"
     else:
-        cat = "main_cpc_label"
-    col = cat.replace("label", "code")
-    df[col] = df[cat].apply(lambda x:x[:3] if isinstance(x, str) else x)
-    df["acceptance"] = df["decision"].apply(lambda x: 1 if x =="ACCEPTED" else 0)
-    top_categories = df.groupby(col)['acceptance'].sum().reset_index()
-    del df
+        col = "cpc_category"
+    df_filtered["acceptance"] = df_filtered["decision"].apply(lambda x: 1 if x =="ACCEPTED" else 0)
+    top_categories = df_filtered.groupby(col)['acceptance'].sum().reset_index()
+    del df_filtered
     top_categories = top_categories.sort_values(by="acceptance", ascending=False)
     acceptance_sums = top_categories['acceptance'].tolist()
     if len(acceptance_sums)==0:
@@ -73,27 +63,20 @@ def top_accepted_category(category, year):
 
 # HUPD Template 3: # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
 def compare_applications_year(year1, year2):
-    df1 = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year1))))
+    df1 = df_hupd[df_hupd["filing_date"].dt.year==year1]
     len_year1 = len(df1)
-    # del df1
-    df2 = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year2))))
+    del df1
+    df2 = df_hupd[df_hupd["filing_date"].dt.year==year2]
     len_year2 = len(df2)
-    # del df2
+    del df2
     return len_year1 / len_year2
 
 # HUPD Template 4: What is the title of the patent filed between {start_year} and {end_year} that took the longest number of days to be published?
 def longest_time(start_year, end_year):
-    df_lst = []
-    for year in range(start_year, end_year+1):
-        df_year = pd.read_csv(os.path.join(corpus_dir, "hupd/hupd_{}.csv".format(str(year))))
-        df_year["date_published"] = convert_date(df_year["date_published"])
-        df_year["filing_date"] = convert_date(df_year["filing_date"])
-        df_lst.append(df_year)
-    df = pd.concat(df_lst, axis=0, ignore_index=True)
-    del df_lst
-    df["duration"] = (df["date_published"]-df["filing_date"]).dt.days
-    sorted_df = df.sort_values(by="duration", ascending=False).reset_index()  
-    del df
+    df_filtered = df_hupd[df_hupd["filing_date"].dt.year.isin(list(range(start_year, end_year+1)))].reset_index(drop=True)
+    df_filtered["duration"] = (df_filtered["date_published"]-df_filtered["filing_date"]).dt.days
+    sorted_df = df_filtered.sort_values(by="duration", ascending=False).reset_index()  
+    del df_filtered
     durations = sorted_df["duration"].tolist()
     max_duration = durations[0]
     i = 0
@@ -103,14 +86,11 @@ def longest_time(start_year, end_year):
 
 # NeurIPS Template 1: Who were the top {#} authors with the most publications at NeurIPS? 
 def top_authors(row_num, llm_keyword):
-    df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv"))
-    df = df.iloc[:row_num+1]
+    df_neurips = df_neurips.iloc[:row_num+1]
     if llm_keyword:
-        df["keyword"] = df["Title"].str.contains("Large Language Models") 
-        df = df[df["keyword"]==True]
-    df['Authors'] = df['Authors'].str.split(' · ')
-    exploded_df = df.explode('Authors')
-    del df
+        df_neurips["keyword"] = df_neurips["Title"].str.contains("Large Language Models") 
+        df_neurips = df_neurips[df_neurips["keyword"]==True]
+    exploded_df = df_neurips.explode('Authors')
     author_counts = exploded_df['Authors'].value_counts()
     author_df = author_counts.reset_index()
     del exploded_df
@@ -130,20 +110,17 @@ def top_authors(row_num, llm_keyword):
 
 # NeurIPS Template 2: What proportion of papers have {compare} {n} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.
 def author_num(compare,n):
-    df = pd.read_csv(os.path.join(corpus_dir, "neurips/NeurIPS_2023_Papers.csv")) 
-    total_papers = len(df)
-    df["author_num"] = df["Authors"].str.split(' · ').apply(len)
+    total_papers = len(df_neurips)
     if compare=="more than":
-        papers = len(df[df["author_num"]>n])
+        papers = len(df_neurips[df_neurips["Authors Num"]>n])
     elif compare=="fewer than":
-        papers = len(df[df["author_num"]<n])
+        papers = len(df_neurips[df_neurips["Authors Num"]<n])
     elif compare=="greater than or equal to": 
-        papers = len(df[df["author_num"]>=n])
+        papers = len(df_neurips[df_neurips["Authors Num"]>=n])
     elif compare=="fewer than or equal to": 
-        papers = len(df[df["author_num"]<=n])
+        papers = len(df_neurips[df_neurips["Authors Num"]<=n])
     else:
-        papers = len(df[df["author_num"]==n])
-    del df
+        papers = len(df_neurips[df_neurips["Authors Num"]==n])
     return papers / total_papers
 
 

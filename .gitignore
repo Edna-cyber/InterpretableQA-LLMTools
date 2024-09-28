@@ -1,5 +1,7 @@
 data/external_corpus/hupd/
 data/questions/
 benchmark/chameleon/logs/
-benchmark/chameleon/run/results/
+benchmark/chameleon/run/results/final_raw/
+benchmark/chameleon/run/results/*.json
+benchmark/chameleon/run/results/*.jsonl
 benchmark/chameleon/run/tools/temp/

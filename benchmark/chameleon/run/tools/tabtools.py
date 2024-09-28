@@ -137,81 +137,46 @@ class table_toolkits():
         self.prediction = False
         self.path = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools" #<YOUR_OWN_PATH>
     
-    def db_loader(self, target_db, duration): # e.g. duration can be 2005-2012 or 0-2000, string type, both sides inclusive
+    def db_loader(self, target_db, duration): # e.g. duration can be [2012,2013,2015] or list(range(2000)), string type
         """
         Loads the needed dataframe(s).
-        """     
-        def extract_start_end(duration):
-            if duration=="None":
-                return None, None
-            hyphen_ind = duration.index("-")
-            start = int(duration[:hyphen_ind])
-            end = int(duration[hyphen_ind+1:])
-            return start, end
-        start, end = extract_start_end(duration)
-    
-        def preprocess_hupd(start_year, end_year):
-            def convert_date(series):
-                if series.dtype == np.float64:
-                    series = series.astype('Int64')
-                series = series.astype(str)
-                series = pd.to_datetime(series, errors='coerce')
-                if series.isna().any():
-                    series = pd.to_datetime(series, format="%Y%m%d", errors='coerce')
-                return series
-            
-            if not start_year and not end_year:
-                return None
-            df = []
-            for sub in range(start_year, end_year+1):
-                file_path = "{}/data/external_corpus/hupd/hupd_{}.csv".format(self.path, sub)
-                df_raw = pd.read_csv(file_path)
-                df_raw['patent_number'] = pd.to_numeric(df_raw['patent_number'], errors='coerce').astype('Int64').replace(0, pd.NA) # so that the LLM is aware of which patent numbers are invalid 
-                df_raw['examiner_id'] = pd.to_numeric(df_raw['examiner_id'], errors='coerce').astype('Int64') 
-                
-                df_raw['filing_date'] = convert_date(df_raw['filing_date'])
-                df_raw['patent_issue_date'] = convert_date(df_raw['patent_issue_date'])
-                df_raw['date_published'] = convert_date(df_raw['date_published'])
-                
-                df_raw["icpr_category"] = df_raw["main_ipcr_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
-                df_raw["cpc_category"] = df_raw["main_cpc_label"].apply(lambda x:x[:3] if isinstance(x, str) else x)
-                df_raw.drop(columns=["main_ipcr_label", "main_cpc_label"], inplace=True)
-                # print(df_raw.dtypes)
-                # print(df_raw.head())
-                df.append(df_raw)
-            df = pd.concat(df, ignore_index=True)
-            df = df.reset_index(drop=False)
+        """
+        def preprocess_hupd(df):
+            df["patent_number"] = df["patent_number"].astype("Int64")
+            df["filing_date"] = pd.to_datetime(df["filing_date"])
+            df["patent_issue_date"] = pd.to_datetime(df["patent_issue_date"])
+            df["date_published"] = pd.to_datetime(df["date_published"])
+            df["examiner_id"] = df["patent_number"].astype("Int64")
             return df
         
-        def preprocess_neurips(start_row, end_row):
-            if not start_row and not end_row:
-                return None
-            file_path = "{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv".format(self.path)
-            df = pd.read_csv(file_path)
-            # print(df.dtypes)
-            df = df.iloc[start_row:end_row+1]
-            df['Authors'] = df['Authors'].str.split(' · ')
-            df['Authors_Num'] = df['Authors'].apply(len)
-            column_names = ["'"+x+"'" for x in df.columns.tolist()]
-            column_names_str = ', '.join(column_names)
-            return df   
+        def preprocess_neurips(df):
+            df["Poster Session"] = df["Poster Session"].astype("float64")
+            df["Authors"] = df["Authors"].apply(eval)
+            df["Authors Num"] = df["Authors Num"].astype("Int64")
+            return df
         
         try:   
+            duration = eval(duration)
             if target_db=="hupd":
-                if self.prediction and end>=2013: # uncomment for medium and hard tasks
+                if self.prediction and any(x>2012 for x in duration):
                     return "Error: The end year of the dataframe cannot be later than year 2012 for prediction tasks."
-                df = preprocess_hupd(start, end)
+                file_path = "{}/data/external_corpus/hupd/hupd.csv".format(self.path)
+                df = pd.read_csv(file_path)
+                df = preprocess_hupd(df)
+                df = df[df["filing_date"].dt.year.isin(duration)].reset_index(drop=True)
             elif target_db=="neurips":
-                if end>3585:
+                if any(x>=3585 for x in duration):
                     return "Error: the dataframe contains 3585 rows in total; the number of rows cannot exceed this limit."
-                if self.prediction and end>3000: # uncomment for medium and hard tasks
-                    return "Error: The end year of the dataframe cannot exceed row 3000 for prediction tasks."
-                df = preprocess_neurips(start, end)
+                if self.prediction and any(x>=3000 for x in duration):
+                    return "Error: the end year must be within the first 3000 rows (index up to 2999) of the dataframe for prediction tasks."
+                file_path = "{}/data/external_corpus/neurips/NeurIPS_2023_Papers.csv".format(self.path)
+                df = pd.read_csv(file_path)
+                df = preprocess_neurips(df)
+                df = df.iloc[duration].reset_index(drop=True)
             else:
                 return "Error: the only possible choices for target_db are hupd (a patent dataset) and neurips (a papers dataset)."
             
-            if isinstance(df, str) and "Error:" in df:
-                return df
+            # print(df.dtypes)
             
             self.data = df
             length = len(self.data)
@@ -384,7 +349,7 @@ class table_toolkits():
                     with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_{}_model.pkl'.format(database, model_name, section, target), 'rb') as file:
                         model = pickle.load(file)
                 except:
-                    return "Error: no pretrained model is available for the specified task. Please use other tools to solve the problem."
+                    return "Error: please change the section or target, or try using PandasInterpreter to solve the problem."
                 model.eval()
                 
                 inputs = processed_text['input_ids']
@@ -431,7 +396,11 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-#     db.db_loader('hupd', '2016-2016')
+    print("line 96, line 607, line 1263")
+    print(db.db_loader('hupd', '[2016]'))
+    print("line 227, 848, 1508")
+    print(db.db_loader('hupd', '[2007,2008,2009]'))
+    print("")
 #     pandas_code = """
 # import pandas as pd
 # df['filing_month'] = df['filing_date'].apply(lambda x: x.month)
@@ -445,3 +414,4 @@ if __name__ == "__main__":
     # print(db.textual_classifier('neurips', 'logistic_regression', 'Abstract', abstract, 'Oral', 'oral'))
     # print(db.textual_classifier('neurips', 'cnn', 'Abstract', abstract, 'Oral', 'oral'))
     # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Abstract', abstract, 'Oral', 'oral'))
+    

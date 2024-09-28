@@ -30,7 +30,7 @@ tools_gpt = [
                     },
                     "duration": {
                         "type": "string",
-                        "description": "The subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2004-2006. When target_db is neurips, specify the range of rows in the format startRow-endRow, e.g. 0-2000. When the task does not involve prediction and the target_db is neurips, use the default range 0-3585.",
+                        "description": "The subset of the database is specified by a string that evaluates to a list. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. When target_db is neurips, specify the rows, e.g. list(range(2000)). When the task does not involve prediction and the target_db is neurips, use the default list(range(3585)).",
                     }
                 },
                 "required": ["target_db", "duration"],
@@ -158,7 +158,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "LLMInterpreter",
-            "description": "Use the current LLM to generate an answer.",
+            "description": "Use the current LLM to generate an answer. If you are unable to determine the answer using other tools, you must use LLMInterpreter to find a solution.",
             "parameters": {},
             "required": [],
         },
@@ -167,7 +167,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "Finish",
-            "description": "Terminate the task and return the final answer. You must use Finish as the final module for solving each question.",
+            "description": "Terminate the task and return the final answer. You MUST USE finish as the final module for solving each question.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -225,7 +225,7 @@ tools_gemini = [
             },
             "duration": {
               "type": "string",
-              "description": "The subset of the database is specified by a range that's inclusive on both ends. When target_db is hupd, specify the range of years in the format startYear-endYear, e.g. 2004-2006. When target_db is neurips, specify the range of rows in the format startRow-endRow, e.g. 0-2000. When the task does not involve prediction and the target_db is neurips, use the default range 0-3585."
+              "description": "The subset of the database is specified by a string that evaluates to a list. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. When target_db is neurips, specify the rows, e.g. list(range(2000)). When the task does not involve prediction and the target_db is neurips, use the default list(range(3585))."
             }
           },
           "required": ["target_db", "duration"]
@@ -377,7 +377,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "LLMInterpreter",
-        "description": "Use the current LLM to generate an answer."
+        "description": "Use the current LLM to generate an answer. If you are unable to determine the answer using other tools, you must use LLMInterpreter to find a solution."
       }
     ]
   },
@@ -385,7 +385,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "Finish",
-        "description": "Terminate the task and return the final answer. You must use Finish as the final module for solving each question.",
+        "description": "Terminate the task and return the final answer. You MUST USE Finish as the final module for solving each question.",
         "parameters": {
           "type": "object",
           "properties": {
