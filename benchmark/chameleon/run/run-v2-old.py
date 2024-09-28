@@ -26,7 +26,7 @@ from tools.forecaster import forecast as forecaster
 from tools.tfidf import tfidf as tfidf
 from tools.llm_inferencer import llm_inferencer 
 from tools.calculator import calculator
-from tools.tabtools import table_toolkits
+from tools.tabtools import table_toolkits, LogisticRegression, BasicCNNModel
 import datetime
 
 from api.gpt4 import call_gpt4, call_gpt3_5
@@ -84,8 +84,7 @@ if __name__ == "__main__":
     # Get the result file
     result_root = f"{args.output_root}" 
     os.makedirs(result_root, exist_ok=True)
-    result_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-test.json"
-    cache_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-cache.jsonl"
+    cache_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-cache-{datetime_string}.jsonl"
     cache = []
     if args.formula=="formula1":
         cost_function = calc_cost1
@@ -96,23 +95,20 @@ if __name__ == "__main__":
     elif args.formula=="formula4":
         cost_function = calc_cost4
 
-    total_count = 0
-    count, valid_performance, errors, cost, cost_original = defaultdict(int), {}, defaultdict(int), defaultdict(int), {}
-    tool_count, avg_tool_cost = defaultdict(int), defaultdict(int)
     pids = solver.pids
     
     for pid in tqdm(pids): # pids
         db.data = None # force reset
-        if total_count < 10:
-            print("\n\n===================================\n")
-            print(f"# [Pid]: {pid}\n") # problem id
-
-        total_count += 1  
         example = solver.examples[pid] # get one example 
-        user_prompt = example["question"] 
+        if args.prompt=="interp":
+            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps:1.Generate Solutions: List 2-4 sequences of tools that can solve the question.2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.3.Execute the Lowest Cost Solution. Question: "+example["question"]
+        else: 
+            user_prompt = "Now, you need to act as a policy model and determine the sequence of modules that can be executed sequentially can solve the question: "+example["question"]
         question_type = int(example["question_type"])
+        if question_type!=3: ###
+            continue
         per_question_cost = 0
-        count[question_type] += 1
+        tool_count, tool_cost = defaultdict(int), defaultdict(int) 
 
         if args.prompt=="clean":
             messages = prompt_policy.messages.copy() 
@@ -173,7 +169,7 @@ if __name__ == "__main__":
                     function_cost = cost_function(function_type, function_arguments)
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
                         tool_count[function_type] += 1
-                        avg_tool_cost[function_type] += function_cost
+                        tool_cost[function_type] += function_cost
                         per_question_cost += function_cost
                     
                     tool_call_response = {
@@ -187,6 +183,39 @@ if __name__ == "__main__":
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
                     iterations += 1
+                    if args.prompt=="interp" and iterations==1:
+                        if "Modules2:" not in content:
+                            more_solutions_messgae = {
+                                "role": "user",
+                                "content": "Regenerate. Create at least 2 solutions (Modules1, Modules2)."
+                            }
+                            messages.append(more_solutions_messgae)
+                            logs.append(more_solutions_messgae)
+                            # reset costs
+                            if not (isinstance(function_response, str) and function_response.startswith("Error:")):
+                                tool_count[function_type] -= 1
+                                tool_cost[function_type] -= function_cost
+                                per_question_cost -= function_cost
+                            continue
+                        cost_analysis_ind = content.find("Cost Analysis")
+                        modules = content[:cost_analysis_ind].split("Modules")
+                        cleaned_modules = []
+                        for x in modules:
+                            if x!="":
+                                clean_x = re.sub(r"^\d:", "", x).strip()
+                                cleaned_modules.append(clean_x)
+                        if len(cleaned_modules)>len(set(cleaned_modules)):
+                            no_duplicate_message = {
+                                "role": "user",
+                                "content": "Regenerate. Do not create duplicate solutions."
+                            }
+                            messages.append(no_duplicate_message)
+                            logs.append(no_duplicate_message)
+                            # reset costs
+                            if not (isinstance(function_response, str) and function_response.startswith("Error:")):
+                                tool_count[function_type] -= 1
+                                tool_cost[function_type] -= function_cost
+                                per_question_cost -= function_cost
                 else:
                     response_without_tools = {
                         "role": choice.message.role,
@@ -212,93 +241,23 @@ if __name__ == "__main__":
         
         gt_answer = example["answer"]
         
-        if question_type not in valid_performance:
-            if question_type in [8,9,10,11,12]:
-                valid_performance[question_type] = [[],[]]
-            else:
-                valid_performance[question_type] = 0
-        if question_type not in cost_original:
-            cost_original[question_type] = {"valid":[], "invalid":[], "correct":[], "incorrect":[]}
-        
         def is_json_serializable(obj):
             try:
                 json.dumps(obj)
                 return True
             except (TypeError, OverflowError):
                 return False
-        if llm_answer is None:
-            errors[question_type] += 1
-            cost_original[question_type]["invalid"].append(per_question_cost)
-        elif not is_json_serializable(llm_answer):
+        if not is_json_serializable(llm_answer):
             llm_answer = None
-            errors[question_type] += 1
-            cost_original[question_type]["invalid"].append(per_question_cost)
-        else:
-            # Calculate valid_performance metric
-            if question_type in [1,3,6]: # threshold correct / incorrect
-                try:
-                    metric = int(abs(llm_answer-gt_answer)<=0.005*gt_answer)
-                    valid_performance[question_type] += metric
-                    cost_original[question_type]["valid"].append(per_question_cost)
-                    if metric==1:
-                        cost_original[question_type]["correct"].append(per_question_cost)
-                    else:
-                        cost_original[question_type]["incorrect"].append(per_question_cost)
-                except:
-                    errors[question_type] += 1
-                    cost_original[question_type]["invalid"].append(per_question_cost)
-            elif question_type in [2,5]: # set intersection
-                try:
-                    valid_performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
-                    cost_original[question_type]["valid"].append(per_question_cost)
-                except:
-                    errors[question_type] += 1
-                    cost_original[question_type]["invalid"].append(per_question_cost)
-            elif question_type in [4]: # within list
-                try:
-                    metric = int(llm_answer in gt_answer)
-                    valid_performance[question_type] += metric
-                    cost_original[question_type]["valid"].append(per_question_cost)
-                    if metric==1:
-                        cost_original[question_type]["correct"].append(per_question_cost)
-                    else:
-                        cost_original[question_type]["incorrect"].append(per_question_cost)
-                except:
-                    errors[question_type] += 1
-                    cost_original[question_type]["invalid"].append(per_question_cost)
-            elif question_type in [7]: # average R2
-                try: 
-                    valid_performance[question_type] += r2_score(gt_answer,llm_answer)
-                    cost_original[question_type]["valid"].append(per_question_cost)
-                except:
-                    errors[question_type] += 1
-                    cost_original[question_type]["invalid"].append(per_question_cost)
-            elif question_type in [8,9,10,11,12]: # F1
-                try:
-                    valid_performance[question_type][0].append(gt_answer)
-                    valid_performance[question_type][1].append(llm_answer)
-                    cost_original[question_type]["valid"].append(per_question_cost)
-                except:
-                    errors[question_type] += 1
-                    cost_original[question_type]["invalid"].append(per_question_cost)
-            else: # Exact match
-                try:
-                    metric = int(llm_answer==gt_answer)
-                    valid_performance[question_type] += metric
-                    cost_original[question_type]["valid"].append(per_question_cost)
-                    if metric==1:
-                        cost_original[question_type]["correct"].append(per_question_cost)
-                    else:
-                        cost_original[question_type]["incorrect"].append(per_question_cost)
-                except:
-                    errors[question_type] += 1
-                    cost_original[question_type]["invalid"].append(per_question_cost)
-                
         
         logs.append({"Question Type": question_type})
         logs.append({"Cost": per_question_cost})
         logs.append({"LLM Answer": llm_answer})
         logs.append({"Ground-Truth Answer": gt_answer})
+        tool_count = dict(sorted(tool_count.items()))
+        logs.append({"Tool Count": tool_count})
+        tool_cost = dict(sorted(tool_cost.items()))
+        logs.append({"Tool Cost": tool_cost})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
         logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH>
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)): # <YOUR_OWN_PATH>
@@ -310,5 +269,3 @@ if __name__ == "__main__":
     with jsonlines.open(cache_file, mode='w') as writer:
         for row in cache:
             writer.write(row)
-
-    
