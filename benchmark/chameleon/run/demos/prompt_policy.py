@@ -151,7 +151,7 @@ month = df['filing_month'].mode()[0]
     },
     {
         'role': 'user',
-        'content': "Determine if a NeurIPS paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.'"
+        'content': "Determine if a NeurIPS paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.' Return either '2' or 'not 2'."
     },
     {
         'role': 'assistant',
@@ -184,7 +184,7 @@ month = df['filing_month'].mode()[0]
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string"
+                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string", "choices": "['2','not 2']"
                     })
                 },
                 'type': 'function'
@@ -305,7 +305,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'user',
-        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'?"
+        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'."
     },
     {
         'role': 'assistant',
@@ -391,7 +391,7 @@ most_relevant = get_most_relevant_document(1, 0)
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string"
+                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string", "choices": "['Document 1', 'Document 2']"
                     })
                 },
                 'type': 'function'
@@ -663,12 +663,12 @@ month = df['filing_month'].mode()[0]
     },
     {
         'role': 'user',
-        'content': "Determine if a NeurIPS paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.'"
+        'content': "Determine if a NeurIPS paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.' Return either '2' or 'not 2'."
     },
     {
         'role': 'assistant',
-        'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
-Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+        'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
+Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
 Modules3: LoadDB(neurips, list(range(3000))), PandasInterpreter('''import torch
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 from torch.utils.data import DataLoader
@@ -732,8 +732,8 @@ def predict(model, processed_text, unique_classes):
         prediction = torch.argmax(outputs, dim=1).item()
     return unique_classes[prediction]
 
-ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string)
-Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string, ['2','not 2'])
+Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
 
 Cost Analysis:
 Modules1 Cost:
@@ -754,7 +754,7 @@ TextualClassifier (cnn): 15
 Finish: 0
 Total: 15 + 0 = 15
 
-Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)""",
+Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -783,7 +783,7 @@ Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propo
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string"
+                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string", "choices": "['2','not 2']"
                     })
                 },
                 'type': 'function'
@@ -929,13 +929,13 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'user',
-        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'?"
+        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'."
     },
     {
         'role': 'assistant',
-        'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Modules3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
+        'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
+Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
+Modules3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
 
 Cost Analysis:
 Modules1 Cost:
@@ -952,7 +952,7 @@ LLMInferencer: 30
 Finish: 0
 Total: 30 + 0 = 30
 
-Best Modules: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))""",
+Best Modules: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -1034,7 +1034,7 @@ most_relevant = get_most_relevant_document(1, 0)
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string"
+                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string", "choices": "['Document 1', 'Document 2']"
                     })
                 },
                 'type': 'function'
@@ -1324,12 +1324,12 @@ month = counter.most_common()[0][0]
     },
     {
         'role': 'user',
-        'content': "Determine if a NeurIPS paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.'"
+        'content': "Determine if a NeurIPS paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.' Return either '2' or 'not 2'."
     },
     {
         'role': 'assistant',
-        'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
-Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+        'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
+Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
 Modules3: LoadDB(neurips, list(range(3000))), PandasInterpreter('''import torch
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 from torch.utils.data import DataLoader
@@ -1393,8 +1393,8 @@ def predict(model, processed_text, unique_classes):
         prediction = torch.argmax(outputs, dim=1).item()
     return unique_classes[prediction]
 
-ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string)
-Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string, ['2', 'not 2'])
+Modules4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
 
 Cost Analysis:
 Modules1 Cost:
@@ -1415,7 +1415,7 @@ TextualClassifier (cnn): 35
 Finish: 0
 Total: 35 + 0 = 35
 
-Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)""",
+Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -1444,7 +1444,7 @@ Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propo
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string"
+                        "variable_values": "{'prediction': '2'}", "answer_variable": "prediction", "answer_type": "string", "choices": "['2','not 2']"
                     })
                 },
                 'type': 'function'
@@ -1590,13 +1590,13 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'user',
-        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'?"
+        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'."
     },
     {
         'role': 'assistant',
-        'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Modules3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
+        'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
+Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
+Modules3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
 
 Cost Analysis:
 Modules1 Cost:
@@ -1613,7 +1613,7 @@ LLMInferencer: 20
 Finish: 0
 Total: 20 + 0 = 20
 
-Best Modules: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string)""",
+Best Modules: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -1641,7 +1641,7 @@ Best Modules: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_rele
                 'function': {
                     'name': 'Finish',
                     'arguments': json.dumps({
-                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string"
+                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string", "choices": "['Document 1', 'Document 2']"
                     })
                 },
                 'type': 'function'

@@ -27,24 +27,24 @@ def count_word_in_files(directory, word, file_extension=None):
                     
                     # Check each sentence for the word and print if found
                     for sentence in sentences:
-                        if '"question_type": "9",' in sentence: # word
+                        if word in sentence:
                             word_count += sentence.count(word)
                             # Store the filename and the sentence containing the word
-                            sentences_with_word.append((filename)) # , sentence
+                            sentences_with_word.append((filename)) # , sentence 
             except Exception as e:
                 print(f"Error reading {file_path}: {e}")
     
     return word_count, sentences_with_word
 
-directory = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/gpt-3.5-turbo-medium-interp-formula1"  
-word = "LLMInterpreter"
+directory = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/gpt-3.5-turbo-easy-interp-formula1"  
+word = "'Cost': 7.12"
 file_extension = ".txt"  
 
 count, sentences = count_word_in_files(directory, word, file_extension)
 
 # Print the count
-# print(f'The word "{word}" appears {count} times in {file_extension} files within the directory.')
-# print(sentences)
+print(f'The word "{word}" appears {count} times in {file_extension} files within the directory.')
+print(sentences)
 
 
 
@@ -77,5 +77,5 @@ word = "Error: please change the section or target,"
 count = count_word_in_file(file_path, word)
 
 # Print the count
-print(f'The word "{word}" appears {count} times within the file.')
+# print(f'The word "{word}" appears {count} times within the file.')
 

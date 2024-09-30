@@ -86,11 +86,11 @@ def longest_time(start_year, end_year):
 
 # NeurIPS Template 1: Who were the top {#} authors with the most publications at NeurIPS? 
 def top_authors(row_num, llm_keyword):
-    df_neurips = df_neurips.iloc[:row_num+1]
+    df_filtered = df_neurips.iloc[:row_num+1]
     if llm_keyword:
-        df_neurips["keyword"] = df_neurips["Title"].str.contains("Large Language Models") 
-        df_neurips = df_neurips[df_neurips["keyword"]==True]
-    exploded_df = df_neurips.explode('Authors')
+        df_filtered["keyword"] = df_filtered["Title"].str.contains("Large Language Models") 
+        df_filtered = df_filtered[df_filtered["keyword"]==True]
+    exploded_df = df_filtered.explode('Authors')
     author_counts = exploded_df['Authors'].value_counts()
     author_df = author_counts.reset_index()
     del exploded_df

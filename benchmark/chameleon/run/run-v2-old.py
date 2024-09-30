@@ -105,7 +105,7 @@ if __name__ == "__main__":
         else: 
             user_prompt = "Now, you need to act as a policy model and determine the sequence of modules that can be executed sequentially can solve the question: "+example["question"]
         question_type = int(example["question_type"])
-        if question_type!=3: ###
+        if question_type!=4 and question_type!=5: ###
             continue
         per_question_cost = 0
         tool_count, tool_cost = defaultdict(int), defaultdict(int) 
@@ -258,7 +258,7 @@ if __name__ == "__main__":
         logs.append({"Tool Count": tool_count})
         tool_cost = dict(sorted(tool_cost.items()))
         logs.append({"Tool Cost": tool_cost})
-        cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
+        cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "Cost": per_question_cost, "Tool Count": tool_count, "Tool Cost": tool_cost, "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
         logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH>
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)): # <YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)) # <YOUR_OWN_PATH>

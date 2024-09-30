@@ -62,15 +62,11 @@ if __name__ == "__main__":
         with open(file_path, 'r') as f:
             content = f.read()
             question_type = int(re.search(r"(?<='Question Type': )\d+", content).group(0))
+            if question_type not in cost_original:
+                cost_original[question_type] = {"valid":[], "invalid":[], "correct":[], "incorrect":[]}
             count[question_type] += 1
             per_question_cost = float(re.search(r"(?<='Cost': )\d+\.?\d*", content).group(0))
-            try:
-                llm_answer = re.search(r"(?<='LLM Answer': )(.*?)}", content).group(1)
-            except:
-                print("regex filename", filename) ##
-                errors[question_type] += 1
-                cost_original[question_type]["invalid"].append(per_question_cost)
-                continue
+            llm_answer = re.search(r"(?<='LLM Answer': )(.*?)}", content).group(1)
             gt_answer = re.search(r"(?<='Ground-Truth Answer': )(.*?)}", content).group(1)
             # question_tool_count = re.search(r"\{'Tool Count':\s*(\{.*?\})\}", content).group(1)
             # question_tool_count = ast.literal_eval(question_tool_count)
@@ -108,8 +104,6 @@ if __name__ == "__main__":
                     valid_performance[question_type] = [[],[]]
                 else:
                     valid_performance[question_type] = 0
-            if question_type not in cost_original:
-                cost_original[question_type] = {"valid":[], "invalid":[], "correct":[], "incorrect":[]}
                 
             if llm_answer=="None" or llm_answer=="null" or llm_answer=="":
                 print("None filename", filename) ##
@@ -119,6 +113,11 @@ if __name__ == "__main__":
                 print("Error: filename", filename) ##
                 errors[question_type] += 1
                 cost_original[question_type]["invalid"].append(per_question_cost)
+            elif per_question_cost==0:
+                print("cost 0 filename", filename) ##
+                errors[question_type] += 1
+                cost_original[question_type]["invalid"].append(per_question_cost)
+                continue
             else:
                 # Calculate valid_performance metric
                 if question_type in [1,3,6]: # threshold correct / incorrect

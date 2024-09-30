@@ -30,7 +30,7 @@ tools_gpt = [
                     },
                     "duration": {
                         "type": "string",
-                        "description": "The subset of the database is specified by a string that evaluates to a list. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. When target_db is neurips, specify the rows, e.g. list(range(2000)). When the task does not involve prediction and the target_db is neurips, use the default list(range(3585)).",
+                        "description": "The subset of the database is specified by a string that evaluates to a list. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. The default value is list(range(2004,2019)). When target_db is neurips, specify the rows, e.g. list(range(2000)). The default value is list(range(3585)).",
                     }
                 },
                 "required": ["target_db", "duration"],
@@ -158,7 +158,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "LLMInterpreter",
-            "description": "Use the current LLM to generate an answer. If you are unable to determine the answer using other tools, you must use LLMInterpreter to find a solution.",
+            "description": "Utilize the current LLM to generate a solution when the answer cannot be determined from other tools. This tool should be used to resolve uncertainties, especially when variable values for the Finish tool are not explicitly defined or involve random guessing.",
             "parameters": {},
             "required": [],
         },
@@ -167,13 +167,13 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "Finish",
-            "description": "Terminate the task and return the final answer. You MUST USE finish as the final module for solving each question.",
+            "description": "Terminate the task and return the final answer. Ensure that all variable values are derived DIRECTLY from the output of the previous tool call. If any values require estimation or involve random guessing, leverage the LLMInterpreter to accurately determine those values. You MUST USE finish as the final module for solving each question.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "variable_values": {
                         "type": "string",
-                        "description": "A string that evaluates to a dictionary of variables and their corresponding values, which is the same as the output from the previous tool call",
+                        "description": "A string that evaluates to a dictionary of variables and their corresponding values, obtained directly from the previous tool call.",
                     },
                     "answer_variable": {
                         "type": "string",
@@ -182,7 +182,11 @@ tools_gpt = [
                     "answer_type": {
                         "type": "string",
                         "description": "A string specifying the required type for the final answer. The only choices are list, float, integer, and string."
-                    }
+                    },
+                    "choices": {
+                        "type": "string",
+                        "description": "A string that evaluates to a list of possible values from which the final answer must be selected."
+                    },
                 },
                 "required": ["variable_values", "answer_variable", "answer_type"], 
             },
@@ -225,7 +229,7 @@ tools_gemini = [
             },
             "duration": {
               "type": "string",
-              "description": "The subset of the database is specified by a string that evaluates to a list. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. When target_db is neurips, specify the rows, e.g. list(range(2000)). When the task does not involve prediction and the target_db is neurips, use the default list(range(3585))."
+              "description": "The subset of the database is specified by a string that evaluates to a list. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. The default value is list(range(2004,2019)). When target_db is neurips, specify the rows, e.g. list(range(2000)). The default value is list(range(3585))."
             }
           },
           "required": ["target_db", "duration"]
@@ -377,7 +381,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "LLMInterpreter",
-        "description": "Use the current LLM to generate an answer. If you are unable to determine the answer using other tools, you must use LLMInterpreter to find a solution."
+        "description": "Utilize the current LLM to generate a solution when the answer cannot be determined from other tools. This tool should be used to resolve uncertainties, especially when variable values for the Finish tool are not explicitly defined or involve random guessing."
       }
     ]
   },
@@ -385,7 +389,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "Finish",
-        "description": "Terminate the task and return the final answer. You MUST USE Finish as the final module for solving each question.",
+        "description": "Terminate the task and return the final answer. Ensure that all variable values are derived DIRECTLY from the output of the previous tool call. If any values require estimation or involve random guessing, leverage the LLMInterpreter to accurately determine those values. You MUST USE finish as the final module for solving each question.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -400,7 +404,11 @@ tools_gemini = [
             "answer_type": {
               "type": "string",
               "description": "A string specifying the required type for the final answer. The only choices are list, float, integer, and string."
-            }
+            },
+            "choices": {
+              "type": "string",
+              "description": "A string that evaluates to a list of possible values from which the final answer must be selected."
+            },
           },
           "required": ["variable_values", "answer_variable", "answer_type"]
         }

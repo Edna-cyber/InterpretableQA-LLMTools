@@ -1,16 +1,18 @@
 import ast
-from sklearn.metrics import f1_score
 
-def finish(variable_values, answer_variable, answer_type):
+def finish(variable_values, answer_variable, answer_type, choices="[]"):
     try:
         variable_values = ast.literal_eval(variable_values)
+        choices = ast.literal_eval(choices)
         if not isinstance(variable_values, dict):
             return "Error: variable_values must be a string that evaluates to a dictionary."
         if answer_variable not in variable_values:
             return "Error: answer_variable must be a key inside variable_values."
         type_map = {"list": list, "float": float, "integer": int, "string": str}
         if not isinstance(variable_values[answer_variable], type_map[answer_type]):
-            return "Error: The final answer should be of type {} not {}".format(answer_type, type(variable_values[answer_variable]))
+            return "Error: the final answer should be of type {} not {}".format(answer_type, type(variable_values[answer_variable]))
+        if choices and variable_values[answer_variable] not in choices:
+            return "Error: the final answer must be one of the elements in {}".format(choices)
         return variable_values[answer_variable]
     except Exception as e:
         if "malformed node or string" in str(e):
