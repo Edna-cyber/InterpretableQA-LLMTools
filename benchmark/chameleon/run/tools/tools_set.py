@@ -157,7 +157,7 @@ tools_gpt = [
     {
         "type": "function",
         "function": {
-            "name": "LLMInterpreter",
+            "name": "LLMInferencer",
             "description": "Utilize the current LLM to generate a solution when the answer cannot be determined from other tools. This tool should be used to resolve uncertainties, especially when variable values for the Finish tool are not explicitly defined or involve random guessing.",
             "parameters": {},
             "required": [],
@@ -167,7 +167,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "Finish",
-            "description": "Terminate the task and return the final answer. Ensure that all variable values are derived DIRECTLY from the output of the previous tool call. If any values require estimation or involve random guessing, leverage the LLMInterpreter to accurately determine those values. You MUST USE finish as the final module for solving each question.",
+            "description": "Terminate the task and return the final answer. Ensure that all variable values are derived DIRECTLY from the output of the previous tool call. If any values require estimation or involve random guessing, leverage the LLMInferencer to accurately determine those values. You MUST USE finish as the final module for solving each question.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -380,7 +380,7 @@ tools_gemini = [
   {
     "function_declarations": [
       {
-        "name": "LLMInterpreter",
+        "name": "LLMInferencer",
         "description": "Utilize the current LLM to generate a solution when the answer cannot be determined from other tools. This tool should be used to resolve uncertainties, especially when variable values for the Finish tool are not explicitly defined or involve random guessing."
       }
     ]
@@ -389,7 +389,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "Finish",
-        "description": "Terminate the task and return the final answer. Ensure that all variable values are derived DIRECTLY from the output of the previous tool call. If any values require estimation or involve random guessing, leverage the LLMInterpreter to accurately determine those values. You MUST USE finish as the final module for solving each question.",
+        "description": "Terminate the task and return the final answer. Ensure that all variable values are derived DIRECTLY from the output of the previous tool call. If any values require estimation or involve random guessing, leverage the LLMInferencer to accurately determine those values. You MUST USE finish as the final module for solving each question.",
         "parameters": {
           "type": "object",
           "properties": {

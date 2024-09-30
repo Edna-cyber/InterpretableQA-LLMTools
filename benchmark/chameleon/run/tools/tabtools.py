@@ -349,7 +349,7 @@ class table_toolkits():
                     with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_{}_model.pkl'.format(database, model_name, section, target), 'rb') as file:
                         model = pickle.load(file)
                 except:
-                    return "Error: please change the section or target, or try using other tools (Calculate, LoadDB, TFIDF, PandasInterpreter, PythonInterpreter, Forecaster, LLMInterpreter) to solve the problem." ###
+                    return "Error: please change the section or target, or try using other tools (Calculate, LoadDB, TFIDF, PandasInterpreter, PythonInterpreter, Forecaster, LLMInferencer) to solve the problem." ###
                 model.eval()
                 
                 inputs = processed_text['input_ids']

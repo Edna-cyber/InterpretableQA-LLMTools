@@ -48,14 +48,14 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(7)
                 question_id += 1
         elif question_type==8:
-            # For a patent application (not in the database) with an abstract {abstract_content}, predict whether it will get accepted. Return either 'ACCEPTED' or 'not ACCEPTED'.
+            # For a patent application, which is not present in the database, with an abstract {abstract_content}, predict whether it will get accepted. Return either 'ACCEPTED' or 'not ACCEPTED'.
             year_not_in_the_range = random.randint(2013,2018)
             df_filtered = df_hupd[df_hupd["filing_date"].dt.year==year_not_in_the_range].reset_index(drop=True)
             indices_to_choose = df_filtered.index[(df_filtered['decision']=="ACCEPTED") | (df_filtered['decision']=="REJECTED")].to_list()
             index = random.choice(indices_to_choose)
             abstract_content = df_filtered.at[index,"abstract"]
             decision = df_filtered.at[index,"decision"]
-            question = "For a patent application (not in the database) with an abstract {}, predict whether it will get accepted. Return either 'ACCEPTED' or 'not ACCEPTED'.".format(abstract_content)
+            question = "For a patent application, which is not present in the database, with an abstract {}, predict whether it will get accepted. Return either 'ACCEPTED' or 'not ACCEPTED'.".format(abstract_content)
             answer = decision
             if answer:
                 writer.write({"qid": "medium-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
@@ -64,7 +64,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(8)
                 question_id += 1
         elif question_type==9:
-            # For a NeurIPS paper (not in the database) with title {title_content}, predict whether it belongs to {topic}? Return either '{topic}' or 'not {topic}'.
+            # For a NeurIPS paper, which is not present in the database, with title {title_content}, predict whether it belongs to {topic}? Return either '{topic}' or 'not {topic}'.
             topic = random.choice(["Deep Learning", "Reinforcement Learning", "Health", "Applications", "Theory", "Data-centric AI", "Probabilistic Methods", "Social Aspects", "Optimization"]) 
             df_filtered = df_neurips.iloc[3001:]
             indices_to_choose = df_filtered.index[df_filtered["Topic"].notna()].to_list()
@@ -74,7 +74,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 belong = topic
             else:
                 belong = "not "+topic
-            question = "For a NeurIPS paper (not in the database) with title {}, predict whether it belongs to {}? Return either '{}' or 'not {}'.".format(title_content, topic, topic, topic)
+            question = "For a NeurIPS paper, which is not present in the database, with title {}, predict whether it belongs to {}? Return either '{}' or 'not {}'.".format(title_content, topic, topic, topic)
             answer = belong
             if answer:
                 writer.write({"qid": "medium-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
@@ -83,7 +83,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(9)
                 question_id += 1
         else:
-            # For a NeurIPS paper (not in the database) with abstract {abstract_content}, predict whether it will be accepted as an oral presentation? Return either ‘oral’ or ‘not oral’.
+            # For a NeurIPS paper, which is not present in the database, with abstract {abstract_content}, predict whether it will be accepted as an oral presentation? Return either ‘oral’ or ‘not oral’.
             df_filtered = df_neurips.iloc[3001:]
             oral = random.choice(["oral", "not oral"])
             if oral=="oral":
@@ -92,7 +92,7 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 indices_to_choose = df_filtered.index[(df_filtered["Oral"].notna()) & (df_filtered["Oral"]=="not oral")].to_list()
             index = random.choice(indices_to_choose)
             abstract_content = df_filtered.at[index,"Abstract"]
-            question = "For a NeurIPS paper (not in the database) with abstract {}, predict whether it will be accepted as an oral presentation? Return either ‘oral’ or ‘not oral’.".format(abstract_content)
+            question = "For a NeurIPS paper, which is not present in the database, with abstract {}, predict whether it will be accepted as an oral presentation? Return either ‘oral’ or ‘not oral’.".format(abstract_content)
             answer = oral
             if answer:
                 writer.write({"qid": "medium-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
