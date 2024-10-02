@@ -54,7 +54,7 @@ if __name__ == "__main__":
     
     total_count = 0
     count, valid_performance, errors, cost, cost_original = defaultdict(int), {}, defaultdict(int), defaultdict(int), {}
-    # tool_count, avg_tool_cost = defaultdict(int), defaultdict(int) 
+    tool_count, avg_tool_cost = defaultdict(int), defaultdict(int) 
         
     for filename in os.listdir(logs_dir):
         total_count += 1
@@ -68,26 +68,26 @@ if __name__ == "__main__":
             per_question_cost = float(re.search(r"(?<='Cost': )\d+\.?\d*", content).group(0))
             llm_answer = re.search(r"(?<='LLM Answer': )(.*?)}", content).group(1)
             gt_answer = re.search(r"(?<='Ground-Truth Answer': )(.*?)}", content).group(1)
-            # question_tool_count = re.search(r"\{'Tool Count':\s*(\{.*?\})\}", content).group(1)
-            # question_tool_count = ast.literal_eval(question_tool_count)
-            # if total_count<5:
-            #     print("question_tool_count", question_tool_count)
-            #     print(type(question_tool_count))
-            # question_tool_cost = re.search(r"\{'Tool Cost':\s*(\{.*?\})\}", content).group(1)
-            # question_tool_cost = ast.literal_eval(question_tool_cost)
-            # if total_count<5:
-            #     print("question_tool_cost", question_tool_cost)
-            #     print(type(question_tool_cost))
-            # for key in question_tool_count.keys():
-            #     if key in tool_count:
-            #         tool_count[key] += int(question_tool_count[key])
-            #     else:
-            #         tool_count[key] = int(question_tool_count[key])
-            # for key in question_tool_cost.keys():
-            #     if key in avg_tool_cost:
-            #         avg_tool_cost[key] += int(question_tool_cost[key])
-            #     else:
-            #         avg_tool_cost[key] = int(question_tool_cost[key])
+            question_tool_count = re.search(r"\{'Tool Count':\s*(\{.*?\})\}", content).group(1)
+            question_tool_count = ast.literal_eval(question_tool_count)
+            if total_count<5:
+                print("question_tool_count", question_tool_count)
+                print(type(question_tool_count))
+            question_tool_cost = re.search(r"\{'Tool Cost':\s*(\{.*?\})\}", content).group(1)
+            question_tool_cost = ast.literal_eval(question_tool_cost)
+            if total_count<5:
+                print("question_tool_cost", question_tool_cost)
+                print(type(question_tool_cost))
+            for key in question_tool_count.keys():
+                if key in tool_count:
+                    tool_count[key] += int(question_tool_count[key])
+                else:
+                    tool_count[key] = int(question_tool_count[key])
+            for key in question_tool_cost.keys():
+                if key in avg_tool_cost:
+                    avg_tool_cost[key] += int(question_tool_cost[key])
+                else:
+                    avg_tool_cost[key] = int(question_tool_cost[key])
                     
             if "[" in llm_answer and "]" in llm_answer:
                 try:
@@ -104,7 +104,7 @@ if __name__ == "__main__":
                     valid_performance[question_type] = [[],[]]
                 else:
                     valid_performance[question_type] = 0
-                
+            
             if llm_answer=="None" or llm_answer=="null" or llm_answer=="":
                 print("None filename", filename) ##
                 errors[question_type] += 1
@@ -136,11 +136,6 @@ if __name__ == "__main__":
                         errors[question_type] += 1
                         cost_original[question_type]["invalid"].append(per_question_cost)
                 elif question_type in [2,5]: # set intersection
-                    if not isinstance(llm_answer, list) and not isinstance(llm_answer, set):
-                        print("data type filename", filename) ##
-                        errors[question_type] += 1
-                        cost_original[question_type]["invalid"].append(per_question_cost)
-                        continue
                     try:
                         valid_performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
                         cost_original[question_type]["valid"].append(per_question_cost)
@@ -248,10 +243,10 @@ if __name__ == "__main__":
                 cost[key]["invalid_variance"] = statistics.variance(cost_original[key]["invalid"])
     cost = dict(sorted(cost.items()))
     count = dict(sorted(count.items()))
-    # tool_count = dict(sorted(tool_count.items()))
-    # for key in avg_tool_cost.keys():
-    #     avg_tool_cost[key] = avg_tool_cost[key] / tool_count[key]
-    # avg_tool_cost = dict(sorted(avg_tool_cost.items()))
+    tool_count = dict(sorted(tool_count.items()))
+    for key in avg_tool_cost.keys():
+        avg_tool_cost[key] = avg_tool_cost[key] / tool_count[key]
+    avg_tool_cost = dict(sorted(avg_tool_cost.items()))
     
     # save the result
     result = {'overall_performance': overall_performance, 'valid_performance': valid_performance, 'errors': errors, 'cost': cost, 'cost_original': cost_original, 'count': count, 'total_count': total_count, 'args': vars(args)} # 'tool_count': tool_count, 'avg_tool_cost': avg_tool_cost, 
