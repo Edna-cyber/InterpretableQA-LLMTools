@@ -41,9 +41,9 @@ datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
 db = table_toolkits()
 ACTION_LIST = {
-    'Calculate': calculator,
-    'LoadDB': db.db_loader,
-    'TFIDF': tfidf,
+    'Calculator': calculator,
+    'DBLoader': db.db_loader,
+    'TFIDFMatcher': tfidf,
     'PandasInterpreter': db.pandas_interpreter, 
     'PythonInterpreter': python_interpreter,
     'Forecaster': forecaster,
@@ -97,7 +97,8 @@ if __name__ == "__main__":
 
     pids = solver.pids
     
-    for pid in tqdm(pids): # pids
+    for pid in tqdm(pids): ###
+        # print("pid", pid)
         db.data = None # force reset
         example = solver.examples[pid] # get one example 
         if args.prompt=="interp":
@@ -105,8 +106,6 @@ if __name__ == "__main__":
         else: 
             user_prompt = "Now, you need to act as a policy model and determine the sequence of modules that can be executed sequentially can solve the question: "+example["question"]
         question_type = int(example["question_type"])
-        if question_type!=4 and question_type!=5: ###
-            continue
         per_question_cost = 0
         tool_count, tool_cost = defaultdict(int), defaultdict(int) 
 
@@ -171,6 +170,7 @@ if __name__ == "__main__":
                         tool_count[function_type] += 1
                         tool_cost[function_type] += function_cost
                         per_question_cost += function_cost
+                        # print("per_question_cost", per_question_cost) ###
                     
                     tool_call_response = {
                         "tool_call_id": tool_call.id,
@@ -196,6 +196,7 @@ if __name__ == "__main__":
                                 tool_count[function_type] -= 1
                                 tool_cost[function_type] -= function_cost
                                 per_question_cost -= function_cost
+                                # print("per_question_cost", per_question_cost) ###
                             continue
                         cost_analysis_ind = content.find("Cost Analysis")
                         modules = content[:cost_analysis_ind].split("Modules")
@@ -216,6 +217,7 @@ if __name__ == "__main__":
                                 tool_count[function_type] -= 1
                                 tool_cost[function_type] -= function_cost
                                 per_question_cost -= function_cost
+                                # print("per_question_cost", per_question_cost) ###
                 else:
                     response_without_tools = {
                         "role": choice.message.role,

@@ -80,7 +80,7 @@ ans = solution(19)
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "[2016]"
                     })
@@ -92,7 +92,7 @@ ans = solution(19)
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': """We have successfully loaded the hupd dataframe, including the following columns: 'index'(e.g.23369, <class 'numpy.int64'>), 'patent_number'(e.g.9993790, <class 'numpy.int64'>), 'decision'(e.g.'ACCEPTED', <class 'str'>), 'title'(e.g.ANTIMICROB..., <class 'str'>), 'abstract'(e.g.Antimicrob..., <class 'str'>), 'claims'(e.g.1. An isol..., <class 'str'>), 'background'(e.g.<SOH> BACK..., <class 'str'>), 'summary'(e.g.<SOH> SUMM..., <class 'str'>), 'full_description'(e.g.CROSS-REFE..., <class 'str'>), 'filing_date'(e.g.2016-12-08 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'patent_issue_date'(e.g.2018-06-12 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'date_published'(e.g.2018-08-09 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'examiner_id'(e.g.9993790, <class 'numpy.int64'>), 'icpr_category'(e.g.A61, <class 'str'>), 'cpc_category'(e.g.A61, <class 'str'>).
 It has 13491 rows."""
     },
@@ -212,7 +212,7 @@ month = df['filing_month'].mode()[0]
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "[2007,2008,2009]"
                     })
@@ -224,7 +224,7 @@ month = df['filing_month'].mode()[0]
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': """We have successfully loaded the hupd dataframe, including the following columns: 'index'(e.g.0, <class 'numpy.int64'>), 'patent_number'(e.g.7869297, <class 'numpy.int64'>), 'decision'(e.g.'ACCEPTED', <class 'str'>), 'title'(e.g.Method for..., <class 'str'>), 'abstract'(e.g.A method f..., <class 'str'>), 'claims'(e.g.1. A metho..., <class 'str'>), 'background'(e.g.<SOH> BACK..., <class 'str'>), 'summary'(e.g.<SOH> SUMM..., <class 'str'>), 'full_description'(e.g.BACKGROUND..., <class 'str'>), 'filing_date'(e.g.2007-07-18 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'patent_issue_date'(e.g.2011-01-11 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'date_published'(e.g.2008-02-28 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'examiner_id'(e.g.7869297, <class 'numpy.int64'>), 'icpr_category'(e.g.B21, <class 'str'>), 'cpc_category'(e.g.H01, <class 'str'>).
 It has 5714 rows."""
     },
@@ -314,7 +314,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'TFIDF',
+                    'name': 'TFIDFMatcher',
                     'arguments': json.dumps({
                         "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence." 
                     })
@@ -326,7 +326,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'TFIDF',
+        'name': 'TFIDFMatcher',
         'content': "{'match':1}"
     },
     {
@@ -336,7 +336,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'TFIDF',
+                    'name': 'TFIDFMatcher',
                     'arguments': json.dumps({
                         "query": "machine learning", "document": "Artificial intelligence is a broad field that encompasses various technologies." 
                     })
@@ -348,7 +348,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     {
         'tool_call_id': 'call_1',
         'role': 'tool',
-        'name': 'TFIDF',
+        'name': 'TFIDFMatcher',
         'content': "{'match':0}"
     },
     {
@@ -472,9 +472,9 @@ messages_formula_1 = [
 2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.
 3.Execute the Lowest Cost Solution.
 Interpretability Costs:
-Calculate: 2
-LoadDB: 3
-TFIDF: 5
+Calculator: 2
+DBLoader: 3
+TFIDFMatcher: 5
 PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
 PythonInterpreter: Same as PandasInterpreter
 Forecaster:
@@ -495,12 +495,12 @@ Accuracy cannot be sacrificed for interpretability. Examples are provided for to
     },
     {
         'role': 'assistant',
-        'content': """Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584), Finish({'ans': 4181}, ans, integer)
+        'content': """Modules1: Calculator(0+0), Calculator(0+1), Calculator(0+1), Calculator(1+1), Calculator(1+2), Calculator(2+3), Calculator(3+5), Calculator(5+8), Calculator(8+13), Calculator(13+21), Calculator(21+34), Calculator(34+55), Calculator(55+89), Calculator(89+144), Calculator(144+233), Calculator(233+377), Calculator(377+610), Calculator(610+987), Calculator(987+1597), Calculator(1597+2584), Finish({'ans': 4181}, ans, integer)
 Modules2: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)
 
 Cost Analysis:
 Modules1 Cost:
-Calculate operations (20 * 2) + Finish: 40 + 0 = 40
+Calculator operations (20 * 2) + Finish: 40 + 0 = 40
 Modules2 Cost:
 PythonInterpreter: 3.32 (11 lines) * 1 (0 package) = 3.32
 Finish: 0
@@ -570,30 +570,30 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+        'content': """Modules1: DBLoader(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)
-Modules2: LoadDB(hupd, [2016]), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Modules2: DBLoader(hupd, [2016]), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\ncounter = Counter(df['filing_month'])\nmonth = counter.most_common()[0][0]), Finish({'month':12}, month, integer)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 1.73 (3 lines) * 1 (1 package) = 1.73
 Finish: 0
 Total: 3 + 1.73 + 0 = 4.73
 Modules2 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 2.24 (5 lines) * 1 (1 package) = 2.24
 Finish: 0
 Total: 3 + 2.24 + 0 = 5.24
 
-Best Modules: LoadDB(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Best Modules: DBLoader(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "[2016]"
                     })
@@ -605,7 +605,7 @@ Best Modules: LoadDB(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['f
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': """We have successfully loaded the hupd dataframe, including the following columns: 'index'(e.g.23369, <class 'numpy.int64'>), 'patent_number'(e.g.9993790, <class 'numpy.int64'>), 'decision'(e.g.'ACCEPTED', <class 'str'>), 'title'(e.g.ANTIMICROB..., <class 'str'>), 'abstract'(e.g.Antimicrob..., <class 'str'>), 'claims'(e.g.1. An isol..., <class 'str'>), 'background'(e.g.<SOH> BACK..., <class 'str'>), 'summary'(e.g.<SOH> SUMM..., <class 'str'>), 'full_description'(e.g.CROSS-REFE..., <class 'str'>), 'filing_date'(e.g.2016-12-08 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'patent_issue_date'(e.g.2018-06-12 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'date_published'(e.g.2018-08-09 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'examiner_id'(e.g.9993790, <class 'numpy.int64'>), 'icpr_category'(e.g.A61, <class 'str'>), 'cpc_category'(e.g.A61, <class 'str'>).
 It has 13491 rows."""
     },
@@ -669,7 +669,7 @@ month = df['filing_month'].mode()[0]
         'role': 'assistant',
         'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
 Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
-Modules3: LoadDB(neurips, list(range(3000))), PandasInterpreter('''import torch
+Modules3: DBLoader(neurips, list(range(3000))), PandasInterpreter('''import torch
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -745,7 +745,7 @@ TextualClassifier (bert-base-uncased): 20
 Finish: 0
 Total: 20 + 0 = 20
 Modules3 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 8 (64 lines) * 4 (4 packages) = 32
 Finish: 0
 Total: 3 + 32 + 0 = 35
@@ -806,24 +806,24 @@ Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propo
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules2: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules3: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+        'content': """Modules1: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules2: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules3: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 2.83 (8 lines) * 1 (1 package) = 2.83
 Finish: 0
 Total: 3 + 2.83 + 0 = 5.83
 Modules2 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 2.24 (5 lines) * 1 (1 package) = 2.24
 Forecaster (ARIMA): 8
 Finish: 0
 Total: 3 + 2.24 + 8 + 0 = 13.24
 Modules3 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 2.24 (6 lines) * 1 (1 package) = 2.24
 Forecaster (linear_regression): 6
 Finish: 0
@@ -831,12 +831,12 @@ Total: 3 + 2.24 + 6 + 0 = 11.24
 
 Reasoning: Modules1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Modules: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+Best Modules: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "[2007,2008,2009]"
                     })
@@ -848,7 +848,7 @@ Best Modules: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': """We have successfully loaded the hupd dataframe, including the following columns: 'index'(e.g.0, <class 'numpy.int64'>), 'patent_number'(e.g.7869297, <class 'numpy.int64'>), 'decision'(e.g.'ACCEPTED', <class 'str'>), 'title'(e.g.Method for..., <class 'str'>), 'abstract'(e.g.A method f..., <class 'str'>), 'claims'(e.g.1. A metho..., <class 'str'>), 'background'(e.g.<SOH> BACK..., <class 'str'>), 'summary'(e.g.<SOH> SUMM..., <class 'str'>), 'full_description'(e.g.BACKGROUND..., <class 'str'>), 'filing_date'(e.g.2007-07-18 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'patent_issue_date'(e.g.2011-01-11 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'date_published'(e.g.2008-02-28 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'examiner_id'(e.g.7869297, <class 'numpy.int64'>), 'icpr_category'(e.g.B21, <class 'str'>), 'cpc_category'(e.g.H01, <class 'str'>).
 It has 5714 rows."""
     },
@@ -934,7 +934,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     {
         'role': 'assistant',
         'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
+Modules2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
 Modules3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
 
 Cost Analysis:
@@ -943,7 +943,7 @@ PythonInterpreter: 4.58 (21 lines) * 2 (2 packages) = 9.16
 Finish: 0
 Total: 9.16 + 0 = 9.16
 Modules2 Cost:
-TFIDF (2x): 5 + 5 + 0 = 10
+TFIDFMatcher (2x): 5 + 5 + 0 = 10
 PythonInterpreter: 3 (9 lines) * 1 (0 package) = 3
 Finish: 0
 Total: 10 + 3 + 0 = 13
@@ -952,12 +952,12 @@ LLMInferencer: 30
 Finish: 0
 Total: 30 + 0 = 30
 
-Best Modules: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])""",
+Best Modules: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'TFIDF',
+                    'name': 'TFIDFMatcher',
                     'arguments': json.dumps({
                         "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence." 
                     })
@@ -969,7 +969,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'TFIDF',
+        'name': 'TFIDFMatcher',
         'content': "{'match':1}"
     },
     {
@@ -979,7 +979,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'TFIDF',
+                    'name': 'TFIDFMatcher',
                     'arguments': json.dumps({
                         "query": "machine learning", "document": "Artificial intelligence is a broad field that encompasses various technologies." 
                     })
@@ -991,7 +991,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
     {
         'tool_call_id': 'call_1',
         'role': 'tool',
-        'name': 'TFIDF',
+        'name': 'TFIDFMatcher',
         'content': "{'match':0}"
     },
     {
@@ -1130,9 +1130,9 @@ messages_formula_2 = [
 2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.
 3.Execute the Lowest Cost Solution.
 Interpretability Costs:
-Calculate: 48
-LoadDB: 47
-TFIDF: 45
+Calculator: 48
+DBLoader: 47
+TFIDFMatcher: 45
 PandasInterpreter: 50-sqrt(Lines of Code) × max(Packages,1)
 PythonInterpreter: Same as PandasInterpreter
 Forecaster:
@@ -1153,12 +1153,12 @@ Accuracy cannot be sacrificed for interpretability. Examples are provided for to
     },
     {
         'role': 'assistant',
-        'content': """Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584), Finish({'ans': 4181}, ans, integer)
+        'content': """Modules1: Calculator(0+0), Calculator(0+1), Calculator(0+1), Calculator(1+1), Calculator(1+2), Calculator(2+3), Calculator(3+5), Calculator(5+8), Calculator(8+13), Calculator(13+21), Calculator(21+34), Calculator(34+55), Calculator(55+89), Calculator(89+144), Calculator(144+233), Calculator(233+377), Calculator(377+610), Calculator(610+987), Calculator(987+1597), Calculator(1597+2584), Finish({'ans': 4181}, ans, integer)
 Modules2: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)
 
 Cost Analysis:
 Modules1 Cost:
-Calculate operations (20 * 48) + Finish: 960 + 0 = 960
+Calculator operations (20 * 48) + Finish: 960 + 0 = 960
 Modules2 Cost:
 PythonInterpreter: 50 - 3.32 (11 lines) * 1 (0 package) = 46.68
 Finish: 0
@@ -1228,30 +1228,30 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+        'content': """Modules1: DBLoader(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)
-Modules2: LoadDB(hupd, [2016]), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Modules2: DBLoader(hupd, [2016]), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\ncounter = Counter(df['filing_month'])\nmonth = counter.most_common()[0][0]), Finish({'month':12}, month, integer)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 1.73 (3 lines) * 1 (1 package) = 48.27
 Finish: 0
 Total: 47 + 48.27 + 0 = 95.27
 Modules2 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 2.24 (5 lines) * 1 (1 package) = 47.76
 Finish: 0
 Total: 47 + 47.76 + 0 = 94.76
 
-Best Modules: LoadDB(hupd, [2016]), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Best Modules: DBLoader(hupd, [2016]), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\ncounter = Counter(df['filing_month'])\nmonth = counter.most_common()[0][0]), Finish({'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "[2016]"
                     })
@@ -1263,7 +1263,7 @@ Best Modules: LoadDB(hupd, [2016]), PandasInterpreter(import pandas as pd\nfrom 
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': """We have successfully loaded the hupd dataframe, including the following columns: 'index'(e.g.23369, <class 'numpy.int64'>), 'patent_number'(e.g.9993790, <class 'numpy.int64'>), 'decision'(e.g.'ACCEPTED', <class 'str'>), 'title'(e.g.ANTIMICROB..., <class 'str'>), 'abstract'(e.g.Antimicrob..., <class 'str'>), 'claims'(e.g.1. An isol..., <class 'str'>), 'background'(e.g.<SOH> BACK..., <class 'str'>), 'summary'(e.g.<SOH> SUMM..., <class 'str'>), 'full_description'(e.g.CROSS-REFE..., <class 'str'>), 'filing_date'(e.g.2016-12-08 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'patent_issue_date'(e.g.2018-06-12 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'date_published'(e.g.2018-08-09 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'examiner_id'(e.g.9993790, <class 'numpy.int64'>), 'icpr_category'(e.g.A61, <class 'str'>), 'cpc_category'(e.g.A61, <class 'str'>).
 It has 13491 rows."""
     },
@@ -1330,7 +1330,7 @@ month = counter.most_common()[0][0]
         'role': 'assistant',
         'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
 Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
-Modules3: LoadDB(neurips, list(range(3000))), PandasInterpreter('''import torch
+Modules3: DBLoader(neurips, list(range(3000))), PandasInterpreter('''import torch
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -1406,7 +1406,7 @@ TextualClassifier (bert-base-uncased): 30
 Finish: 0
 Total: 30 + 0 = 30
 Modules3 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 8 (64 lines) * 4 (4 packages) = 18
 Finish: 0
 Total: 47 + 18 + 0 = 65
@@ -1467,24 +1467,24 @@ Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propo
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules2: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules3: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+        'content': """Modules1: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules2: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules3: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 2.83 (8 lines) * 1 (1 package) = 47.17
 Finish: 0
 Total: 47 + 47.17 + 0 = 94.17
 Modules2 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 2.24 (5 lines) * 1 (1 package) = 47.76
 Forecaster (ARIMA): 42
 Finish: 0
 Total: 47 + 47.76 + 42 + 0 = 136.76
 Modules3 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 2.45 (5 lines) * 1 (1 package) = 47.76
 Forecaster (linear_regression): 44
 Finish: 0
@@ -1492,12 +1492,12 @@ Total: 47 + 47.76 + 44 + 0 = 138.76
 
 Reasoning: Modules1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Modules: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+Best Modules: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "[2007,2008,2009]"
                     })
@@ -1509,7 +1509,7 @@ Best Modules: LoadDB(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': """We have successfully loaded the hupd dataframe, including the following columns: 'index'(e.g.0, <class 'numpy.int64'>), 'patent_number'(e.g.7869297, <class 'numpy.int64'>), 'decision'(e.g.'ACCEPTED', <class 'str'>), 'title'(e.g.Method for..., <class 'str'>), 'abstract'(e.g.A method f..., <class 'str'>), 'claims'(e.g.1. A metho..., <class 'str'>), 'background'(e.g.<SOH> BACK..., <class 'str'>), 'summary'(e.g.<SOH> SUMM..., <class 'str'>), 'full_description'(e.g.BACKGROUND..., <class 'str'>), 'filing_date'(e.g.2007-07-18 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'patent_issue_date'(e.g.2011-01-11 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'date_published'(e.g.2008-02-28 00:00:00, <class 'pandas._libs.tslibs.timestamps.Timestamp'>), 'examiner_id'(e.g.7869297, <class 'numpy.int64'>), 'icpr_category'(e.g.B21, <class 'str'>), 'cpc_category'(e.g.H01, <class 'str'>).
 It has 5714 rows."""
     },
@@ -1595,7 +1595,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     {
         'role': 'assistant',
         'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
+Modules2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
 Modules3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
 
 Cost Analysis:
@@ -1604,7 +1604,7 @@ PythonInterpreter: 50 - 4.58 (21 lines) * 2 (2 packages) = 40.84
 Finish: 0
 Total: 40.84 + 0 = 40.84
 Modules2 Cost:
-TFIDF (2x): 45 + 45 + 0 = 90
+TFIDFMatcher (2x): 45 + 45 + 0 = 90
 PythonInterpreter: 50 - 3 (9 lines) * 1 (0 package) = 47
 Finish: 0
 Total: 90 + 47 + 0 = 137
@@ -1735,9 +1735,9 @@ messages_formula_3 = [
 2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.
 3.Execute the Lowest Cost Solution.
 Interpretability Costs:
-Calculate: 2
-LoadDB: 3
-TFIDF: 5
+Calculator: 2
+DBLoader: 3
+TFIDFMatcher: 5
 PandasInterpreter: (Lines of Code) × (Packages)
 Lines of Code: <10 (4), 10-20 (10), 21-100 (15), >100 (20)
 Packages: <2 (1), 2-5 (1.5), >5 (2)
@@ -1760,12 +1760,12 @@ Accuracy cannot be sacrificed for interpretability. Examples are provided for to
     },
     {
         'role': 'assistant',
-        'content': """Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584), Finish({'ans': 4181}, ans, integer)
+        'content': """Modules1: Calculator(0+0), Calculator(0+1), Calculator(0+1), Calculator(1+1), Calculator(1+2), Calculator(2+3), Calculator(3+5), Calculator(5+8), Calculator(8+13), Calculator(13+21), Calculator(21+34), Calculator(34+55), Calculator(55+89), Calculator(89+144), Calculator(144+233), Calculator(233+377), Calculator(377+610), Calculator(610+987), Calculator(987+1597), Calculator(1597+2584), Finish({'ans': 4181}, ans, integer)
 Modules2: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)
 
 Cost Analysis:
 Modules1 Cost:
-Calculate operations (20 * 2) + Finish: 40 + 0 = 40
+Calculator operations (20 * 2) + Finish: 40 + 0 = 40
 Modules2 Cost:
 PythonInterpreter: 4 (lines) * 1 (packages) = 4
 Finish: 0
@@ -1835,30 +1835,30 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+        'content': """Modules1: DBLoader(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)
-Modules2: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Modules2: DBLoader(hupd, 2016-2016), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\ncounter = Counter(df['filing_month'])\nmonth = counter.most_common()[0][0]), Finish({'month':12}, month, integer)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 4 (lines) * 1 (packages) = 4
 Finish: 0
 Total: 3 + 4 + 0 = 7
 Modules2 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 4 (lines) * 1.5 (packages) = 6
 Finish: 0
 Total: 3 + 6 + 0 = 9
 
-Best Modules: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Best Modules: DBLoader(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "2016-2016"
                     })
@@ -1870,7 +1870,7 @@ Best Modules: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': "We have successfully loaded the hupd dataframe, including the following columns: 'patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'. It has the following structure: patent_number decision  ... icpr_category cpc_category 0 <NA>  PENDING  ... F16  F16 1 <NA>  PENDING  ... C12  C12 2 <NA>  PENDING  ... H04  H04 3 <NA>  PENDING  ... G06  G06 4 <NA>  PENDING  ... H02  H02"
     },
     {
@@ -1933,7 +1933,7 @@ month = df['filing_month'].mode()[0]
         'role': 'assistant',
         'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
-Modules3: LoadDB(neurips, 0-3000), PandasInterpreter('''import torch
+Modules3: DBLoader(neurips, 0-3000), PandasInterpreter('''import torch
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -2009,7 +2009,7 @@ TextualClassifier (bert-base-uncased): 20
 Finish: 0
 Total: 20 + 0 = 20
 Modules3 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 15 (lines) * 2 (packages) = 30
 Finish: 0
 Total: 3 + 30 + 0 = 33
@@ -2070,24 +2070,24 @@ Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propo
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules2: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules3: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+        'content': """Modules1: DBLoader(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules2: DBLoader(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules3: DBLoader(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 4 (lines) * 1 (packages) = 4
 Finish: 0
 Total: 3 + 4 + 0 = 7
 Modules2 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 4 (lines) * 1 (packages) = 4
 Forecaster (ARIMA): 8
 Finish: 0
 Total: 3 + 4 + 8 + 0 = 15
 Modules3 Cost:
-LoadDB: 3
+DBLoader: 3
 PandasInterpreter: 4 (lines) * 1 (packages) = 4
 Forecaster (linear_regression): 6
 Finish: 0
@@ -2095,12 +2095,12 @@ Total: 3 + 4 + 6 + 0 = 13
 
 Reasoning: Modules1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Modules: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+Best Modules: DBLoader(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "2007-2009"
                     })
@@ -2112,7 +2112,7 @@ Best Modules: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'],num_rows: 5713}) test: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'filing_date', 'patent_issue_date', 'date_published', 'icpr_category', 'cpc_category'],num_rows: 1110})})"
     },
     {
@@ -2197,7 +2197,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     {
         'role': 'assistant',
         'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
+Modules2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
 Modules3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
 
 Cost Analysis:
@@ -2206,7 +2206,7 @@ PythonInterpreter: 10 (lines) * 1.5 (packages) = 15
 Finish: 0
 Total: 15 + 0 = 15
 Modules2 Cost:
-TFIDF (2x): 5 + 5 = 10
+TFIDFMatcher (2x): 5 + 5 = 10
 PythonInterpreter: 4 (lines) * 1 (packages) = 4
 Finish: 0
 Total: 10 + 4 = 14
@@ -2215,12 +2215,12 @@ LLMInferencer: 30
 Finish: 0
 Total: 30 + 0 = 30
 
-Best Modules: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))""",
+Best Modules: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'TFIDF',
+                    'name': 'TFIDFMatcher',
                     'arguments': json.dumps({
                         "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence." 
                     })
@@ -2232,7 +2232,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'TFIDF',
+        'name': 'TFIDFMatcher',
         'content': "{'match':1}"
     },
     {
@@ -2242,7 +2242,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'TFIDF',
+                    'name': 'TFIDFMatcher',
                     'arguments': json.dumps({
                         "query": "machine learning", "document": "Artificial intelligence is a broad field that encompasses various technologies." 
                     })
@@ -2254,7 +2254,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
     {
         'tool_call_id': 'call_1',
         'role': 'tool',
-        'name': 'TFIDF',
+        'name': 'TFIDFMatcher',
         'content': "{'match':0}"
     },
     {
@@ -2393,9 +2393,9 @@ messages_formula_4 = [
 2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.
 3.Execute the Lowest Cost Solution.
 Interpretability Costs:
-Calculate: 48
-LoadDB: 47
-TFIDF: 45
+Calculator: 48
+DBLoader: 47
+TFIDFMatcher: 45
 PandasInterpreter: 50 - (Lines of Code) × (Packages)
 Lines of Code: <10 (4), 10-20 (10), 21-100 (15), >100 (20)
 Packages: <2 (1), 2-5 (1.5), >5 (2)
@@ -2418,12 +2418,12 @@ Accuracy cannot be sacrificed for interpretability. Examples are provided for to
     },
     {
         'role': 'assistant',
-        'content': """Modules1: Calculate(0+0), Calculate(0+1), Calculate(0+1), Calculate(1+1), Calculate(1+2), Calculate(2+3), Calculate(3+5), Calculate(5+8), Calculate(8+13), Calculate(13+21), Calculate(21+34), Calculate(34+55), Calculate(55+89), Calculate(89+144), Calculate(144+233), Calculate(233+377), Calculate(377+610), Calculate(610+987), Calculate(987+1597), Calculate(1597+2584), Finish({'ans': 4181}, ans, integer)
+        'content': """Modules1: Calculator(0+0), Calculator(0+1), Calculator(0+1), Calculator(1+1), Calculator(1+2), Calculator(2+3), Calculator(3+5), Calculator(5+8), Calculator(8+13), Calculator(13+21), Calculator(21+34), Calculator(34+55), Calculator(55+89), Calculator(89+144), Calculator(144+233), Calculator(233+377), Calculator(377+610), Calculator(610+987), Calculator(987+1597), Calculator(1597+2584), Finish({'ans': 4181}, ans, integer)
 Modules2: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)
 
 Cost Analysis:
 Modules1 Cost:
-Calculate operations (20 * 48) + Finish: 960 + 0 = 960
+Calculator operations (20 * 48) + Finish: 960 + 0 = 960
 Modules2 Cost:
 PythonInterpreter: 50 - 4 (lines) * 1 (packages) = 46
 Finish: 0
@@ -2493,30 +2493,30 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+        'content': """Modules1: DBLoader(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)
-Modules2: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Modules2: DBLoader(hupd, 2016-2016), PandasInterpreter(import pandas as pd\nfrom collections import Counter\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\ncounter = Counter(df['filing_month'])\nmonth = counter.most_common()[0][0]), Finish({'month':12}, month, integer)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 4 (lines) * 1 (packages) = 46
 Finish: 0
 Total: 47 + 46 + 0 = 93
 Modules2 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 4 (lines) * 1.5 (packages) = 44
 Finish: 0
 Total: 47 + 44 + 0 = 91
 
-Best Modules: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+Best Modules: DBLoader(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
 .month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "2016-2016"
                     })
@@ -2528,7 +2528,7 @@ Best Modules: LoadDB(hupd, 2016-2016), PandasInterpreter(import pandas as pd\ndf
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': "We have successfully loaded the hupd dataframe, including the following columns: 'patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'. It has the following structure: patent_number decision  ... icpr_category cpc_category 0 <NA>  PENDING  ... F16  F16 1 <NA>  PENDING  ... C12  C12 2 <NA>  PENDING  ... H04  H04 3 <NA>  PENDING  ... G06  G06 4 <NA>  PENDING  ... H02  H02"
     },
     {
@@ -2591,7 +2591,7 @@ month = df['filing_month'].mode()[0]
         'role': 'assistant',
         'content': """Modules1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 Modules2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
-Modules3: LoadDB(neurips, 0-3000), PandasInterpreter('''import torch
+Modules3: DBLoader(neurips, 0-3000), PandasInterpreter('''import torch
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -2667,7 +2667,7 @@ TextualClassifier (bert-base-uncased): 30
 Finish: 0
 Total: 30 + 0 = 30
 Modules3 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 15 (lines) * 2 (packages) = 20
 Finish: 0
 Total: 47 + 20 + 0 = 67
@@ -2728,24 +2728,24 @@ Best Modules: TextualClassifier(neurips, logistic_regression, Abstract, We propo
     },
     {
         'role': 'assistant',
-        'content': """Modules1: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules2: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Modules3: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+        'content': """Modules1: DBLoader(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules2: DBLoader(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Modules3: DBLoader(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 
 Cost Analysis:
 Modules1 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 4 (lines) * 1 (packages) = 46
 Finish: 0
 Total: 47 + 46 + 0 = 93
 Modules2 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 4 (lines) * 1 (packages) = 46
 Forecaster (ARIMA): 42
 Finish: 0
 Total: 47 + 46 + 42 + 0 = 135
 Modules3 Cost:
-LoadDB: 47
+DBLoader: 47
 PandasInterpreter: 50 - 4 (lines) * 1 (packages) = 46
 Forecaster (linear_regression): 44
 Finish: 0
@@ -2753,12 +2753,12 @@ Total: 47 + 46 + 44 + 0 = 137
 
 Reasoning: Modules1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Modules: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+Best Modules: DBLoader(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "2007-2009"
                     })
@@ -2770,7 +2770,7 @@ Best Modules: LoadDB(hupd, 2007-2009), PandasInterpreter(import pandas as pd\ndf
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': "We have successfully loaded the hupd dataset dict that has the following structure: DatasetDict({train: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'],num_rows: 5713}) test: Dataset({features: ['patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'filing_date', 'patent_issue_date', 'date_published', 'icpr_category', 'cpc_category'],num_rows: 1110})})"
     },
     {
@@ -2855,7 +2855,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     {
         'role': 'assistant',
         'content': """Modules1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Modules2: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
+Modules2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
 Modules3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
 
 Cost Analysis:
@@ -2864,7 +2864,7 @@ PythonInterpreter: 50 - 10 (lines) * 1.5 (packages) = 35
 Finish: 0
 Total: 35 + 0 = 35
 Modules2 Cost:
-TFIDF (2x): 45 + 45 = 90
+TFIDFMatcher (2x): 45 + 45 = 90
 PythonInterpreter: 50 - 4 (lines) * 1 (packages) = 46
 Finish: 0
 Total: 90 + 46 = 136
@@ -2873,12 +2873,12 @@ LLMInferencer: 20
 Finish: 0
 Total: 20 + 0 = 20
 
-Best Modules: TFIDF(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDF(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))""",
+Best Modules: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'TFIDF',
+                    'name': 'TFIDFMatcher',
                     'arguments': json.dumps({
                         "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence." 
                     })
@@ -2890,7 +2890,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'TFIDF',
+        'name': 'TFIDFMatcher',
         'content': "{'match':1}"
     },
     {
@@ -2900,7 +2900,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
             {
                 'id': 'call_1',
                 'function': {
-                    'name': 'TFIDF',
+                    'name': 'TFIDFMatcher',
                     'arguments': json.dumps({
                         "query": "machine learning", "document": "Artificial intelligence is a broad field that encompasses various technologies." 
                     })
@@ -2912,7 +2912,7 @@ Best Modules: TFIDF(machine learning, Machine learning is a specialized branch o
     {
         'tool_call_id': 'call_1',
         'role': 'tool',
-        'name': 'TFIDF',
+        'name': 'TFIDFMatcher',
         'content': "{'match':0}"
     },
     {
@@ -3123,7 +3123,7 @@ ans = solution(19)
             {
                 'id': 'call_0',
                 'function': {
-                    'name': 'LoadDB',
+                    'name': 'DBLoader',
                     'arguments': json.dumps({
                         "target_db": "hupd", "duration": "2016-2016"
                     })
@@ -3135,7 +3135,7 @@ ans = solution(19)
     {
         'tool_call_id': 'call_0',
         'role': 'tool',
-        'name': 'LoadDB',
+        'name': 'DBLoader',
         'content': "We have successfully loaded the hupd dataframe, including the following columns: 'patent_number', 'decision', 'title', 'abstract', 'claims', 'background', 'summary', 'full_description', 'main_cpc_label', 'main_ipcr_label', 'filing_date', 'patent_issue_date', 'date_published', 'examiner_id', 'icpr_category', 'cpc_category'. It has the following structure: patent_number decision  ... icpr_category cpc_category 0 <NA>  PENDING  ... F16  F16 1 <NA>  PENDING  ... C12  C12 2 <NA>  PENDING  ... H04  H04 3 <NA>  PENDING  ... G06  G06 4 <NA>  PENDING  ... H02  H02"
     },
     {

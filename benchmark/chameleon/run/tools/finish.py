@@ -10,9 +10,9 @@ def finish(variable_values, answer_variable, answer_type, choices="[]"):
             return "Error: answer_variable must be a key inside variable_values."
         type_map = {"list": list, "float": float, "integer": int, "string": str}
         if not isinstance(variable_values[answer_variable], type_map[answer_type]):
-            return "Error: the final answer should be of type {} not {}".format(answer_type, type(variable_values[answer_variable]))
+            return "Error: the final answer should be of type {} not {}. Modify variable values accordingly and call finish tool again.".format(answer_type, type(variable_values[answer_variable]))
         if choices and variable_values[answer_variable] not in choices:
-            return "Error: the final answer must be one of the elements in {}".format(choices)
+            return "Error: the final answer must be one of the elements in {}. Modify variable values accordingly and call finish tool again.".format(choices)
         return variable_values[answer_variable]
     except Exception as e:
         if "malformed node or string" in str(e):

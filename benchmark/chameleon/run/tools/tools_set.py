@@ -2,7 +2,7 @@ tools_gpt = [
     {
         "type": "function",
         "function": {
-            "name": "Calculate",
+            "name": "Calculator",
             "description": "Conduct an arithmetic operation",
             "parameters": {
                 "type": "object",
@@ -19,8 +19,8 @@ tools_gpt = [
     {
         "type": "function",
         "function": {
-            "name": "LoadDB",
-            "description": "Load a database specified by the DBName and a subset. Normally, we only use LoadDB when the question requires data from a specific structured database.",
+            "name": "DBLoader",
+            "description": "Load a database specified by the DBName and a subset. Normally, we only use DBLoader when the question requires data from a specific structured database.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -40,7 +40,7 @@ tools_gpt = [
     {
         "type": "function",
         "function": {
-            "name": "TFIDF",
+            "name": "TFIDFMatcher",
             "description": "Find the most relevant document for a given query or to identify pairs of documents that are most relevant to each other",
             "parameters": {
                 "type": "object",
@@ -62,7 +62,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "PandasInterpreter",
-            "description": "Interpret Pandas code written in Python and return a dictionary containing the values of variables defined within that code. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
+            "description": "Interpret Pandas code written in Python and return a dictionary containing the values of variables defined within that code. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use DBLoader before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -158,7 +158,7 @@ tools_gpt = [
         "type": "function",
         "function": {
             "name": "LLMInferencer",
-            "description": "Utilize the current LLM to generate a solution when the answer cannot be determined from other tools. This tool should be used to resolve uncertainties, especially when variable values for the Finish tool are not explicitly defined or involve random guessing.",
+            "description": "Utilize the current LLM to generate a solution only when the answer cannot be determined from other tools or involves complex reasoning; do not use it for simple type conversions of variable values for the Finish tool. This tool is specifically for addressing uncertainties when these variable values are not explicitly defined or involve random guessing.",
             "parameters": {},
             "required": [],
         },
@@ -173,7 +173,7 @@ tools_gpt = [
                 "properties": {
                     "variable_values": {
                         "type": "string",
-                        "description": "A string that evaluates to a dictionary of variables and their corresponding values, obtained directly from the previous tool call.",
+                        "description": "A string that evaluates to a dictionary of variables and their corresponding values, which is exactly the same as the output from the previous tool call. If it leads to an error response, the variable_values must be modified to match the required answer_type, and to match one of the available choices when choices is provided."
                     },
                     "answer_variable": {
                         "type": "string",
@@ -200,7 +200,7 @@ tools_gemini = [
   {
     "function_declarations": [
       {
-        "name": "Calculate",
+        "name": "Calculator",
         "description": "Conduct an arithmetic operation",
         "parameters": {
           "type": "object",
@@ -218,8 +218,8 @@ tools_gemini = [
   {
     "function_declarations": [
       {
-        "name": "LoadDB",
-        "description": "Load a database specified by the DBName and a subset. Normally, we only use LoadDB when the question requires data from a specific structured database.",
+        "name": "DBLoader",
+        "description": "Load a database specified by the DBName and a subset. Normally, we only use DBLoader when the question requires data from a specific structured database.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -258,7 +258,7 @@ tools_gemini = [
   {
     "function_declarations": [
       {
-        "name": "TFIDF",
+        "name": "TFIDFMatcher",
         "description": "Find the most relevant document for a given query or to identify pairs of documents that are most relevant to each other",
         "parameters": {
           "type": "object",
@@ -281,7 +281,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "PandasInterpreter",
-        "description": "Interpret Pandas code written in Python and return a dictionary containing the values of variables defined within that code. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use LoadDB before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
+        "description": "Interpret Pandas code written in Python and return a dictionary containing the values of variables defined within that code. Normally, we only use PandasInterpreter when the question requires data manipulation performed on a specific structured dataframe. We must first use DBLoader before we can use PandasInterpreter. We do not use this tool for general Python computations or tasks unrelated to dataframes.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -381,7 +381,7 @@ tools_gemini = [
     "function_declarations": [
       {
         "name": "LLMInferencer",
-        "description": "Utilize the current LLM to generate a solution when the answer cannot be determined from other tools. This tool should be used to resolve uncertainties, especially when variable values for the Finish tool are not explicitly defined or involve random guessing."
+        "description": "Utilize the current LLM to generate a solution only when the answer cannot be determined from other tools or involves complex reasoning; do not use it for simple type conversions of variable values for the Finish tool. This tool is specifically for addressing uncertainties when these variable values are not explicitly defined or involve random guessing."
       }
     ]
   },
@@ -395,7 +395,7 @@ tools_gemini = [
           "properties": {
             "variable_values": {
               "type": "string",
-              "description": "A string that evaluates to a dictionary of variables and their corresponding values, which is exactly the same as the output from the previous tool call"
+              "description": "A string that evaluates to a dictionary of variables and their corresponding values, which is exactly the same as the output from the previous tool call. If it leads to an error response, the variable_values must be modified to match the required answer_type, and to match one of the available choices when choices is provided."
             },
             "answer_variable": {
               "type": "string",

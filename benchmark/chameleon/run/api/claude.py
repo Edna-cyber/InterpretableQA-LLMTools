@@ -10,72 +10,17 @@ client = anthropic.Anthropic(
 
 CLAUDE_CKPT = "claude-3-opus-20240229"
 
-def encode_image(image_path):
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+def call_claude3(prompt, temperature, max_tokens, tools, tool_choice):
+    response = anthropic_client.completions.create(
+        model=CLAUDE_CKPT, 
+        prompt=prompt,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        tools=tools,  
+        tool_choice=tool_choice
+    )
+    choice = response['completion']
+    return choice
 
-def call_claude3_vision(text_query, image_path, temperature=0.0):
-    base64_image = encode_image(image_path)
-    success = False
-    while not success:
-        try:
-            response = client.messages.create(
-                model=CLAUDE_CKPT,
-                max_tokens=1024,
-                temperature=temperature,
-                messages=[
-                    {
-                        "role": "user", 
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": base64_image,
-                                }
-                            },
-                            {
-                                "type": "text", 
-                                "text": text_query
-                            }
-                        ]
-                    }
-                ]
-            )
-            response = response.content[0].text
-            success = True
-        except Exception as e:
-            print(e)
-            sleep(60)
-    return response
-
-    
-
-def call_claude3(text_query, system_content, temperature=0.0):
-    success = False
-    while not success:
-        try:
-            response = client.messages.create(
-                model=CLAUDE_CKPT,
-                max_tokens=1024,
-                temperature=temperature,
-                system=system_content,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": text_query
-                            }
-                        ]
-                    }
-                ]
-            )
-            response = response.content[0].text
-            success = True
-        except Exception as e:
-            print(e)
-            sleep(60)
-    return response
+if __name__ == '__main__':
+    call_claude3(model, prompt, temperature, max_tokens, tools, tool_choice)

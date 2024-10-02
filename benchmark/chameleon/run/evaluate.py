@@ -109,7 +109,7 @@ if __name__ == "__main__":
                 print("None filename", filename) ##
                 errors[question_type] += 1
                 cost_original[question_type]["invalid"].append(per_question_cost)
-            elif isinstance(llm_answer, str) and llm_answer.startswith("Error:"):
+            elif isinstance(llm_answer, str) and "Error:" in llm_answer:
                 print("Error: filename", filename) ##
                 errors[question_type] += 1
                 cost_original[question_type]["invalid"].append(per_question_cost)
@@ -136,6 +136,11 @@ if __name__ == "__main__":
                         errors[question_type] += 1
                         cost_original[question_type]["invalid"].append(per_question_cost)
                 elif question_type in [2,5]: # set intersection
+                    if not isinstance(llm_answer, list) and not isinstance(llm_answer, set):
+                        print("data type filename", filename) ##
+                        errors[question_type] += 1
+                        cost_original[question_type]["invalid"].append(per_question_cost)
+                        continue
                     try:
                         valid_performance[question_type] += len(set(gt_answer)&set(llm_answer)) / len(set(gt_answer))
                         cost_original[question_type]["valid"].append(per_question_cost)

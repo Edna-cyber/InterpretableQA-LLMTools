@@ -3,107 +3,34 @@ from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import os 
 from PIL import Image
 import pdb
+import requests
 from time import sleep
+import json
 
 GOOGLE_API_KEY=os.getenv('GOOGLE_API_KEY')
+print("Gemini key", GOOGLE_API_KEY)
+gemini_client = genai.configure(api_key=GOOGLE_API_KEY)
 
-genai.configure(api_key=GOOGLE_API_KEY)
 safety_settings = {
     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
     HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
 }
-def call_gemini_pro_vision(text_query, image_path, temperature=0.0):
-    model = genai.GenerativeModel('gemini-1.5-pro')
-    img = Image.open(image_path)
 
-    success = False
-    while not success:
-        try:
-            response = model.generate_content(
-                [text_query, img], \
-                generation_config = genai.types.GenerationConfig(
-                    candidate_count=1,
-                    max_output_tokens=1024,
-                    temperature=temperature
-                ),
-                safety_settings=safety_settings
-            )
-            success = True
-        except Exception as e:
-            print(e)
-            sleep(10)
-    try:
-        response = response.candidates[0].content.parts[0].text
-    except Exception as e:
-        print(e)
-        print(text_query)
-        print(response)
-        response = ""
-    return response
-
-
-def call_gemini_pro(text_query, temperature=0.0, max_tokens=1024, tools=None, tool_choice="auto"):
-
-    headers = {
-        "Authorization": f"Bearer {GOOGLE_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "model": "gemini/gemini-1.5-pro",  
-        "messages": [
-            {
-                "role": "user",
-                "content": text_query
-            }
-        ],
-        "tools": tools,
-        "tool_choice": "auto",
-        "max_tokens": max_tokens,
-    }
-
-    response = requests.post(API_URL, headers=headers, data=json.dumps(payload))
-        
-    try:
-        response = response.candidates[0].content.parts[0].text
-    except Exception as e:
-        print(e)
-        print(text_query)
-        print(response)
-        response = ""
-    return response
-
-## PaLM 2 is legacy, but we keep it here for text only evaluations
-def call_palm_2(text_query, temperature=0.0):
-    PALM_API_KEY=os.getenv('PALM_API_KEY')
-    if PALM_API_KEY is None:
-        print("Warning: PALM_API_KEY not set")
-        PALM_API_KEY = GOOGLE_API_KEY
-    genai.configure(api_key=PALM_API_KEY)
-    success = False
-    while not success:
-        try:
-            response = genai.generate_text(
-                model='models/text-bison-001',
-                prompt=text_query,
-                temperature=temperature,
-                candidate_count=1,
-                max_output_tokens=1024,
-            )
-            success = True
-        except Exception as e:
-            print(e)
-            sleep(60)
-    # PaLM-2 has weird rate limiting issues
-    # sleep one second after each query to resolve
-    sleep(1)
-    return response.result
+def call_gemini_pro(model, prompt, temperature, max_tokens, tools, tool_choice):
+    response = gemini_client.generate_content(
+        model=model, 
+        prompt=prompt,
+        temperature=temperature,
+        max_tokens=args.policy_max_tokens, 
+        tools=max_tokens,
+        tool_choice=tool_choice 
+    )
+    print("response", response)
+    choice = response.choices[0]  
+    return choice
 
 if __name__ == '__main__':
-    text_query = "are the two highlighed red nodes connected?"
-    image_path = "graph/0_1_0_yes.png"
-    response = call_gemini_pro_vision(text_query, image_path)
-    pdb.set_trace()
+    call_gemini_pro(model, prompt, temperature, max_tokens, tools, tool_choice)
     

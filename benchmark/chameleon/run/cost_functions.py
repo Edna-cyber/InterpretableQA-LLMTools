@@ -1,11 +1,11 @@
 import math
 
 def calc_cost1(function_type, function_arguments):
-    if function_type=="Calculate":
+    if function_type=="Calculator":
         return 2
-    if function_type=="LoadDB":
+    if function_type=="DBLoader":
         return 3   
-    if function_type=="TFIDF":
+    if function_type=="TFIDFMatcher":
         return 5
     if function_type=="PandasInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
@@ -45,11 +45,11 @@ def calc_cost1(function_type, function_arguments):
         return 0
 
 def calc_cost2(function_type, function_arguments):
-    if function_type=="Calculate":
+    if function_type=="Calculator":
         return 48
-    if function_type=="LoadDB":
+    if function_type=="DBLoader":
         return 47
-    if function_type=="TFIDF":
+    if function_type=="TFIDFMatcher":
         return 45
     if function_type=="PandasInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
@@ -89,11 +89,11 @@ def calc_cost2(function_type, function_arguments):
         return 0
     
 def calc_cost3(function_type, function_arguments):
-    if function_type=="Calculate":
+    if function_type=="Calculator":
         return 2
-    if function_type=="LoadDB":
+    if function_type=="DBLoader":
         return 3   
-    if function_type=="TFIDF":
+    if function_type=="TFIDFMatcher":
         return 5
     if function_type=="PandasInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
@@ -159,13 +159,13 @@ def calc_cost3(function_type, function_arguments):
         return 30
     if function_type=="Finish":
         return 0
-
+    
 def calc_cost4(function_type, function_arguments):
-    if function_type=="Calculate":
+    if function_type=="Calculator":
         return 48
-    if function_type=="LoadDB":
+    if function_type=="DBLoader":
         return 47
-    if function_type=="TFIDF":
+    if function_type=="TFIDFMatcher":
         return 45
     if function_type=="PandasInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
