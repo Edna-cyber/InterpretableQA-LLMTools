@@ -29,7 +29,7 @@ from tools.calculator import calculator
 from tools.tabtools import table_toolkits, LogisticRegression, BasicCNNModel
 import datetime
 
-from api.gpt4 import call_gpt
+from api.gpt import call_gpt
 from api.gemini import call_gemini_pro
 from api.claude import call_claude3
 
