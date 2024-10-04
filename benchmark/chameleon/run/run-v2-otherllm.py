@@ -94,20 +94,24 @@ if __name__ == "__main__":
 
     pids = solver.pids
     
-    for pid in tqdm(pids): ###
+    for pid in tqdm(pids[:5]): ###
         # print("pid", pid)
         db.data = None # force reset
         example = solver.examples[pid] # get one example 
-        if args.prompt=="interp":
-            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps:1.Generate Solutions: List 2-4 sequences of tools that can solve the question.2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.3.Execute the Lowest Cost Solution. Question: "+example["question"]
+        if args.prompt=="interp" or args.prompt=="interptext":
+            user_prompt = "Now, write the CONTENT of your response in the format of the examples (Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution): 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. Each solution must end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that the lowest total cost without sacrificing accuracy. Follow the tool call order exactly. Question: " + example["question"]
+            # user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps:1.Generate Solutions: List 2-4 sequences of tools that can solve the question.2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.3.Execute the Lowest Cost Solution. Question: "+example["question"]
         else: 
-            user_prompt = "Now, you need to act as a policy model and determine the sequence of modules that can be executed sequentially can solve the question: "+example["question"]
+            user_prompt = "Now write the CONTENT of your response in the format of the examples (Solution). The solution must end with the Finish tool. Then, execute the tool calls in the given order. Question: "+example["question"] ###
+            # user_prompt = "Now, you need to act as a policy model and determine the sequence of modules that can be executed sequentially can solve the question: "+example["question"]
         question_type = int(example["question_type"])
         per_question_cost = 0
         tool_count, tool_cost = defaultdict(int), defaultdict(int) 
 
         if args.prompt=="clean":
-            messages = prompt_policy.messages.copy() 
+            messages = prompt_policy.messages.copy()
+        elif args.prompt=="cleantext":
+            messages = prompt_policy.messages_text.copy()
         elif args.prompt=="subset":
             messages = prompt_policy.messages_subset.copy()
         elif args.prompt=="interp":
@@ -119,7 +123,9 @@ if __name__ == "__main__":
                 messages = prompt_policy.messages_formula_3.copy()
             elif args.formula=="formula4":
                 messages = prompt_policy.messages_formula_4.copy()
-        
+        elif args.prompt=="interptext":
+            if args.formula=="formula1":
+                messages = prompt_policy.messages_formula_1_text.copy()
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
@@ -167,12 +173,52 @@ if __name__ == "__main__":
                     # print(response_with_tools) 
                     messages.append(response_with_tools) 
                     logs.append(response_with_tools)
-                                
+                    
+                    # Regeneration
+                    if args.prompt=="interp" or args.prompt=="interptext":
+                        if "Solution2:" not in content:
+                            more_solutions_message = {
+                                "role": "user",
+                                "content": "Regenerate multiple solutions with varying total costs by using different tools or arguments, aiming to minimize the total cost. Include Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution. Optionally, include Solution3, Solution3 Cost, Solution4, Solution4 Cost, and Accuracy Consideration."
+                            }
+                            messages.append(more_solutions_message)
+                            logs.append(more_solutions_message)
+                            continue
+                        if "Cost:" not in content or "Best Solution:" not in content:
+                            incomplete_format_message = {
+                                "role": "user",
+                                "content": "Regenerate multiple solutions with varying total costs by using different tools or arguments, aiming to minimize the total cost. Include Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution. Optionally, include Solution3, Solution3 Cost, Solution4, Solution4 Cost, and Accuracy Consideration."
+                            }
+                            messages.append(incomplete_format_message)
+                            logs.append(incomplete_format_message)
+                            continue
+                        best_solution_ind = content.find("Best Solution:")
+                        print("content", content)
+                        solutions = content[:best_solution_ind].split("Solution")
+                        cleaned_solutions = []
+                        for x in solutions:
+                            if x!="" and "Cost" not in x:
+                                clean_x = re.sub(r"^[^a-zA-Z]+", "", x).strip()
+                                cleaned_solutions.append(clean_x)
+                        if len(cleaned_solutions)>len(set(cleaned_solutions)):
+                            no_duplicate_message = {
+                                "role": "user",
+                                "content": "Regenerate multiple solutions with varying total costs by using different tools or arguments, aiming to minimize the total cost. Include Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution. Optionally, include Solution3, Solution3 Cost, Solution4, Solution4 Cost, and Accuracy Consideration."
+                            }
+                            messages.append(no_duplicate_message)
+                            logs.append(no_duplicate_message)
+                            continue
+                        
                     function_type = tool_call.function.name
+                    print("1")
                     function = ACTION_LIST[function_type]
+                    print("2")
                     function_arguments = json.loads(tool_call.function.arguments)
+                    print("3")
                     function_response = function(**function_arguments)
+                    print("4")
                     function_cost = cost_function(function_type, function_arguments)
+                    print("5")
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
                         tool_count[function_type] += 1
                         tool_cost[function_type] += function_cost
@@ -190,41 +236,6 @@ if __name__ == "__main__":
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
                     iterations += 1
-                    if args.prompt=="interp" and iterations==1:
-                        if "Modules2:" not in content:
-                            more_solutions_messgae = {
-                                "role": "user",
-                                "content": "Regenerate. Create at least 2 solutions (Modules1, Modules2)."
-                            }
-                            messages.append(more_solutions_messgae)
-                            logs.append(more_solutions_messgae)
-                            # reset costs
-                            if not (isinstance(function_response, str) and function_response.startswith("Error:")):
-                                tool_count[function_type] -= 1
-                                tool_cost[function_type] -= function_cost
-                                per_question_cost -= function_cost
-                                # print("per_question_cost", per_question_cost) ###
-                            continue
-                        cost_analysis_ind = content.find("Cost Analysis")
-                        modules = content[:cost_analysis_ind].split("Modules")
-                        cleaned_modules = []
-                        for x in modules:
-                            if x!="":
-                                clean_x = re.sub(r"^\d:", "", x).strip()
-                                cleaned_modules.append(clean_x)
-                        if len(cleaned_modules)>len(set(cleaned_modules)):
-                            no_duplicate_message = {
-                                "role": "user",
-                                "content": "Regenerate. Do not create duplicate solutions."
-                            }
-                            messages.append(no_duplicate_message)
-                            logs.append(no_duplicate_message)
-                            # reset costs
-                            if not (isinstance(function_response, str) and function_response.startswith("Error:")):
-                                tool_count[function_type] -= 1
-                                tool_cost[function_type] -= function_cost
-                                per_question_cost -= function_cost
-                                # print("per_question_cost", per_question_cost) ###
                 else:
                     response_without_tools = {
                         "role": choice.message.role,
@@ -234,12 +245,16 @@ if __name__ == "__main__":
                     logs.append(response_without_tools)
                     iterations += 1
                     if iterations==1:
-                        follow_up_message = {
+                        if args.prompt=="clean" or args.prompt=="cleantext":
+                            finish_thought = "Please finish your thought. Execute the tool calls in the given order. "
+                        elif args.prompt=="interp" or args.prompt=="interptext":
+                            finish_thought = "Please finish your thought. Execute the tool calls in Best Solution in the given order. "
+                        finish_thought_message = {
                             "role": "user",
-                            "content": "Please finish your thought."
+                            "content": finish_thought
                         }
-                        messages.append(follow_up_message)
-                        logs.append(follow_up_message)
+                        messages.append(finish_thought_message)
+                        logs.append(finish_thought_message)
                     else:
                         break
                     
