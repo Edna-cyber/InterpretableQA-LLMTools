@@ -61,7 +61,7 @@ def top_accepted_category(category, year):
     top_n = top_categories.head(cnt)[col].tolist()
     return cnt, top_n
 
-# HUPD Template 3: # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
+# HUPD Template 3: # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}? Return a number between 0 and 1. Please note that each row represents a patent application, and not all patent applications are assigned a patent number. 
 def compare_applications_year(year1, year2):
     df1 = df_hupd[df_hupd["filing_date"].dt.year==year1]
     len_year1 = len(df1)
@@ -170,12 +170,12 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                 question_types.remove(2)
             question_id += 1
         elif question_type == 3:
-            # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}?
+            # How does the number of patent applications filed in {year1} compare proportionally to those filed in the {year2}? Return a number between 0 and 1. Please note that each row represents a patent application, and not all patent applications are assigned a patent number.
             year_1 = random.randint(2004,2018)
             year_2 = random.randint(2004,2018)
             while year_2==year_1:
                 year_2 = random.randint(2004,2018)
-            question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}? Return a number.".format(year_1, year_2)
+            question = "How does the number of patent applications filed in {} compare proportionally to those filed in the {}? Return a number between 0 and 1. Please note that each row represents a patent application, and not all patent applications are assigned a patent number.".format(year_1, year_2)
             answer = compare_applications_year(year_1, year_2)
             if answer and not np.isnan(answer):
                 writer.write({"qid": "easy-{:0>4d}".format(question_id), "question_type":str(question_type), "question":question, "answer":answer})
@@ -223,10 +223,10 @@ with jsonlines.open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/data/questi
                     question_types.remove(5)
                 question_id += 1
         else:
-            # What proportion of papers have {compare} {n} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.
+            # What proportion of NeurIPS papers have {compare} {n} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.
             compare = random.choice(["more than", "fewer than", "exactly", "greater than or equal to", "fewer than or equal to"]) 
             n = random.randint(2,10)
-            question_phrasings = ["What proportion of papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What percentage of papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What's the ratio of papers that have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1."] 
+            question_phrasings = ["What proportion of NeurIPS papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What percentage of NeurIPS papers have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1.", "What's the ratio of NeurIPS papers that have {} {} authors? In the authors column of the database, each entry is a list, not a single string. Return a value between 0 and 1."] 
             question = question_phrasings[random.randint(0,len(question_phrasings)-1)].format(compare,n)
             answer = author_num(compare,n)
             if answer and not np.isnan(answer):
