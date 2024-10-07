@@ -94,20 +94,28 @@ if __name__ == "__main__":
 
     pids = solver.pids
     
-    for pid in tqdm(pids): ###
+    for pid in tqdm(pids[:10]): ### 10:200
         # print("pid", pid)
         db.data = None # force reset
         example = solver.examples[pid] # get one example 
-        if args.prompt=="interp":
-            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps:1.Generate Solutions: List 2-4 sequences of tools that can solve the question.2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.3.Execute the Lowest Cost Solution. Question: "+example["question"]
-        else: 
-            user_prompt = "Now, you need to act as a policy model and determine the sequence of modules that can be executed sequentially can solve the question: "+example["question"]
+        if args.prompt=="clean":
+            user_prompt = "Now, you need to act as a policy model and determine the sequence of tools that can be executed sequentially to solve the question. The solution must follow the structure as in the text CONTENT of the examples and end with the Finish tool. Do not respond with multi_tool_use.parallel JSON. Question: "+example["question"]
+        elif args.prompt=="cleantext":
+            user_prompt = "Now write your response in the format of the text CONTENT of the examples provided (Solution). Do not respond with multi_tool_use.parallel JSON. The solution must follow this structure as in the examples:  SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. Question: "+example["question"] 
+        elif args.prompt=="interp":
+            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps: 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. The solutions must follow the structure as in the text CONTENT of the examples and end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: "+example["question"]
+        elif args.prompt=="interptext":
+            user_prompt = "Now, write your response in the format of the text CONTENT of the examples provided (Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution): 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. Each solution must follow this structure as in the examples:   SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: " + example["question"]
         question_type = int(example["question_type"])
+        if question_type!=3: ###
+            continue
         per_question_cost = 0
         tool_count, tool_cost = defaultdict(int), defaultdict(int) 
 
         if args.prompt=="clean":
-            messages = prompt_policy.messages.copy() 
+            messages = prompt_policy.messages.copy()
+        elif args.prompt=="cleantext":
+            messages = prompt_policy.messages_text.copy()
         elif args.prompt=="subset":
             messages = prompt_policy.messages_subset.copy()
         elif args.prompt=="interp":
@@ -119,35 +127,128 @@ if __name__ == "__main__":
                 messages = prompt_policy.messages_formula_3.copy()
             elif args.formula=="formula4":
                 messages = prompt_policy.messages_formula_4.copy()
-        
+        elif args.prompt=="interptext":
+            if args.formula=="formula1":
+                messages = prompt_policy.messages_formula_1_text.copy()
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
         llm_answer = None
-        iterations = 0
-
-        while iterations<10:
+        generation_iterations = 0
+        execution_iterations = 0
+        
+        # solution generation
+        while generation_iterations<4:
             if args.hardness!="easy":
                 db.prediction = True
             try:
                 if args.policy_engine == "gpt-3.5-turbo" or args.policy_engine == "gpt-4-turbo":
-                    choice = call_gpt(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice="auto")
+                    choice = call_gpt(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice="none")
+                    response_message = choice.message
+                    content = response_message.content
+                elif args.policy_engine == "gemini":
+                    choice = call_gemini_pro(model=args.policy_engine, prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gemini, tool_choice="none")
+                    response_message = choice['message']
+                    content = response_message['content']
+                elif args.policy_engine == "claude":
+                    choice = call_claude3(prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice="none")
+                    content = choice['text']
+                else:
+                    raise ValueError("Invalid engine")
+                
+                response_without_tools = {
+                    "role": choice.message.role,
+                    "content": content
+                }
+                messages.append(response_without_tools) 
+                logs.append(response_without_tools)
+                generation_iterations += 1
+                
+                if generation_iterations==4:
+                    break
+         
+                # Regeneration (logic according to text prompts)
+                if args.prompt=="clean" or args.prompt=="cleantext":
+                    if not content or "Solution:" not in content:
+                        write_solution_message = {
+                            "role": "user",
+                            "content": "Generate a solution that includes a sequence of consecutive tool calls to address the question. The solution must follow the structure as in the examples and end with the Finish tool."
+                        }
+                        messages.append(write_solution_message)
+                        logs.append(write_solution_message)
+                        continue
+                    else:
+                        break
+                if args.prompt=="interp" or args.prompt=="interptext":
+                    if not content or "Solution2:" not in content or "Cost:" not in content or "Best Solution:" not in content:
+                        more_solutions_message = {
+                            "role": "user",
+                            "content": "Generate multiple solutions with varying total costs by using different tools or arguments, aiming to minimize the total cost. Include Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution. Optionally, include Solution3, Solution3 Cost, Solution4, Solution4 Cost, and Accuracy Consideration. The solutions must follow the structure as in the examples and end with the Finish tool."
+                        }
+                        messages.append(more_solutions_message)
+                        logs.append(more_solutions_message)
+                        continue
+                    best_solution_ind = content.find("Best Solution:")
+                    # print("content", content) 
+                    solutions = content[:best_solution_ind].split("Solution")
+                    cleaned_solutions = []
+                    for x in solutions:
+                        if x!="" and "Cost" not in x:
+                            clean_x = re.sub(r"^[^a-zA-Z]+", "", x).strip()
+                            cleaned_solutions.append(clean_x)
+                    if len(cleaned_solutions)>len(set(cleaned_solutions)):
+                        no_duplicate_message = {
+                            "role": "user",
+                            "content": "Generate multiple solutions with varying total costs by using different tools or arguments, aiming to minimize the total cost. Include Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution. Optionally, include Solution3, Solution3 Cost, Solution4, Solution4 Cost, and Accuracy Consideration. The solutions must follow the structure as in the examples and end with the Finish tool."
+                        }
+                        messages.append(no_duplicate_message)
+                        logs.append(no_duplicate_message)
+                        continue
+                    break
+            except Exception as e:
+                print(f"An error occurred during solution generation: {e}")
+                logs.append(json.dumps(str(e)))
+                break
+        
+        if args.prompt=="clean" or args.prompt=="cleantext":
+            user_prompt = "Execute the tool calls in the given order of 'Solution'. The 'content' of your response MUST BE None, while the 'tool_calls' of your response MUST reflect each tool and its arguments from the 'Solution', one at a time! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
+        elif args.prompt=="interp" or args.prompt=="interptext":     
+            user_prompt = "Execute the tool calls in the given order of Best Solution using the 'tool_calls' parameter. The 'content' of your response MUST BE None. Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message."
+        
+        execution_message = {
+            "role": "user",
+            "content": user_prompt
+        }
+        messages.append(execution_message)
+        logs.append(execution_message)
+                        
+        # solution execution
+        started_execution=False
+        tool_choice="required"
+        while execution_iterations<10:
+            if args.hardness!="easy":
+                db.prediction = True
+            try:
+                if args.policy_engine == "gpt-3.5-turbo" or args.policy_engine == "gpt-4-turbo":
+                    choice = call_gpt(model=args.policy_engine, messages=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice=tool_choice)
                     response_message = choice.message
                     tool_calls = response_message.tool_calls
                     content = response_message.content
                 elif args.policy_engine == "gemini":
-                    choice = call_gemini_pro(model=args.policy_engine, prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gemini, tool_choice="auto")
+                    choice = call_gemini_pro(model=args.policy_engine, prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gemini, tool_choice=tool_choice)
                     response_message = choice['message']
                     tool_calls = response_message.get('tool_calls', None)
                     content = response_message['content']
                 elif args.policy_engine == "claude":
-                    choice = call_claude3(prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice="auto")
+                    choice = call_claude3(prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice=tool_choice)
                     tool_calls = choice.get('tool_calls', None)
                     content = choice['text']
                 else:
                     raise ValueError("Invalid engine")
          
                 if tool_calls:
+                    started_execution=True
+                    tool_choice = "auto"
                     tool_call = tool_calls[0]
                     
                     response_with_tools = {
@@ -167,7 +268,7 @@ if __name__ == "__main__":
                     # print(response_with_tools) 
                     messages.append(response_with_tools) 
                     logs.append(response_with_tools)
-                                
+                        
                     function_type = tool_call.function.name
                     function = ACTION_LIST[function_type]
                     function_arguments = json.loads(tool_call.function.arguments)
@@ -189,42 +290,7 @@ if __name__ == "__main__":
                     llm_answer = function_response
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
-                    iterations += 1
-                    if args.prompt=="interp" and iterations==1:
-                        if "Modules2:" not in content:
-                            more_solutions_messgae = {
-                                "role": "user",
-                                "content": "Regenerate. Create at least 2 solutions (Modules1, Modules2)."
-                            }
-                            messages.append(more_solutions_messgae)
-                            logs.append(more_solutions_messgae)
-                            # reset costs
-                            if not (isinstance(function_response, str) and function_response.startswith("Error:")):
-                                tool_count[function_type] -= 1
-                                tool_cost[function_type] -= function_cost
-                                per_question_cost -= function_cost
-                                # print("per_question_cost", per_question_cost) ###
-                            continue
-                        cost_analysis_ind = content.find("Cost Analysis")
-                        modules = content[:cost_analysis_ind].split("Modules")
-                        cleaned_modules = []
-                        for x in modules:
-                            if x!="":
-                                clean_x = re.sub(r"^\d:", "", x).strip()
-                                cleaned_modules.append(clean_x)
-                        if len(cleaned_modules)>len(set(cleaned_modules)):
-                            no_duplicate_message = {
-                                "role": "user",
-                                "content": "Regenerate. Do not create duplicate solutions."
-                            }
-                            messages.append(no_duplicate_message)
-                            logs.append(no_duplicate_message)
-                            # reset costs
-                            if not (isinstance(function_response, str) and function_response.startswith("Error:")):
-                                tool_count[function_type] -= 1
-                                tool_cost[function_type] -= function_cost
-                                per_question_cost -= function_cost
-                                # print("per_question_cost", per_question_cost) ###
+                    execution_iterations += 1
                 else:
                     response_without_tools = {
                         "role": choice.message.role,
@@ -232,19 +298,23 @@ if __name__ == "__main__":
                     }
                     messages.append(response_without_tools) 
                     logs.append(response_without_tools)
-                    iterations += 1
-                    if iterations==1:
-                        follow_up_message = {
+                    execution_iterations += 1
+                    if started_execution==False:
+                        if args.prompt=="clean" or args.prompt=="cleantext":
+                            finish_thought = "USE 'tool_calls' IN YOUR RESPONSE FOR EXECUTION OF 'Solution'! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
+                        elif args.prompt=="interp" or args.prompt=="interptext":
+                            finish_thought = "USE 'tool_calls' IN YOUR RESPONSE FOR EXECUTION OF 'Best Solution'! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message."
+                        finish_thought_message = {
                             "role": "user",
-                            "content": "Please finish your thought."
+                            "content": finish_thought
                         }
-                        messages.append(follow_up_message)
-                        logs.append(follow_up_message)
+                        messages.append(finish_thought_message)
+                        logs.append(finish_thought_message)
                     else:
                         break
                     
             except Exception as e:
-                print(f"An error occurred: {e}")
+                print(f"An error occurred during solution execution: {e}")
                 logs.append(json.dumps(str(e)))
                 break
         
@@ -272,7 +342,7 @@ if __name__ == "__main__":
         if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)): # <YOUR_OWN_PATH>
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)) # <YOUR_OWN_PATH>
         with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
-            for item in logs:
+            for item in logs: 
                 f.write(f"{item}\n")
     
     with jsonlines.open(cache_file, mode='w') as writer:

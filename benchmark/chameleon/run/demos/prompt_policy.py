@@ -11,7 +11,7 @@ messages = [
     },
     {
         'role': 'assistant',
-        'content': "", 
+        'content': """Solution: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)""", 
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -75,7 +75,8 @@ ans = solution(19)
     },
     {
         'role': 'assistant',
-        'content': "",
+        'content': """Solution: DBLoader(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x
+.month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -155,7 +156,7 @@ month = df['filing_month'].mode()[0]
     },
     {
         'role': 'assistant',
-        'content': "",
+        'content': """Solution: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -207,14 +208,14 @@ month = df['filing_month'].mode()[0]
     },
     {
         'role': 'assistant',
-        'content': "",
+        'content': """Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'DBLoader',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "duration": "[2007,2008,2009]"
+                        "target_db": "hupd", "duration": "list(range(2007,2010))"
                     })
                 },
                 'type': 'function'
@@ -309,7 +310,7 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'assistant',
-        'content': "",
+        'content': """Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -414,7 +415,7 @@ most_relevant = get_most_relevant_document(1, 0)
     },
     {
         'role': 'assistant',
-        'content': "",
+        'content': """Solution: LLMInferencer(), Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)""",
         'tool_calls': [
             {
                 'id': 'call_0',
@@ -669,71 +670,7 @@ month = df['filing_month'].mode()[0]
         'role': 'assistant',
         'content': """Solution1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
 Solution2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
-Solution3: DBLoader(neurips, list(range(3000))), PandasInterpreter('''import torch
-from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-
-# Define constants
-text = 'We propose a Bayesian encoder for metric learning...'
-section = 'Abstract'
-target = 'Poster Session'
-unique_classes = ["not 2", "2"]
-CLASSES = 2
-max_length = 512
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# Configure model and tokenizer
-config = AutoConfig.from_pretrained("bert-base-uncased", num_labels=CLASSES)
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", model_max_length=max_length)
-model = AutoModelForSequenceClassification.from_config(config=config).to(device)
-
-# Tokenize input text
-def tokenize_text(text, tokenizer, max_length):
-    return tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
-
-encoded_text = tokenize_text(text, tokenizer, max_length)
-input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0).to(device)
-attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0).to(device)
-processed_text = {'input_ids': input_ids, 'attention_mask': attention_mask}
-
-# DataLoader setup for training
-def prepare_data(df, section, tokenizer, target, batch_size=64):
-    zero_encoding = tokenize_text('', tokenizer, max_length)
-    df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
-    df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
-    df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  
-    dataset = df[['input_ids', 'attention_mask', 'output']].apply(
-        lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
-    )
-    return DataLoader(list(dataset), batch_size=batch_size)
-
-# Train the model
-def train_model(model, data_loader, epochs=5, learning_rate=2e-5):
-    optimizer = torch.optim.AdamW(params=model.parameters(), lr=learning_rate)
-    criterion = torch.nn.CrossEntropyLoss()
-    model.train()
-    for epoch in range(epochs):
-        for batch in tqdm(data_loader):
-            inputs, labels = batch['input_ids'].to(device), batch['output'].to(device)
-            outputs = model(input_ids=inputs, labels=labels).logits
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-
-# Evaluate the model on the input text
-def predict(model, processed_text, unique_classes):
-    model.eval()
-    inputs = processed_text['input_ids']
-    with torch.no_grad():
-        outputs = model(input_ids=inputs).logits
-        prediction = torch.argmax(outputs, dim=1).item()
-    return unique_classes[prediction]
-
-ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string, ['2','not 2'])
-Solution4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
+Solution3: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
 
 Cost Analysis:
 Solution1 Cost:
@@ -745,11 +682,6 @@ TextualClassifier (bert-base-uncased): 20
 Finish: 0
 Total: 20 + 0 = 20
 Solution3 Cost:
-DBLoader: 3
-PandasInterpreter: 8 (64 lines) * 4 (4 packages) = 32
-Finish: 0
-Total: 3 + 32 + 0 = 35
-Solution4 Cost:
 TextualClassifier (cnn): 15
 Finish: 0
 Total: 15 + 0 = 15
@@ -806,9 +738,9 @@ Best Solution: TextualClassifier(neurips, logistic_regression, Abstract, We prop
     },
     {
         'role': 'assistant',
-        'content': """Solution1: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Solution2: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Solution3: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+        'content': """Solution1: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Solution2: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Solution3: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 
 Cost Analysis:
 Solution1 Cost:
@@ -831,14 +763,14 @@ Total: 3 + 2.24 + 6 + 0 = 11.24
 
 Accuracy Consideration: Solution1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Solution: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+Best Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'DBLoader',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "duration": "[2007,2008,2009]"
+                        "target_db": "hupd", "duration": "list(range(2007,2010))"
                     })
                 },
                 'type': 'function'
@@ -1330,71 +1262,7 @@ month = counter.most_common()[0][0]
         'role': 'assistant',
         'content': """Solution1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
 Solution2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
-Solution3: DBLoader(neurips, list(range(3000))), PandasInterpreter('''import torch
-from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-
-# Define constants
-text = 'We propose a Bayesian encoder for metric learning...'
-section = 'Abstract'
-target = 'Poster Session'
-unique_classes = ["not 2", "2"]
-CLASSES = 2
-max_length = 512
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# Configure model and tokenizer
-config = AutoConfig.from_pretrained("bert-base-uncased", num_labels=CLASSES)
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", model_max_length=max_length)
-model = AutoModelForSequenceClassification.from_config(config=config).to(device)
-
-# Tokenize input text
-def tokenize_text(text, tokenizer, max_length):
-    return tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
-
-encoded_text = tokenize_text(text, tokenizer, max_length)
-input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0).to(device)
-attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0).to(device)
-processed_text = {'input_ids': input_ids, 'attention_mask': attention_mask}
-
-# DataLoader setup for training
-def prepare_data(df, section, tokenizer, target, batch_size=64):
-    zero_encoding = tokenize_text('', tokenizer, max_length)
-    df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
-    df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
-    df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  
-    dataset = df[['input_ids', 'attention_mask', 'output']].apply(
-        lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
-    )
-    return DataLoader(list(dataset), batch_size=batch_size)
-
-# Train the model
-def train_model(model, data_loader, epochs=5, learning_rate=2e-5):
-    optimizer = torch.optim.AdamW(params=model.parameters(), lr=learning_rate)
-    criterion = torch.nn.CrossEntropyLoss()
-    model.train()
-    for epoch in range(epochs):
-        for batch in tqdm(data_loader):
-            inputs, labels = batch['input_ids'].to(device), batch['output'].to(device)
-            outputs = model(input_ids=inputs, labels=labels).logits
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-
-# Evaluate the model on the input text
-def predict(model, processed_text, unique_classes):
-    model.eval()
-    inputs = processed_text['input_ids']
-    with torch.no_grad():
-        outputs = model(input_ids=inputs).logits
-        prediction = torch.argmax(outputs, dim=1).item()
-    return unique_classes[prediction]
-
-ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string, ['2', 'not 2'])
-Solution4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
+Solution3: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2', 'not 2'])
 
 Cost Analysis:
 Solution1 Cost:
@@ -1406,11 +1274,6 @@ TextualClassifier (bert-base-uncased): 30
 Finish: 0
 Total: 30 + 0 = 30
 Solution3 Cost:
-DBLoader: 47
-PandasInterpreter: 50 - 8 (64 lines) * 4 (4 packages) = 18
-Finish: 0
-Total: 47 + 18 + 0 = 65
-Solution4 Cost:
 TextualClassifier (cnn): 35
 Finish: 0
 Total: 35 + 0 = 35
@@ -1467,9 +1330,9 @@ Best Solution: TextualClassifier(neurips, logistic_regression, Abstract, We prop
     },
     {
         'role': 'assistant',
-        'content': """Solution1: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Solution2: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-Solution3: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+        'content': """Solution1: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Solution2: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Solution3: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 
 Cost Analysis:
 Solution1 Cost:
@@ -1492,14 +1355,14 @@ Total: 47 + 47.76 + 44 + 0 = 138.76
 
 Accuracy Consideration: Solution1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 
-Best Solution: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
+Best Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)""",
         'tool_calls': [
             {
                 'id': 'call_0',
                 'function': {
                     'name': 'DBLoader',
                     'arguments': json.dumps({
-                        "target_db": "hupd", "duration": "[2007,2008,2009]"
+                        "target_db": "hupd", "duration": "list(range(2007,2010))"
                     })
                 },
                 'type': 'function'
@@ -1933,71 +1796,7 @@ month = df['filing_month'].mode()[0]
         'role': 'assistant',
         'content': """Solution1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 Solution2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
-Solution3: DBLoader(neurips, 0-3000), PandasInterpreter('''import torch
-from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-
-# Define constants
-text = 'We propose a Bayesian encoder for metric learning...'
-section = 'Abstract'
-target = 'Poster Session'
-unique_classes = ["not 2", "2"]
-CLASSES = 2
-max_length = 512
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# Configure model and tokenizer
-config = AutoConfig.from_pretrained("bert-base-uncased", num_labels=CLASSES)
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", model_max_length=max_length)
-model = AutoModelForSequenceClassification.from_config(config=config).to(device)
-
-# Tokenize input text
-def tokenize_text(text, tokenizer, max_length):
-    return tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
-
-encoded_text = tokenize_text(text, tokenizer, max_length)
-input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0).to(device)
-attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0).to(device)
-processed_text = {'input_ids': input_ids, 'attention_mask': attention_mask}
-
-# DataLoader setup for training
-def prepare_data(df, section, tokenizer, target, batch_size=64):
-    zero_encoding = tokenize_text('', tokenizer, max_length)
-    df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
-    df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
-    df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  
-    dataset = df[['input_ids', 'attention_mask', 'output']].apply(
-        lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
-    )
-    return DataLoader(list(dataset), batch_size=batch_size)
-
-# Train the model
-def train_model(model, data_loader, epochs=5, learning_rate=2e-5):
-    optimizer = torch.optim.AdamW(params=model.parameters(), lr=learning_rate)
-    criterion = torch.nn.CrossEntropyLoss()
-    model.train()
-    for epoch in range(epochs):
-        for batch in tqdm(data_loader):
-            inputs, labels = batch['input_ids'].to(device), batch['output'].to(device)
-            outputs = model(input_ids=inputs, labels=labels).logits
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-
-# Evaluate the model on the input text
-def predict(model, processed_text, unique_classes):
-    model.eval()
-    inputs = processed_text['input_ids']
-    with torch.no_grad():
-        outputs = model(input_ids=inputs).logits
-        prediction = torch.argmax(outputs, dim=1).item()
-    return unique_classes[prediction]
-
-ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string)
-Solution4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+Solution3: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 
 Cost Analysis:
 Solution1 Cost:
@@ -2009,11 +1808,6 @@ TextualClassifier (bert-base-uncased): 20
 Finish: 0
 Total: 20 + 0 = 20
 Solution3 Cost:
-DBLoader: 3
-PandasInterpreter: 15 (lines) * 2 (packages) = 30
-Finish: 0
-Total: 3 + 30 + 0 = 33
-Solution4 Cost:
 TextualClassifier (cnn): 15
 Finish: 0
 Total: 15 + 0 = 15
@@ -2591,71 +2385,7 @@ month = df['filing_month'].mode()[0]
         'role': 'assistant',
         'content': """Solution1: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 Solution2: TextualClassifier(neurips, bert-base-uncased, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
-Solution3: DBLoader(neurips, 0-3000), PandasInterpreter('''import torch
-from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-
-# Define constants
-text = 'We propose a Bayesian encoder for metric learning...'
-section = 'Abstract'
-target = 'Poster Session'
-unique_classes = ["not 2", "2"]
-CLASSES = 2
-max_length = 512
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# Configure model and tokenizer
-config = AutoConfig.from_pretrained("bert-base-uncased", num_labels=CLASSES)
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", model_max_length=max_length)
-model = AutoModelForSequenceClassification.from_config(config=config).to(device)
-
-# Tokenize input text
-def tokenize_text(text, tokenizer, max_length):
-    return tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
-
-encoded_text = tokenize_text(text, tokenizer, max_length)
-input_ids = torch.tensor(encoded_text['input_ids']).unsqueeze(0).to(device)
-attention_mask = torch.tensor(encoded_text['attention_mask']).unsqueeze(0).to(device)
-processed_text = {'input_ids': input_ids, 'attention_mask': attention_mask}
-
-# DataLoader setup for training
-def prepare_data(df, section, tokenizer, target, batch_size=64):
-    zero_encoding = tokenize_text('', tokenizer, max_length)
-    df[section] = df[section].apply(lambda text: tokenize_text(text, tokenizer, max_length) if text is not None else zero_encoding)
-    df['input_ids'] = df[section].apply(lambda x: torch.tensor(x['input_ids']))
-    df['attention_mask'] = df[section].apply(lambda x: torch.tensor(x['attention_mask']))
-    df['output'] = df[target].apply(lambda x: int(x == "2"))  
-    dataset = df[['input_ids', 'attention_mask', 'output']].apply(
-        lambda row: {'input_ids': row['input_ids'], 'attention_mask': row['attention_mask'], 'output': row['output']}, axis=1
-    )
-    return DataLoader(list(dataset), batch_size=batch_size)
-
-# Train the model
-def train_model(model, data_loader, epochs=5, learning_rate=2e-5):
-    optimizer = torch.optim.AdamW(params=model.parameters(), lr=learning_rate)
-    criterion = torch.nn.CrossEntropyLoss()
-    model.train()
-    for epoch in range(epochs):
-        for batch in tqdm(data_loader):
-            inputs, labels = batch['input_ids'].to(device), batch['output'].to(device)
-            outputs = model(input_ids=inputs, labels=labels).logits
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-
-# Evaluate the model on the input text
-def predict(model, processed_text, unique_classes):
-    model.eval()
-    inputs = processed_text['input_ids']
-    with torch.no_grad():
-        outputs = model(input_ids=inputs).logits
-        prediction = torch.argmax(outputs, dim=1).item()
-    return unique_classes[prediction]
-
-ans = predict(model, processed_text, unique_classes)'''), Finish({'ans': 'not 2'}, ans, string)
-Solution4: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
+Solution3: TextualClassifier(neurips, cnn, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string)
 
 Cost Analysis:
 Solution1 Cost:
@@ -2667,11 +2397,6 @@ TextualClassifier (bert-base-uncased): 30
 Finish: 0
 Total: 30 + 0 = 30
 Solution3 Cost:
-DBLoader: 47
-PandasInterpreter: 50 - 15 (lines) * 2 (packages) = 20
-Finish: 0
-Total: 47 + 20 + 0 = 67
-Solution4 Cost:
 TextualClassifier (cnn): 35
 Finish: 0
 Total: 35 + 0 = 35
@@ -3211,7 +2936,7 @@ Question: Determine if a NeurIPS paper, based on the following abstract, is assi
 Solution: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
 
 Question: Using the patent applications from 2007 to 2009, predict the average length of claims for patent applications in 2010 and 2011.
-Solution: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
         
 Question: I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'.
 Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
@@ -3270,14 +2995,14 @@ Solution3 Cost: TextualClassifier (cnn): 15 + Finish = 15
 Best Solution: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
 
 Question: Using the patent applications from 2007 to 2009, predict the average length of claims for patent applications in 2010 and 2011.
-Solution1: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Solution1: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\nmean_claims_per_year_list = df.groupby('year')['len_claims'].mean().tolist()\npred=sum(mean_claims_per_year_list)/len(mean_claims_per_year_list)\npreds=[pred]*(2011-2010+1)), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 Solution1 Cost: DBLoader: 3 + PandasInterpreter: 2.83 (8 lines) * 1 (1 package) + Finish = 5.83
-Solution2: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Solution2: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(ARIMA, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 Solution2 Cost: DBLoader: 3 + PandasInterpreter: 2.24 (5 lines) * 1 (1 package) + Forecaster (ARIMA): 8 + Finish: 0 = 13.24
-Solution3: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Solution3: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
 Solution3 Cost: DBLoader: 3 + PandasInterpreter: 2.24 (6 lines) * 1 (1 package) + Forecaster (linear_regression): 6 + Finish = 11.24
 Accuracy Consideration: Solution1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
-Best Solution: DBLoader(hupd, [2007,2008,2009]), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+Best Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
         
 Question: I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'.
 Solution1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])

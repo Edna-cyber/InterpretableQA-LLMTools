@@ -30,7 +30,7 @@ tools_gpt = [
                     },
                     "duration": {
                         "type": "string",
-                        "description": "The subset of the database is specified by a string that evaluates to a list. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. The default value is list(range(2004,2019)). When target_db is neurips, specify the rows, e.g. list(range(2000)). The default value is list(range(3585)).",
+                        "description": "The subset of the database is specified by a string that evaluates to a list. You must load all the data you need at once. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. The default value is list(range(2004,2019)). When target_db is neurips, specify the rows, e.g. list(range(2000)). The default value is list(range(3585)).",
                     }
                 },
                 "required": ["target_db", "duration"],
@@ -229,7 +229,7 @@ tools_gemini = [
             },
             "duration": {
               "type": "string",
-              "description": "The subset of the database is specified by a string that evaluates to a list. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. The default value is list(range(2004,2019)). When target_db is neurips, specify the rows, e.g. list(range(2000)). The default value is list(range(3585))."
+              "description": "The subset of the database is specified by a string that evaluates to a list. You must load all the data you need at once. When target_db is hupd, specify the years, e.g. [2012,2013,2015]. The default value is list(range(2004,2019)). When target_db is neurips, specify the rows, e.g. list(range(2000)). The default value is list(range(3585))."
             }
           },
           "required": ["target_db", "duration"]

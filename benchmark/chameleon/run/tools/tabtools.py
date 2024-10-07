@@ -207,7 +207,7 @@ class table_toolkits():
         else:
             return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
         try: 
-            exec(pandas_code, globals(), global_var)
+            exec(pandas_code, global_var)
             variable_values = {}
             excluded_types = (types.ModuleType, types.FunctionType, type, pd.DataFrame)
             for var_name, var_value in locals().items(): 
@@ -236,7 +236,7 @@ class table_toolkits():
                     else:
                         variable_values[var_name] = var_value
             if variable_values=={}:
-                return "Error: the return value is empty. Ensure that the solution is assigned to a variable in the code."
+                return "Error: the return value is empty. Please ensure that the result is assigned to a variable in your pandas_code. For example, use 'result = your_operation_here' in pandas_code to capture the result."
             return variable_values
         except KeyError as e:
             column_names = ["'"+x+"'" for x in global_var["df"].columns.tolist()]
@@ -246,7 +246,7 @@ class table_toolkits():
             if "'pd'" in str(e):
                 return "Error: "+str(e)+"\nImport the pandas library using the pandas_interpreter."
             else:
-                return "Error: "+str(e)
+                return "Error: "+str(e)+"\nIf it's a package, import the package."
         except Exception as e:
             return "Error: "+str(e)
             
@@ -396,11 +396,6 @@ class table_toolkits():
 
 if __name__ == "__main__":
     db = table_toolkits()
-    print("line 96, line 607, line 1263")
-    print(db.db_loader('hupd', '[2016]'))
-    print("line 227, 848, 1508")
-    print(db.db_loader('hupd', '[2007,2008,2009]'))
-    print("")
 #     pandas_code = """
 # import pandas as pd
 # df['filing_month'] = df['filing_date'].apply(lambda x: x.month)
@@ -414,4 +409,3 @@ if __name__ == "__main__":
     # print(db.textual_classifier('neurips', 'logistic_regression', 'Abstract', abstract, 'Oral', 'oral'))
     # print(db.textual_classifier('neurips', 'cnn', 'Abstract', abstract, 'Oral', 'oral'))
     # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Abstract', abstract, 'Oral', 'oral'))
-    

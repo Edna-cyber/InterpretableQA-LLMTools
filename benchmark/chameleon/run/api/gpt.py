@@ -1,8 +1,8 @@
 import os
 from openai import OpenAI
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-print("OpenAI key", openai.api_key)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+print("OpenAI key", OPENAI_API_KEY)
 client = OpenAI()
 
 def call_gpt(model, messages, temperature, max_tokens, tools, tool_choice):
