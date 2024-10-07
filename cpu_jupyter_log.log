@@ -1,0 +1,229 @@
+[I 2024-10-02 11:44:04.855 ServerApp] Extension package jupyter_lsp took 2.2942s to import
+[W 2024-10-02 11:44:04.855 ServerApp] A `_jupyter_server_extension_points` function was not found in jupyter_lsp. Instead, a `_jupyter_server_extension_paths` function was found and will be used for now. This function name will be deprecated in future releases of Jupyter Server.
+[I 2024-10-02 11:44:05.601 ServerApp] Extension package jupyter_server_terminals took 0.7447s to import
+[W 2024-10-02 11:44:14.898 ServerApp] A `_jupyter_server_extension_points` function was not found in notebook_shim. Instead, a `_jupyter_server_extension_paths` function was found and will be used for now. This function name will be deprecated in future releases of Jupyter Server.
+[I 2024-10-02 11:44:14.911 ServerApp] jupyter_lsp | extension was successfully linked.
+[I 2024-10-02 11:44:14.924 ServerApp] jupyter_server_terminals | extension was successfully linked.
+[I 2024-10-02 11:44:14.933 ServerApp] jupyterlab | extension was successfully linked.
+[W 2024-10-02 11:44:14.939 JupyterNotebookApp] 'allow_remote_access' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[I 2024-10-02 11:44:14.943 ServerApp] notebook | extension was successfully linked.
+[I 2024-10-02 11:44:44.394 ServerApp] notebook_shim | extension was successfully linked.
+[I 2024-10-02 11:44:45.828 ServerApp] notebook_shim | extension was successfully loaded.
+[I 2024-10-02 11:44:45.834 ServerApp] jupyter_lsp | extension was successfully loaded.
+[I 2024-10-02 11:44:45.836 ServerApp] jupyter_server_terminals | extension was successfully loaded.
+[I 2024-10-02 11:44:45.845 LabApp] JupyterLab extension loaded from /usr/xtmp/zg78/envs/proto/tools/lib/python3.8/site-packages/jupyterlab
+[I 2024-10-02 11:44:45.845 LabApp] JupyterLab application directory is /usr/project/xtmp/zg78/envs/proto/tools/share/jupyter/lab
+[I 2024-10-02 11:44:45.846 LabApp] Extension Manager is 'pypi'.
+[I 2024-10-02 11:44:45.891 ServerApp] jupyterlab | extension was successfully loaded.
+[I 2024-10-02 11:44:45.898 ServerApp] notebook | extension was successfully loaded.
+[I 2024-10-02 11:44:45.899 ServerApp] Serving notebooks from local directory: /usr/project/xtmp/zg78/tool_proj
+[I 2024-10-02 11:44:45.899 ServerApp] Jupyter Server 2.14.1 is running at:
+[I 2024-10-02 11:44:45.899 ServerApp] http://rudin-01:8808/tree?token=0656af4c3e2b92af72d98e53baab7e644b16a35e9c0ca2b3
+[I 2024-10-02 11:44:45.899 ServerApp]     http://127.0.0.1:8808/tree?token=0656af4c3e2b92af72d98e53baab7e644b16a35e9c0ca2b3
+[I 2024-10-02 11:44:45.899 ServerApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 2024-10-02 11:44:45.938 ServerApp] 
+    
+    To access the server, open this file in a browser:
+        file:///home/users/zg78/.local/share/jupyter/runtime/jpserver-2697210-open.html
+    Or copy and paste one of these URLs:
+        http://rudin-01:8808/tree?token=0656af4c3e2b92af72d98e53baab7e644b16a35e9c0ca2b3
+        http://127.0.0.1:8808/tree?token=0656af4c3e2b92af72d98e53baab7e644b16a35e9c0ca2b3
+[I 2024-10-02 11:44:46.306 ServerApp] Skipped non-installed server(s): bash-language-server, dockerfile-language-server-nodejs, javascript-typescript-langserver, jedi-language-server, julia-language-server, pyright, python-language-server, python-lsp-server, r-languageserver, sql-language-server, texlab, typescript-language-server, unified-language-server, vscode-css-languageserver-bin, vscode-html-languageserver-bin, vscode-json-languageserver-bin, yaml-language-server
+[I 2024-10-02 11:44:49.948 ServerApp] 302 GET / (@152.3.143.21) 1.57ms
+[E 2024-10-02 11:45:22.890 ServerApp] Uncaught exception GET /lab/api/settings/@jupyterlab/codemirror-extension:plugin?1727883922735 (152.3.143.21)
+    HTTPServerRequest(protocol='http', host='localhost:8808', method='GET', uri='/lab/api/settings/@jupyterlab/codemirror-extension:plugin?1727883922735', version='HTTP/1.1', remote_ip='152.3.143.21')
+    Traceback (most recent call last):
+      File "/usr/xtmp/zg78/envs/proto/tools/lib/python3.8/site-packages/tornado/web.py", line 1790, in _execute
+        result = await result
+    tornado.iostream.StreamClosedError: Stream is closed
+[I 2024-10-02 11:45:23.999 ServerApp] 302 GET / (@152.3.143.21) 1.09ms
+[I 2024-10-02 11:45:48.309 ServerApp] Kernel started: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:45:55.315 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:46:19.878 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:46:55.958 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:46:56.003 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:46:56.021 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:46:56.021 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:47:47.899 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 11:48:01.356 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:48:01.372 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:48:01.437 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:48:01.438 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[W 2024-10-02 11:48:05.956 ServerApp] Nudge: attempt 10 on kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:48:43.331 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:48:43.347 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:48:43.365 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:48:43.365 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:49:16.694 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:49:16.707 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:49:16.765 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:49:16.765 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:49:48.898 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 11:49:58.998 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:49:59.014 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:49:59.084 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:49:59.084 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:51:35.471 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:51:35.487 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:51:35.506 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:51:35.506 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[W 2024-10-02 11:51:40.023 ServerApp] Nudge: attempt 10 on kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:51:49.906 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 11:53:33.932 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:53:33.949 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:53:34.013 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:53:34.013 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[W 2024-10-02 11:53:38.533 ServerApp] Nudge: attempt 10 on kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:53:50.106 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 11:55:50.895 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 11:56:33.054 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 11:56:33.130 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:56:33.212 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 11:56:33.212 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 11:57:51.894 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 11:59:12.184 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 12:15:05.910 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:dcb30696-a8a1-44cd-bad2-fb5f5d369dde
+[I 2024-10-02 13:54:36.573 ServerApp] 302 GET / (@152.3.143.21) 1.05ms
+[I 2024-10-02 13:54:41.140 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 13:54:44.163 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:6398cdeb-86cf-4941-b180-7fd1948aff5d
+[I 2024-10-02 13:55:40.476 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 13:55:41.436 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:75f26248-3bb2-48d5-bbbb-655417ead348
+[I 2024-10-02 13:55:41.639 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 14:01:12.149 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:9fd063f7-67e0-4ccf-b02e-5c5a380efe37
+[I 2024-10-02 14:35:40.594 ServerApp] 302 GET / (@152.3.143.21) 1.04ms
+[I 2024-10-02 14:35:44.318 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 14:35:45.901 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:07acd807-dbc0-4a2f-a319-5fc93b32bff5
+[I 2024-10-02 14:35:52.337 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 14:35:52.550 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:d323981a-10f1-4f22-b819-c45f25691e91
+[I 2024-10-02 14:35:52.834 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 14:37:52.827 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:40:13.935 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 14:40:13.964 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:096ae39f-aea8-4e5d-8838-b7e20c6c5307
+[I 2024-10-02 14:40:14.044 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 14:40:14.045 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:096ae39f-aea8-4e5d-8838-b7e20c6c5307
+[W 2024-10-02 14:40:18.562 ServerApp] Nudge: attempt 10 on kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 14:41:54.419 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:42:20.686 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:44:20.897 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:46:21.825 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:49:21.962 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 14:49:21.987 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:096ae39f-aea8-4e5d-8838-b7e20c6c5307
+[I 2024-10-02 14:49:22.065 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 14:49:22.065 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:096ae39f-aea8-4e5d-8838-b7e20c6c5307
+[I 2024-10-02 14:50:23.827 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:52:24.835 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:54:25.086 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:56:25.323 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:57:24.114 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 14:59:24.828 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:01:25.066 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:03:25.292 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:05:25.825 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:07:26.131 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:09:26.825 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:11:27.856 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:13:28.811 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:15:21.979 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:15:28.906 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:19:30.832 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:27:34.831 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:33:55.630 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-02 15:33:55.651 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:096ae39f-aea8-4e5d-8838-b7e20c6c5307
+[I 2024-10-02 15:33:55.730 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-02 15:33:55.730 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:096ae39f-aea8-4e5d-8838-b7e20c6c5307
+[I 2024-10-02 15:35:37.812 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:37:38.826 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:39:39.101 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:41:39.605 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:43:39.856 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:45:40.818 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:53:43.824 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:55:44.815 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:57:45.824 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 15:59:46.077 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:01:46.345 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:05:46.824 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:06:10.463 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:08:10.687 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:10:11.790 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:16:13.812 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:17:48.896 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:19:49.236 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-02 16:55:39.461 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:096ae39f-aea8-4e5d-8838-b7e20c6c5307
+[I 2024-10-03 13:02:15.988 ServerApp] 302 GET / (@152.3.143.22) 1.33ms
+[I 2024-10-03 13:02:21.367 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-03 13:02:22.203 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:3deb3e1e-821e-4ddc-b803-5fedcdd56c5e
+[I 2024-10-03 13:02:28.411 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-03 13:02:28.724 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:2cf6706d-d7fc-4bc2-a962-967b53dd343e
+[I 2024-10-03 13:02:28.985 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-03 13:05:14.556 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:05:14.582 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:6d386088-50f5-4eeb-830f-0ffc13786801
+[I 2024-10-03 13:05:14.665 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-03 13:05:14.665 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:6d386088-50f5-4eeb-830f-0ffc13786801
+[W 2024-10-03 13:05:19.184 ServerApp] Nudge: attempt 10 on kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:06:29.381 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 13:08:06.337 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 13:10:06.714 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 13:41:55.435 ServerApp] Kernel restarted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:41:55.456 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:6d386088-50f5-4eeb-830f-0ffc13786801
+[I 2024-10-03 13:41:55.527 ServerApp] Connecting to kernel 97ec1fb5-9164-466c-9c98-6b097b7ea7d8.
+[I 2024-10-03 13:41:55.527 ServerApp] Restoring connection for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:6d386088-50f5-4eeb-830f-0ffc13786801
+[I 2024-10-03 13:42:16.372 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:42:16.379 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:42:16.446 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 13:42:17.343 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:42:17.479 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:44:17.357 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 13:55:46.972 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:55:47.157 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:55:47.342 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 13:56:53.912 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:01:18.315 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:03:15.513 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:03:15.641 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:03:15.792 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:03:18.519 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:04:39.675 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:06:39.897 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:07:14.937 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:07:23.957 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:08:52.978 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:08:53.131 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:09:18.280 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:09:18.416 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:09:24.185 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:10:33.685 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:10:49.197 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:10:49.373 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:10:49.561 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:11:24.444 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 14:12:50.126 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:12:50.315 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:12:50.469 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 14:13:24.664 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:09:00.559 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:10:16.468 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:14:18.300 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:16:18.552 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:16:39.495 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:17:11.415 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:17:48.888 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:17:56.917 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:17:58.073 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:19:58.321 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:21:59.325 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:30:02.327 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:32:03.332 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:49:15.333 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:51:15.609 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:53:15.847 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:57:16.132 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 15:59:16.385 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 16:01:16.633 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 16:03:16.842 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 16:05:16.083 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 16:05:26.690 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 16:05:26.849 ServerApp] Kernel interrupted: 97ec1fb5-9164-466c-9c98-6b097b7ea7d8
+[I 2024-10-03 16:06:36.271 ServerApp] Saving file at /benchmark/chameleon/run/run_stuff.ipynb
+[I 2024-10-03 16:06:38.884 ServerApp] Starting buffering for 97ec1fb5-9164-466c-9c98-6b097b7ea7d8:6d386088-50f5-4eeb-830f-0ffc13786801
+slurmstepd: error: *** JOB 4778975 ON rudin-01 CANCELLED AT 2024-10-04T13:11:09 ***

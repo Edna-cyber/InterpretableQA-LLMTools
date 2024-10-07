@@ -4,3 +4,5 @@ benchmark/chameleon/run/results/final_raw/
 benchmark/chameleon/run/results/*.json
 benchmark/chameleon/run/results/*.jsonl
 benchmark/chameleon/run/tools/temp/
+
+*.json
