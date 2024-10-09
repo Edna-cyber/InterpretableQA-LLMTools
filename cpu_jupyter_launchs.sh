@@ -8,4 +8,4 @@
 
 source /home/users/zg78/miniconda3/bin/activate
 conda activate tools
-jupyter-notebook --ip=0.0.0.0 --port=8808 --no-browser
+jupyter-notebook --ip=0.0.0.0 --port=8809 --no-browser
