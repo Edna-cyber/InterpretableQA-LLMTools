@@ -63,6 +63,7 @@ def parse_args():
     parser.add_argument('--policy_engine', type=str, default="gpt-3.5-turbo", help='engine for module prediction')
     parser.add_argument('--policy_temperature', type=float, default=0., help='temperature for module prediction')
     parser.add_argument('--policy_max_tokens', type=int, default=128, help='max tokens for module prediction')
+    parser.add_argument('--split', type=str, default="")
 
     args = parser.parse_args()
 
@@ -93,28 +94,36 @@ if __name__ == "__main__":
         cost_function = calc_cost4
 
     pids = solver.pids
+    length = len(pids)
+    if args.split=="firsthalf":
+        pids = pids[:length//2]
+    elif args.split=="secondhalf":
+        pids = pids[length//2:]
     
-    for pid in tqdm(pids[:10]): ### 10:200
+    for pid in tqdm(pids[300:]): #####
+        time.sleep(1)
         # print("pid", pid)
         db.data = None # force reset
         example = solver.examples[pid] # get one example 
         if args.prompt=="clean":
             user_prompt = "Now, you need to act as a policy model and determine the sequence of tools that can be executed sequentially to solve the question. The solution must follow the structure as in the text CONTENT of the examples and end with the Finish tool. Do not respond with multi_tool_use.parallel JSON. Question: "+example["question"]
-        elif args.prompt=="cleantext":
+        elif args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
             user_prompt = "Now write your response in the format of the text CONTENT of the examples provided (Solution). Do not respond with multi_tool_use.parallel JSON. The solution must follow this structure as in the examples:  SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. Question: "+example["question"] 
         elif args.prompt=="interp":
             user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps: 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. The solutions must follow the structure as in the text CONTENT of the examples and end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: "+example["question"]
-        elif args.prompt=="interptext":
+        elif args.prompt=="interptext" or args.prompt=="interplimited" or args.prompt=="interponeexample":
             user_prompt = "Now, write your response in the format of the text CONTENT of the examples provided (Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution): 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. Each solution must follow this structure as in the examples:   SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: " + example["question"]
+        elif args.prompt=="noexample":
+            user_prompt = "Now, you need to act as a policy model and determine the sequence of tools that can be executed sequentially to solve the question. The solution must end with the Finish tool. Do not respond with multi_tool_use.parallel JSON. Question: "+example["question"]
+        elif args.prompt=="interpnoexample":
+            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps: 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. The solutions must end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: "+example["question"]
         question_type = int(example["question_type"])
-        if question_type!=3: ###
-            continue
         per_question_cost = 0
         tool_count, tool_cost = defaultdict(int), defaultdict(int) 
 
         if args.prompt=="clean":
             messages = prompt_policy.messages.copy()
-        elif args.prompt=="cleantext":
+        elif args.prompt=="cleantext" or args.prompt=="cleanlimited":
             messages = prompt_policy.messages_text.copy()
         elif args.prompt=="subset":
             messages = prompt_policy.messages_subset.copy()
@@ -127,9 +136,19 @@ if __name__ == "__main__":
                 messages = prompt_policy.messages_formula_3.copy()
             elif args.formula=="formula4":
                 messages = prompt_policy.messages_formula_4.copy()
-        elif args.prompt=="interptext":
+        elif args.prompt=="interptext" or args.prompt=="interplimited":
             if args.formula=="formula1":
                 messages = prompt_policy.messages_formula_1_text.copy()
+        elif args.prompt=="noexample":
+            messages = prompt_policy.messages_no_example_text.copy()
+        elif args.prompt=="oneexample":
+            messages = prompt_policy.messages_one_example_text.copy()
+        elif args.prompt=="interpnoexample":
+            if args.formula=="formula1":
+                messages = prompt_policy.messages_formula_1_no_example_text.copy()
+        elif args.prompt=="interponeexample":
+            if args.formula=="formula1":
+                messages = prompt_policy.messages_formula_1_one_example_text.copy()
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
@@ -164,11 +183,11 @@ if __name__ == "__main__":
                 logs.append(response_without_tools)
                 generation_iterations += 1
                 
-                if generation_iterations==4:
+                if generation_iterations==4 or (args.prompt=="noexample" and generation_iterations==1) or (args.prompt=="interpnoexample" and generation_iterations==1):
                     break
          
                 # Regeneration (logic according to text prompts)
-                if args.prompt=="clean" or args.prompt=="cleantext":
+                if args.prompt=="clean" or args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
                     if not content or "Solution:" not in content:
                         write_solution_message = {
                             "role": "user",
@@ -179,7 +198,7 @@ if __name__ == "__main__":
                         continue
                     else:
                         break
-                if args.prompt=="interp" or args.prompt=="interptext":
+                if args.prompt=="interp" or args.prompt=="interptext" or args.prompt=="interplimited" or args.prompt=="interponeexample":
                     if not content or "Solution2:" not in content or "Cost:" not in content or "Best Solution:" not in content:
                         more_solutions_message = {
                             "role": "user",
@@ -210,11 +229,13 @@ if __name__ == "__main__":
                 logs.append(json.dumps(str(e)))
                 break
         
-        if args.prompt=="clean" or args.prompt=="cleantext":
+        if args.prompt=="clean" or args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
             user_prompt = "Execute the tool calls in the given order of 'Solution'. The 'content' of your response MUST BE None, while the 'tool_calls' of your response MUST reflect each tool and its arguments from the 'Solution', one at a time! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
-        elif args.prompt=="interp" or args.prompt=="interptext":     
+        elif args.prompt=="interp" or args.prompt=="interptext" or args.prompt=="interplimited" or args.prompt=="interponeexample":      
             user_prompt = "Execute the tool calls in the given order of Best Solution using the 'tool_calls' parameter. The 'content' of your response MUST BE None. Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message."
-        
+        elif args.prompt=="noexample" or args.prompt=="interpnoexample":  
+            user_prompt = "Execute the tool calls. The 'content' of your response MUST BE None, while the 'tool_calls' of your response MUST reflect your proposed solution, one tool call at a time! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
+
         execution_message = {
             "role": "user",
             "content": user_prompt
@@ -300,10 +321,13 @@ if __name__ == "__main__":
                     logs.append(response_without_tools)
                     execution_iterations += 1
                     if started_execution==False:
-                        if args.prompt=="clean" or args.prompt=="cleantext":
+                        if args.prompt=="clean" or args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
                             finish_thought = "USE 'tool_calls' IN YOUR RESPONSE FOR EXECUTION OF 'Solution'! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
-                        elif args.prompt=="interp" or args.prompt=="interptext":
+                        elif args.prompt=="interp" or args.prompt=="interptext" or args.prompt=="interplimited" or args.prompt=="interponeexample":
                             finish_thought = "USE 'tool_calls' IN YOUR RESPONSE FOR EXECUTION OF 'Best Solution'! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message."
+                        elif args.prompt=="noexample" or args.prompt=="interpnoexample":
+                            finish_thought = "USE 'tool_calls' IN YOUR RESPONSE FOR EXECUTION! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
+
                         finish_thought_message = {
                             "role": "user",
                             "content": finish_thought

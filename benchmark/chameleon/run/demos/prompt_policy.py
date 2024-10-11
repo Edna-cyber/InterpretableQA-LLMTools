@@ -2921,6 +2921,21 @@ month = df['filing_month'].mode()[0]
 
 
 # TEXT CHUNK
+messages_no_example_text = [
+    {
+        'role': 'system',
+        'content': """You need to act as a policy model, that given a question and a set of tools, determines the optimal sequence of tools that can be executed sequentially to answer the question as accurately as possible."""}
+]
+
+messages_one_example_text = [
+    {
+        'role': 'system',
+        'content': """You need to act as a policy model, that given a question and a set of tools, determines the optimal sequence of tools that can be executed sequentially to answer the question as accurately as possible. Below is one example that maps the problem to the tools:
+
+Question: What is the 20th Fibonacci number?
+Solution: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)"""}
+]
+
 messages_text = [
     {
         'role': 'system',
@@ -2945,7 +2960,62 @@ Question: Identify a common theme that links the NeurIPS papers titled '4D Panop
 Solution: LLMInferencer(), Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)"""}
 ]
 
+messages_formula_1_no_example_text = [
+    {
+        'role': 'system',
+        'content': """Act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps:
+1.Generate Solutions: List 2-4 sequences of tools that can solve the question.
+2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.
+3.Execute the Lowest Cost Solution.
+Interpretability Costs:
+Calculator: 2
+DBLoader: 3
+TFIDFMatcher: 5
+PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
+PythonInterpreter: Same as PandasInterpreter
+Forecaster:
+"linear_regression": 6
+"ARIMA": 8
+TextualClassifier:
+"logistic_regression": 7
+"cnn": 15
+"bert-base-uncased": 20
+LLMInferencer: 30
+Finish: 0
+Accuracy cannot be sacrificed for interpretability."""}
+]
 
+messages_formula_1_one_example_text = [
+    {
+        'role': 'system',
+        'content': """Act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps:
+1.Generate Solutions: List 2-4 sequences of tools that can solve the question.
+2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.
+3.Execute the Lowest Cost Solution.
+Interpretability Costs:
+Calculator: 2
+DBLoader: 3
+TFIDFMatcher: 5
+PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
+PythonInterpreter: Same as PandasInterpreter
+Forecaster:
+"linear_regression": 6
+"ARIMA": 8
+TextualClassifier:
+"logistic_regression": 7
+"cnn": 15
+"bert-base-uncased": 20
+LLMInferencer: 30
+Finish: 0
+Accuracy cannot be sacrificed for interpretability. Below is one example that maps the problem to the tools:
+
+Question: What is the 20th Fibonacci number?
+Solution1: Calculator(0+0), Calculator(0+1), Calculator(0+1), Calculator(1+1), Calculator(1+2), Calculator(2+3), Calculator(3+5), Calculator(5+8), Calculator(8+13), Calculator(13+21), Calculator(21+34), Calculator(34+55), Calculator(55+89), Calculator(89+144), Calculator(144+233), Calculator(233+377), Calculator(377+610), Calculator(610+987), Calculator(987+1597), Calculator(1597+2584), Finish({'ans': 4181}, ans, integer)
+Solution1 Cost: Calculator operations (20 * 2) + Finish = 40
+Solution2: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)
+Solution2 Cost: PythonInterpreter: 3.32 (11 lines) * 1 (0 package) + Finish = 3.32
+Best Solution: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)"""}
+]
 
 messages_formula_1_text = [
     {

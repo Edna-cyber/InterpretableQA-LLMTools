@@ -33,34 +33,57 @@ if __name__ == "__main__":
     def get_bar_plot(data):
         cost_original_dict = data["cost_original"]
         cost_dict = data["cost"]
-        categories, values, errors = [], [], []
+        performance_dict = data["overall_performance"]
+        categories, costvalues, costerrors, performancevalues = [], [], [], []
         for key in list(cost_dict.keys()):
             categories.append(key)
-            values.append(cost_dict[key]["valid_mean"] if "valid_mean" in cost_dict[key] else 0)
-            errors.append(math.sqrt(cost_dict[key]["valid_variance"]) if "valid_variance" in cost_dict[key] else 0)
-        return categories, values, errors
+            costvalues.append(cost_dict[key]["valid_mean"] if "valid_mean" in cost_dict[key] else 0)
+            costerrors.append(math.sqrt(cost_dict[key]["valid_variance"]) if "valid_variance" in cost_dict[key] else 0)
+            performancevalues.append(performance_dict[key])
+        return categories, costvalues, costerrors, performancevalues
     
-    categories, values1, errors1 = get_bar_plot(data1)
-    categories, values2, errors2 = get_bar_plot(data2)
+    categories, costvalues1, costerrors1, performancevalues1 = get_bar_plot(data1)
+    categories, costvalues2, costerrors2, performancevalues2 = get_bar_plot(data2)
     
     n = len(categories)
 
     bar_width = 0.35  
     x = np.arange(n)
-
+    
+    # Cost
     fig, ax = plt.subplots()
 
-    bar1 = ax.bar(x - bar_width/2, values1, bar_width, label='clean', yerr=errors1, capsize=5)
-    bar2 = ax.bar(x + bar_width/2, values2, bar_width, label='interp', yerr=errors2, capsize=5)
+    bar1 = ax.bar(x - bar_width/2, costvalues1, bar_width, label='cleanexamples', yerr=costerrors1, capsize=5) #clean
+    bar2 = ax.bar(x + bar_width/2, costvalues2, bar_width, label='interpformula', yerr=costerrors2, capsize=5) #interp
 
     ax.set_xlabel('Question Id')
     ax.set_ylabel('Cost')
-    ax.set_title(f'Comparison of costs for {args.hardness} questions with {args.policy_engine} {args.formula}')
+    # ax.set_title(f'{args.prompt1} prompt: Comparison of costs for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
+    ax.set_title(f'Different interpretability prompt: Comparison of costs for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
     ax.set_xticks(x)
     ax.set_xticklabels(categories)
     ax.legend()
 
-    output_image_path = os.path.join(output_image_dir, f'Comparison_of_costs_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
+    output_image_path = os.path.join(output_image_dir, f'Different_interpretability_prompt_Comparison_of_costs_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
+    # output_image_path = os.path.join(output_image_dir, f'{args.prompt1}_prompt_Comparison_of_costs_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
+    plt.savefig(output_image_path)
+    
+    # Performance
+    fig, ax = plt.subplots()
+
+    bar1 = ax.bar(x - bar_width/2, performancevalues1, bar_width, label='cleanexamples', capsize=5) #clean
+    bar2 = ax.bar(x + bar_width/2, performancevalues2, bar_width, label='interpformula', capsize=5) #interp
+
+    ax.set_xlabel('Question Id')
+    ax.set_ylabel('Performance')
+    # ax.set_title(f'{args.prompt1} prompt: Comparison of performance for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
+    ax.set_title(f'Different interpretability prompt: Comparison of performance for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(categories)
+    ax.legend()
+
+    # output_image_path = os.path.join(output_image_dir, f'{args.prompt1}_prompt_Comparison_of_performance_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
+    output_image_path = os.path.join(output_image_dir, f'Different_interpretability_prompt_Comparison_of_performance_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
     plt.savefig(output_image_path)
         
     # for key in list(cost_original_dict.keys()):

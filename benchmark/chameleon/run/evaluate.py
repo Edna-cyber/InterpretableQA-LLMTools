@@ -249,7 +249,7 @@ if __name__ == "__main__":
     avg_tool_cost = dict(sorted(avg_tool_cost.items()))
     
     # save the result
-    result = {'overall_performance': overall_performance, 'valid_performance': valid_performance, 'errors': errors, 'cost': cost, 'cost_original': cost_original, 'count': count, 'total_count': total_count, 'args': vars(args)} # 'tool_count': tool_count, 'avg_tool_cost': avg_tool_cost, 
+    result = {'overall_performance': overall_performance, 'valid_performance': valid_performance, 'errors': errors, 'cost': cost, 'cost_original': cost_original, 'count': count, 'total_count': total_count, 'args': vars(args), 'tool_count': tool_count, 'avg_tool_cost': avg_tool_cost}  
     with open(result_file, 'w') as f:
         json.dump(result, f, indent=4, separators=(',', ': '))
 

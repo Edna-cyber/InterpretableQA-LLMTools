@@ -3,4 +3,6 @@ benchmark/chameleon/logs/
 benchmark/chameleon/run/results/final_raw/
 benchmark/chameleon/run/results/*.json
 benchmark/chameleon/run/results/*.jsonl
+benchmark/chameleon/run/results/current/
 benchmark/chameleon/run/tools/temp/
+benchmark/chameleon/run/scripts/
