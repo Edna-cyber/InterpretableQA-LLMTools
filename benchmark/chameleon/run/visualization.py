@@ -31,12 +31,16 @@ if __name__ == "__main__":
         data2 = json.load(f)
         
     def get_bar_plot(data):
-        cost_original_dict = data["cost_original"]
         cost_dict = data["cost"]
         performance_dict = data["overall_performance"]
         categories, costvalues, costerrors, performancevalues = [], [], [], []
         for key in list(cost_dict.keys()):
-            categories.append(key)
+            if key=="9" and args.hardness=="medium":
+                continue
+            if key=="10" and args.hardness=="medium":
+                categories.append("9")
+            else:
+                categories.append(key)
             costvalues.append(cost_dict[key]["valid_mean"] if "valid_mean" in cost_dict[key] else 0)
             costerrors.append(math.sqrt(cost_dict[key]["valid_variance"]) if "valid_variance" in cost_dict[key] else 0)
             performancevalues.append(performance_dict[key])
@@ -44,6 +48,20 @@ if __name__ == "__main__":
     
     categories, costvalues1, costerrors1, performancevalues1 = get_bar_plot(data1)
     categories, costvalues2, costerrors2, performancevalues2 = get_bar_plot(data2)
+    if args.hardness=="hard":
+        with open(os.path.join(json_dir, f"{args.policy_engine}-medium-{args.prompt1}-{args.formula}-test.json"), 'r') as f:
+            medium_data1 = json.load(f)
+        with open(os.path.join(json_dir, f"{args.policy_engine}-medium-{args.prompt2}-{args.formula}-test.json"), 'r') as f:
+            medium_data2 = json.load(f)
+        added_categories, added_costvalues1, added_costerrors1, added_performancevalues1 = get_bar_plot(medium_data1) 
+        added_categories, added_costvalues2, added_costerrors2, added_performancevalues2 = get_bar_plot(medium_data2)
+        categories.insert(0,"10")
+        costvalues1.insert(0,added_costvalues1[2])
+        costvalues2.insert(0,added_costvalues2[2])
+        costerrors1.insert(0,added_costerrors1[2])
+        costerrors2.insert(0,added_costerrors2[2])
+        performancevalues1.insert(0,added_performancevalues1[2])
+        performancevalues2.insert(0,added_performancevalues2[2])
     
     n = len(categories)
 
@@ -86,73 +104,5 @@ if __name__ == "__main__":
     output_image_path = os.path.join(output_image_dir, f'Different_interpretability_prompt_Comparison_of_performance_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
     plt.savefig(output_image_path)
         
-    # for key in list(cost_original_dict.keys()):
-    #     for category in ["valid", "invalid", "correct", "incorrect"]:
-    #         data_points = cost_original_dict[key][category]
-    #         plt.hist(data_points, edgecolor='black')
-    #         plt.title(f"Interpretability Cost of {args.policy_engine}_{args.hardness}_{args.prompt}_{args.formula}_Question{key}_{category}")
-    #         plt.xlabel('Cost')
-    #         plt.ylabel('Frequency')
-    #         output_image_path = os.path.join(output_image_dir, f'{args.policy_engine}_{args.hardness}_{args.prompt}_{args.formula}_Question{key}_{category}.png')
-    #         plt.savefig(output_image_path)
-    #         plt.clf()
-    #         print(f'{args.policy_engine}_{args.hardness}_{args.prompt}_{args.formula}_Question{key}_{category}.png saved!')
-    
 
-# acc_dict = data["acc"]
-# agg_acc = data["agg_acc"]
-# cost_dict = data["cost"]
-# cost_original_dict = data["cost_original"]
-# agg_cost = data["agg_cost"]
-# total_count = data["total_count"]
 
-# accuracy = [float(x[:-1]) for x in list(acc_dict.values())]
-# cost = list(cost_dict.values())
-# cost_std_errors = []
-# for key in list(cost_original_dict.keys()):
-#     if len(cost_original_dict[key])>1:
-#         cost_std_errors.append(np.std(cost_original_dict[key], ddof=1)/np.sqrt(len(cost_original_dict[key])))
-#     else:
-#         cost_std_errors.append(np.nan)
-
-# x = np.arange(len(acc_dict))
-# width = 0.35
-
-# fig = plt.figure()
-# bar1 = plt.bar(x - width/2, accuracy, width, color='tab:blue')
-# plt.xlabel('Question Type')
-# plt.title('Accuracy of {} Questions'.format(str(total_count)))
-# plt.xticks(x)
-
-# for bar in bar1:
-#     height = bar.get_height()
-#     plt.text(
-#         bar.get_x() + bar.get_width() / 2,  # x coordinate
-#         height,                             # y coordinate
-#         f'{height:.2f}%',                   # text
-#         ha='center',                        # horizontal alignment
-#         va='bottom'                         # vertical alignment
-#     )
-# text = 'Aggregate Accuracy: {}'.format(agg_acc)
-# plt.figtext(0.3, 0.8, text, ha="center", fontsize=9)
-# plt.savefig(os.path.join(result_dir, "figures", plot1_name))
-
-# fig = plt.figure()
-# bar2 = plt.bar(x + width/2, cost, width, label='Cost', color='tab:red', yerr=cost_std_errors, capsize=5)
-# plt.xlabel('Question Type')
-# plt.title('Interpretability Cost of {} Questions'.format(str(total_count)))
-# plt.xticks(x)
-    
-# for bar in bar2:
-#     height = bar.get_height()
-#     plt.text(
-#         bar.get_x() + bar.get_width() / 2,  
-#         height,                             
-#         f'{height:.2f}',                   
-#         ha='center',                        
-#         va='bottom'                         
-#     )
-
-# text = 'Aggregate Cost: {}'.format(agg_cost) 
-# plt.figtext(0.3, 0.8, text, ha="center", fontsize=9)
-# plt.savefig(os.path.join(result_dir, "figures", plot2_name))
