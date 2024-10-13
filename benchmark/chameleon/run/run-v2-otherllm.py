@@ -12,7 +12,6 @@ import pandas as pd
 from tqdm import tqdm
 from sklearn.metrics import f1_score, r2_score
 from demos import prompt_policy
-from openai import OpenAI
 from collections import defaultdict
 # add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
@@ -33,7 +32,7 @@ from api.gpt import call_gpt
 from api.gemini import call_gemini_pro
 from api.claude import call_claude3
 
-from tools.tools_set import tools_gpt, tools_gemini
+from tools.tools_set import tools_gpt, tools_gemini, tools_claude
 from cost_functions import calc_cost1, calc_cost2, calc_cost3, calc_cost4
 
 current_datetime = datetime.datetime.now()
@@ -149,6 +148,19 @@ if __name__ == "__main__":
         elif args.prompt=="interponeexample":
             if args.formula=="formula1":
                 messages = prompt_policy.messages_formula_1_one_example_text.copy()
+
+        # NOTE: Claude does not allow the system role, and instead has 
+        # an explicit system parameter. If we're using claude, remove
+        # any system prompts
+        if args.policy_engine == "claude":
+            new_messages = []
+            for m in messages:
+                if m['role'] == 'system':
+                    system_message = m['content']
+                else:
+                    new_messages.append(m)
+            messages = new_messages
+
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
@@ -170,22 +182,28 @@ if __name__ == "__main__":
                     response_message = choice['message']
                     content = response_message['content']
                 elif args.policy_engine == "claude":
-                    choice = call_claude3(prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice="none")
-                    content = choice['text']
+                    choice = call_claude3(prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_claude, tool_choice="none", system=system_message)
+                    content = choice.content
                 else:
                     raise ValueError("Invalid engine")
-                
-                response_without_tools = {
-                    "role": choice.message.role,
-                    "content": content
-                }
+
+                if args.policy_engine == "claude":
+                    response_without_tools = {
+                        "role": choice.role,
+                        "content": content
+                    }
+                else:
+                    response_without_tools = {
+                        "role": choice.message.role,
+                        "content": content
+                    }
                 messages.append(response_without_tools) 
                 logs.append(response_without_tools)
                 generation_iterations += 1
                 
                 if generation_iterations==4 or (args.prompt=="noexample" and generation_iterations==1) or (args.prompt=="interpnoexample" and generation_iterations==1):
                     break
-         
+            
                 # Regeneration (logic according to text prompts)
                 if args.prompt=="clean" or args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
                     if not content or "Solution:" not in content:
@@ -261,38 +279,60 @@ if __name__ == "__main__":
                     tool_calls = response_message.get('tool_calls', None)
                     content = response_message['content']
                 elif args.policy_engine == "claude":
-                    choice = call_claude3(prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_gpt, tool_choice=tool_choice)
-                    tool_calls = choice.get('tool_calls', None)
-                    content = choice['text']
+                    # For claude, any is equivalent to required
+                    choice = call_claude3(prompt=messages, temperature=args.policy_temperature, max_tokens=args.policy_max_tokens, tools=tools_claude, tool_choice={"type": "any"}, system=system_message)
+                    print(choice)
+                    tool_calls = choice.content
+                    content = choice.content
                 else:
                     raise ValueError("Invalid engine")
-         
+            
                 if tool_calls:
                     started_execution=True
                     tool_choice = "auto"
                     tool_call = tool_calls[0]
                     
-                    response_with_tools = {
-                        "role": choice.message.role,
-                        "content": content,
-                        "tool_calls": [
-                            {
-                                "id": tool_call.id,
-                                "type": tool_call.type, 
-                                "function": {
-                                    "name": tool_call.function.name,
-                                    "arguments": tool_call.function.arguments
+                    if args.policy_engine == "claude":
+                        response_with_tools = {
+                            "role": choice.role,
+                            "content": content,
+                            "tool_calls": [
+                                {
+                                    "id": tool_call.id,
+                                    "type": tool_call.type, 
+                                    "function": {
+                                        "name": tool_call.name,
+                                        "arguments": tool_call.input
+                                    }
                                 }
-                            }
-                        ]
-                    }
+                            ]
+                        }
+                        function_type = tool_call.name
+                        function_arguments = tool_call.input
+                    else:
+                        response_with_tools = {
+                            "role": choice.message.role,
+                            "content": content,
+                            "tool_calls": [
+                                {
+                                    "id": tool_call.id,
+                                    "type": tool_call.type, 
+                                "type": tool_call.type, 
+                                    "type": tool_call.type, 
+                                    "function": {
+                                        "name": tool_call.function.name,
+                                        "arguments": tool_call.function.arguments
+                                    }
+                                }
+                            ]
+                        }
+                        function_type = tool_call.function.name
+                        function_arguments = json.loads(tool_call.function.arguments)
                     # print(response_with_tools) 
                     messages.append(response_with_tools) 
                     logs.append(response_with_tools)
                         
-                    function_type = tool_call.function.name
                     function = ACTION_LIST[function_type]
-                    function_arguments = json.loads(tool_call.function.arguments)
                     function_response = function(**function_arguments)
                     function_cost = cost_function(function_type, function_arguments)
                     if not (isinstance(function_response, str) and function_response.startswith("Error:")):
@@ -300,23 +340,45 @@ if __name__ == "__main__":
                         tool_cost[function_type] += function_cost
                         per_question_cost += function_cost
                         # print("per_question_cost", per_question_cost) ###
-                    
-                    tool_call_response = {
-                        "tool_call_id": tool_call.id,
-                        "role": "tool",
-                        "name": function_type,
-                        "content": str(function_response) if function_response is not None else "",
+
+                    if args.policy_engine == "claude":
+                        tool_call_response = {
+                            # Claude doesn't have a tool role, and their docs say to send
+                            # tool response back with user role
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "tool_result",
+                                    "tool_use_id": tool_call.id,
+                                    "content": str(function_response) if function_response is not None else "",
+                                }
+                            ]
+                        }
+                    else:
+                        tool_call_response = {
+                            "tool_call_id": tool_call.id,
+                            "role": "tool",
+                            "name": function_type,
+                            "content": str(function_response) if function_response is not None else "",
+                        }
                     } 
+                        }
                     # print(tool_call_response) 
                     llm_answer = function_response
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
                     execution_iterations += 1
                 else:
-                    response_without_tools = {
-                        "role": choice.message.role,
-                        "content": content
-                    }
+                    if args.policy_engine == "claude":
+                        response_without_tools = {
+                            "role": choice.role,
+                            "content": content
+                        }
+                    else:
+                        response_without_tools = {
+                            "role": choice.message.role,
+                            "content": content
+                        }
                     messages.append(response_without_tools) 
                     logs.append(response_without_tools)
                     execution_iterations += 1
@@ -336,7 +398,7 @@ if __name__ == "__main__":
                         logs.append(finish_thought_message)
                     else:
                         break
-                    
+                        
             except Exception as e:
                 print(f"An error occurred during solution execution: {e}")
                 logs.append(json.dumps(str(e)))
