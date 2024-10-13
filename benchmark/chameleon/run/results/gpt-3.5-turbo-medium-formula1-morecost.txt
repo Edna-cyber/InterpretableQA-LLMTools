@@ -1,0 +1,86 @@
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0397.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 3.732050807568877}, 'Cost1': 4.414213562373095, 'Cost2': 6.732050807568877, 'filename': 'medium-0346.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951, 'PythonInterpreter': 7.745966692414834}, 'Cost1': 3.0, 'Cost2': 12.160180254787928, 'filename': 'medium-0087.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.4142135623730951, 'PythonInterpreter': 1.0}, 'Cost1': 3.0, 'Cost2': 5.414213562373095, 'filename': 'medium-0219.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 1.7320508075688772}, 'Cost1': 3.0, 'Cost2': 4.732050807568877, 'filename': 'medium-0217.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 4.414213562373095, 'Cost2': 5.23606797749979, 'filename': 'medium-0348.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 7}, 'Cost1': 3.0, 'Cost2': 7.0, 'filename': 'medium-0198.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 3.0, 'Cost2': 4.414213562373095, 'filename': 'medium-0250.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 7}, 'Cost1': 0.0, 'Cost2': 7.0, 'filename': 'medium-0075.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0362.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 2.8284271247461903}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'Forecaster': 6, 'PandasInterpreter': 2.0}, 'Cost1': 5.82842712474619, 'Cost2': 11.0, 'filename': 'medium-0246.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 4.414213562373095, 'Cost2': 5.23606797749979, 'filename': 'medium-0151.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.0}, 'Cost1': 3.0, 'Cost2': 4.0, 'filename': 'medium-0123.txt'}
+{'Clean Cost1': {'TextualClassifier': 20}, 'Clean Cost2': {'TextualClassifier': 27}, 'Cost1': 20.0, 'Cost2': 27.0, 'filename': 'medium-0310.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'Forecaster': 6, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 3.0, 'Cost2': 10.414213562373096, 'filename': 'medium-0201.txt'}
+{'Clean Cost1': {'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 54}, 'Cost1': 7.0, 'Cost2': 54.0, 'filename': 'medium-0388.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951, 'PythonInterpreter': 1.4142135623730951}, 'Cost1': 4.414213562373095, 'Cost2': 5.82842712474619, 'filename': 'medium-0111.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.0}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 4.0, 'Cost2': 4.414213562373095, 'filename': 'medium-0206.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0386.txt'}
+{'Clean Cost1': {'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 27}, 'Cost1': 7.0, 'Cost2': 27.0, 'filename': 'medium-0287.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 3.0, 'Cost2': 5.23606797749979, 'filename': 'medium-0375.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 4.47213595499958}, 'Clean Cost2': {'DBLoader': 6, 'Forecaster': 8, 'PandasInterpreter': 2.8284271247461903}, 'Cost1': 7.47213595499958, 'Cost2': 16.82842712474619, 'filename': 'medium-0134.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 1.7320508075688772}, 'Cost1': 4.414213562373095, 'Cost2': 4.732050807568877, 'filename': 'medium-0133.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.7320508075688772}, 'Cost1': 3.0, 'Cost2': 4.732050807568877, 'filename': 'medium-0211.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0059.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 3.0, 'Cost2': 4.414213562373095, 'filename': 'medium-0057.txt'}
+{'Clean Cost1': {'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0086.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 2.8284271247461903}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'Forecaster': 6, 'PandasInterpreter': 2.0}, 'Cost1': 5.82842712474619, 'Cost2': 11.0, 'filename': 'medium-0050.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.0}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.4142135623730951, 'PythonInterpreter': 1.4142135623730951}, 'Cost1': 4.0, 'Cost2': 5.82842712474619, 'filename': 'medium-0081.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 3.0, 'Cost2': 5.23606797749979, 'filename': 'medium-0263.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'TextualClassifier': 7}, 'Cost1': 0.0, 'Cost2': 7.0, 'filename': 'medium-0090.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'LLMInferencer': 30, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 4.414213562373095, 'Cost2': 34.41421356237309, 'filename': 'medium-0387.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0041.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 3.0, 'Cost2': 4.414213562373095, 'filename': 'medium-0272.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 4.414213562373095, 'Cost2': 5.23606797749979, 'filename': 'medium-0162.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 7}, 'Cost1': 0.0, 'Cost2': 7.0, 'filename': 'medium-0097.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 20}, 'Clean Cost2': {'TextualClassifier': 42}, 'Cost1': 20.0, 'Cost2': 42.0, 'filename': 'medium-0046.txt'}
+{'Clean Cost1': {'TextualClassifier': 20}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 20.0, 'Cost2': 30.0, 'filename': 'medium-0323.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'Forecaster': 6, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 3.0, 'Cost2': 10.414213562373096, 'filename': 'medium-0034.txt'}
+{'Clean Cost1': {'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0099.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 7}, 'Cost1': 0.0, 'Cost2': 7.0, 'filename': 'medium-0117.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0358.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'Forecaster': 6, 'PandasInterpreter': 2.6457513110645907}, 'Cost1': 4.414213562373095, 'Cost2': 11.64575131106459, 'filename': 'medium-0006.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 21}, 'Cost1': 7.0, 'Cost2': 21.0, 'filename': 'medium-0159.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0232.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 34}, 'Cost1': 7.0, 'Cost2': 34.0, 'filename': 'medium-0291.txt'}
+{'Clean Cost1': {'TextualClassifier': 20}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 27}, 'Cost1': 20.0, 'Cost2': 27.0, 'filename': 'medium-0296.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0276.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0383.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'Forecaster': 6, 'PandasInterpreter': 2.0}, 'Cost1': 4.414213562373095, 'Cost2': 11.0, 'filename': 'medium-0384.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 4.645751311064591}, 'Cost1': 4.414213562373095, 'Cost2': 7.645751311064591, 'filename': 'medium-0166.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 4.414213562373095, 'Cost2': 5.23606797749979, 'filename': 'medium-0168.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0126.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 4.414213562373095, 'Cost2': 5.23606797749979, 'filename': 'medium-0369.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0367.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.8284271247461903}, 'Cost1': 4.414213562373095, 'Cost2': 5.82842712474619, 'filename': 'medium-0130.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'Forecaster': 6, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 4.414213562373095, 'Cost2': 11.23606797749979, 'filename': 'medium-0227.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.4142135623730951, 'PythonInterpreter': 1.0}, 'Cost1': 4.414213562373095, 'Cost2': 5.414213562373095, 'filename': 'medium-0220.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.0}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 2.0, 'PythonInterpreter': 1.4142135623730951}, 'Cost1': 4.0, 'Cost2': 6.414213562373095, 'filename': 'medium-0026.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 7}, 'Cost1': 0.0, 'Cost2': 7.0, 'filename': 'medium-0331.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0102.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 4.414213562373095, 'Cost2': 5.23606797749979, 'filename': 'medium-0179.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.0}, 'Cost1': 3.0, 'Cost2': 4.0, 'filename': 'medium-0028.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 27}, 'Cost1': 7.0, 'Cost2': 27.0, 'filename': 'medium-0071.txt'}
+{'Clean Cost1': {'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0294.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 4.414213562373095, 'Cost2': 5.23606797749979, 'filename': 'medium-0120.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0368.txt'}
+{'Clean Cost1': {'Finish': 0}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'medium-0321.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 20}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 27}, 'Cost1': 20.0, 'Cost2': 27.0, 'filename': 'medium-0036.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'Calculator': 2, 'DBLoader': 3}, 'Cost1': 3.0, 'Cost2': 5.0, 'filename': 'medium-0092.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.7320508075688772}, 'Cost1': 3.0, 'Cost2': 4.732050807568877, 'filename': 'medium-0385.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 49}, 'Cost1': 7.0, 'Cost2': 49.0, 'filename': 'medium-0167.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 3.4641016151377544}, 'Cost1': 3.0, 'Cost2': 6.4641016151377535, 'filename': 'medium-0270.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'Calculator': 2, 'DBLoader': 3, 'Finish': 0}, 'Cost1': 4.414213562373095, 'Cost2': 5.0, 'filename': 'medium-0277.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.0}, 'Cost1': 3.0, 'Cost2': 5.0, 'filename': 'medium-0095.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'Forecaster': 8, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 4.414213562373095, 'Cost2': 12.414213562373096, 'filename': 'medium-0044.txt'}
+{'Clean Cost1': {'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 14}, 'Cost1': 7.0, 'Cost2': 14.0, 'filename': 'medium-0052.txt'}
+{'Clean Cost1': {'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0394.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.449489742783178}, 'Cost1': 3.0, 'Cost2': 5.449489742783178, 'filename': 'medium-0083.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 3.0, 'Cost2': 4.414213562373095, 'filename': 'medium-0261.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.23606797749979}, 'Cost1': 3.0, 'Cost2': 5.23606797749979, 'filename': 'medium-0337.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.0}, 'Clean Cost2': {'Calculator': 4, 'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.7320508075688772}, 'Cost1': 4.0, 'Cost2': 8.732050807568877, 'filename': 'medium-0379.txt'}
+{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'DBLoader': 3, 'Finish': 0, 'PandasInterpreter': 1.4142135623730951}, 'Cost1': 3.0, 'Cost2': 4.414213562373095, 'filename': 'medium-0131.txt'}
+{'Clean Cost1': {'DBLoader': 3, 'PandasInterpreter': 1.4142135623730951}, 'Clean Cost2': {'DBLoader': 3, 'PandasInterpreter': 2.0}, 'Cost1': 4.414213562373095, 'Cost2': 5.0, 'filename': 'medium-0302.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 20}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 27}, 'Cost1': 20.0, 'Cost2': 27.0, 'filename': 'medium-0285.txt'}
+{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0282.txt'}

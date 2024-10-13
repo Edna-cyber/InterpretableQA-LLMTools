@@ -1,0 +1,121 @@
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0010.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0021.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0027.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0048.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0076.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0084.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0194.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0205.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0222.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0238.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0258.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0286.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0293.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0300.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0336.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0360.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'ACCEPTED', 'filename': 'medium-0364.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0033.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0072.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0165.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0182.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0234.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0279.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0285.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0295.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0311.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0318.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0322.txt'}
+{'LLM Answer': 'ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0376.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0040.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0055.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0158.txt'}
+{'LLM Answer': 'not ACCEPTED', 'Groundtruth Answer': 'REJECTED', 'filename': 'medium-0274.txt'}
+{'LLM Answer': 'Applications', 'Groundtruth Answer': 'not Applications', 'filename': 'medium-0029.txt'}
+{'LLM Answer': 'Applications', 'Groundtruth Answer': 'not Applications', 'filename': 'medium-0075.txt'}
+{'LLM Answer': 'Applications', 'Groundtruth Answer': 'not Applications', 'filename': 'medium-0276.txt'}
+{'LLM Answer': 'Applications', 'Groundtruth Answer': 'not Applications', 'filename': 'medium-0361.txt'}
+{'LLM Answer': 'Data-centric AI', 'Groundtruth Answer': 'not Data-centric AI', 'filename': 'medium-0386.txt'}
+{'LLM Answer': 'Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key ans and place your answer inside the dictionary, like this: {ans: your_answer', 'Groundtruth Answer': 'not Data-centric AI', 'filename': 'medium-0368.txt'}
+{'LLM Answer': 'Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key ans and place your answer inside the dictionary, like this: {ans: your_answer', 'Groundtruth Answer': 'not Health', 'filename': 'medium-0383.txt'}
+{'LLM Answer': 'Optimization', 'Groundtruth Answer': 'not Optimization', 'filename': 'medium-0321.txt'}
+{'LLM Answer': '{prediction: Social Aspects', 'Groundtruth Answer': 'not Social Aspects', 'filename': 'medium-0090.txt'}
+{'LLM Answer': 'Theory', 'Groundtruth Answer': 'not Theory', 'filename': 'medium-0059.txt'}
+{'LLM Answer': 'Theory', 'Groundtruth Answer': 'not Theory', 'filename': 'medium-0358.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0036.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0191.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0236.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0341.txt'}
+{'LLM Answer': 'We have successfully loaded the neurips dataframe, including the following columns: Title(e.g.SEEDS: Exp..., <class str>), Authors(e.g.[Martin Gonzalez, Nelson Fernandez Pinto, Thuy Tran, elies Gherbi, Hatem Hajri, Nader Masmoudi], <class list>), Location(e.g.Great Hall..., <class str>), Abstract(e.g.A potent c..., <class str>), Topic(e.g.Deep Learn..., <class str>), Oral(e.g.not oral, <class str>), Poster Session(e.g.4.0, <class numpy.float64>), Subtopic(e.g.Generative..., <class str>), Authors Num(e.g.6, <class numpy.int64>).\nIt has 3000 rows.', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0378.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0011.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0014.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0074.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0100.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0105.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0178.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0184.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0195.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0208.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0249.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0259.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0282.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0331.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0350.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0377.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0394.txt'}
+{'LLM Answer': 'oral', 'Groundtruth Answer': 'not oral', 'filename': 'medium-0107.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0056.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0085.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0101.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0117.txt'}
+{'LLM Answer': 'Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0181.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0013.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0045.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0061.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0121.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0132.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0177.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0180.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0187.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0213.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0243.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0264.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0266.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0268.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0269.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0294.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0296.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0355.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0390.txt'}
+{'LLM Answer': 'not Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0392.txt'}
+{'LLM Answer': 'not oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0063.txt'}
+{'LLM Answer': 'not oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0094.txt'}
+{'LLM Answer': 'not oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0099.txt'}
+{'LLM Answer': 'not oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0140.txt'}
+{'LLM Answer': 'not oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0319.txt'}
+{'LLM Answer': 'not oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0389.txt'}
+{'LLM Answer': '{prediction: Oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0167.txt'}
+{'LLM Answer': '{prediction: not oral', 'Groundtruth Answer': 'oral', 'filename': 'medium-0159.txt'}
+{'LLM Answer': [0.69, 0.69, 0.69, 0.69], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0026.txt'}
+{'LLM Answer': [55.46, 58.06, 58.37, 57.14], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0145.txt'}
+{'LLM Answer': [60.0, 62.0, 61.5, 63.0], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0301.txt'}
+{'LLM Answer': [62.06896551724138, 66.44736842105263, 65.18987341772153, 60.86956521739131], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0220.txt'}
+{'LLM Answer': [65.0, 70.0, 55.0, 75.0], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0203.txt'}
+{'LLM Answer': [65.46814933993413, 70.27020369409966, 65.46821591518174, 70.27013711977504], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0044.txt'}
+{'LLM Answer': [65.93740177520887, 65.93740177520887, 65.93740177520887, 65.93740177520887], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0380.txt'}
+{'LLM Answer': [66.92294993156948, 66.89053075443843, 66.85811157730737, 66.82569240017631], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0006.txt'}
+{'LLM Answer': [66.92499999999998, 66.89299999999999, 66.86099999999998, 66.82899999999998], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0246.txt'}
+{'LLM Answer': [69.0, 67.05, 65.87, 67.35], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0081.txt'}
+{'LLM Answer': [69.06984969053934, 69.75766056053027, 70.4454714305212, 71.1332823005121], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0034.txt'}
+{'LLM Answer': [69.06984969053934, 69.75766056053027, 70.4454714305212, 71.1332823005121], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823, 66.12296110414053], 'filename': 'medium-0201.txt'}
+{'LLM Answer': [57.94, 67.07, 71.45], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823], 'filename': 'medium-0008.txt'}
+{'LLM Answer': [62.07, 66.45, 65.19], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823], 'filename': 'medium-0324.txt'}
+{'LLM Answer': [65.56099999999999, 65.04799999999999, 64.53499999999998], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823], 'filename': 'medium-0384.txt'}
+{'LLM Answer': [67.53, 66.73, 70.09], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241, 65.46184738955823], 'filename': 'medium-0231.txt'}
+{'LLM Answer': [65.49525201579843, 65.49525201579843], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241], 'filename': 'medium-0241.txt'}
+{'LLM Answer': [66.87713128729754, 68.0920138018056], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241], 'filename': 'medium-0168.txt'}
+{'LLM Answer': [68.49, 68.86], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241], 'filename': 'medium-0050.txt'}
+{'LLM Answer': [69.0, 65.1006711409396], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241], 'filename': 'medium-0375.txt'}
+{'LLM Answer': [69.0, 65.1006711409396], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241], 'filename': 'medium-0379.txt'}
+{'LLM Answer': [70, 60], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241], 'filename': 'medium-0387.txt'}
+{'LLM Answer': [74.03, 55.06], 'Groundtruth Answer': [66.59217877094972, 70.05235602094241], 'filename': 'medium-0128.txt'}

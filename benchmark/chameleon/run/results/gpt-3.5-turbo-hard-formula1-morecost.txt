@@ -1,0 +1,20 @@
+{'Clean Cost1': {'Finish': 0}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0095.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0037.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0154.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0185.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0153.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0244.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0013.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0130.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'PythonInterpreter': 7.745966692414834}, 'Cost1': 0.0, 'Cost2': 7.745966692414834, 'filename': 'hard-0284.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0229.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0054.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'PythonInterpreter': 1.0}, 'Cost1': 0.0, 'Cost2': 1.0, 'filename': 'hard-0269.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0017.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0133.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0165.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0073.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0210.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'DBLoader': 3}, 'Cost1': 0.0, 'Cost2': 3.0, 'filename': 'hard-0262.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'Finish': 0, 'LLMInferencer': 30}, 'Cost1': 0.0, 'Cost2': 30.0, 'filename': 'hard-0011.txt'}
+{'Clean Cost1': {}, 'Clean Cost2': {'DBLoader': 3}, 'Cost1': 0.0, 'Cost2': 3.0, 'filename': 'hard-0035.txt'}

@@ -1,0 +1,33 @@
+{'LLM Answer': "'Theory'", 'Groundtruth Answer': "'Applications'", 'filename': 'hard-0074.txt'}
+{'LLM Answer': "'Theory'", 'Groundtruth Answer': "'Applications'", 'filename': 'hard-0287.txt'}
+{'LLM Answer': "'Reinforcement Learning'", 'Groundtruth Answer': "'Deep Learning'", 'filename': 'hard-0032.txt'}
+{'LLM Answer': "'Deep Learning'", 'Groundtruth Answer': "'Miscellaneous Aspects of Machine Learning'", 'filename': 'hard-0176.txt'}
+{'LLM Answer': "'Reinforcement Learning'", 'Groundtruth Answer': "'Miscellaneous Aspects of Machine Learning'", 'filename': 'hard-0150.txt'}
+{'LLM Answer': '"Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key \'ans\' and place your answer inside the dictionary, like this: {\'ans\': your_answer', 'Groundtruth Answer': "'Miscellaneous Aspects of Machine Learning'", 'filename': 'hard-0140.txt'}
+{'LLM Answer': "'Deep Learning'", 'Groundtruth Answer': "'Optimization'", 'filename': 'hard-0285.txt'}
+{'LLM Answer': '"Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key \'ans\' and place your answer inside the dictionary, like this: {\'ans\': your_answer', 'Groundtruth Answer': "'Probabilistic Methods'", 'filename': 'hard-0296.txt'}
+{'LLM Answer': "'Deep Learning'", 'Groundtruth Answer': "'Social Aspects'", 'filename': 'hard-0228.txt'}
+{'LLM Answer': 'Yes', 'Groundtruth Answer': 'No', 'filename': 'hard-0102.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0007.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0014.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0031.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0049.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0064.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0080.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0086.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0096.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0105.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0113.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0124.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0134.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0137.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0149.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0166.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0170.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0182.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0188.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0220.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0230.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0255.txt'}
+{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0275.txt'}
+{'LLM Answer': 'Unknown', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0038.txt'}
