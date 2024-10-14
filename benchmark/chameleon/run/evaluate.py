@@ -57,7 +57,7 @@ if __name__ == "__main__":
         wrong_interp_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-{args.prompt2}-wrong.txt"
         wrong_both_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-bothwrong.txt"
         more_cost_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-morecost.txt"
-    result_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-test.json"
+    result_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-test.json" ###
     wrong_clean_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-{args.prompt}-wrong.txt"
     
     total_count = 0
@@ -87,7 +87,16 @@ if __name__ == "__main__":
                 avg_tool_cost[key] += int(question_tool_cost[key])
             else:
                 avg_tool_cost[key] = int(question_tool_cost[key])
-                
+
+        try:
+            llm_answer = float(llm_answer)
+        except:
+            pass
+        try:
+            gt_answer = float(gt_answer)
+        except:
+            pass
+        
         if "[" in llm_answer and "]" in llm_answer:
             try:
                 llm_answer = ast.literal_eval(llm_answer)
@@ -107,6 +116,14 @@ if __name__ == "__main__":
         metric = None
         if llm_answer=="None" or llm_answer=="null" or llm_answer=="":
             print("None filename", filename) ##
+            errors[question_type] += 1
+            cost_original[question_type]["invalid"].append(per_question_cost)
+        elif (isinstance(llm_answer, int) or isinstance(llm_answer, float)) and llm_answer==0:
+            print("0 value filename", filename) ##
+            errors[question_type] += 1
+            cost_original[question_type]["invalid"].append(per_question_cost)
+        elif isinstance(llm_answer, list) and llm_answer==[]:
+            print("empty list filename", filename) ##
             errors[question_type] += 1
             cost_original[question_type]["invalid"].append(per_question_cost)
         elif isinstance(llm_answer, str) and "Error:" in llm_answer:
@@ -207,15 +224,15 @@ if __name__ == "__main__":
             if metric2!=None and metric2!=1:
                 wrong_interp.append({"LLM Answer": llm_answer2, "Groundtruth Answer": gt_answer2, "filename": filename})
             if metric!=None and metric2!=None and metric!=1 and metric2!=1:
-                wrong_both.append({"LLM Answer1": llm_answer, "LLM Answer2": llm_answer2, "Groundtruth Answer2": gt_answer, "filename": filename})
-            if per_question_cost2>per_question_cost:
+                wrong_both.append({"LLM Answer1": llm_answer, "LLM Answer2": llm_answer2, "Groundtruth Answer": gt_answer, "filename": filename})
+            if per_question_cost2>per_question_cost and metric!=None and metric2!=None:
                 more_cost.append({"Clean Cost1": question_tool_cost, "Clean Cost2": question_tool_cost2, "Cost1": per_question_cost, "Cost2": per_question_cost2, "filename": filename})
         if metric!=None and metric!=1:
             wrong_clean.append({"LLM Answer": llm_answer, "Groundtruth Answer": gt_answer, "filename": filename})
     
     wrong_clean = sorted(wrong_clean, key=lambda x: json.dumps(x, sort_keys=True))
     wrong_interp = sorted(wrong_interp, key=lambda x: json.dumps(x, sort_keys=True))
-    wrong_both = sorted(wrong_interp, key=lambda x: json.dumps(x, sort_keys=True))
+    wrong_both = sorted(wrong_both, key=lambda x: json.dumps(x, sort_keys=True))
             
     with open(wrong_clean_file, 'w') as f:
         for item in wrong_clean: 

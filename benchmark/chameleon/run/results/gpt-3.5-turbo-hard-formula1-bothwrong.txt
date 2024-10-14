@@ -1,15 +1,4 @@
-{'LLM Answer': "'Deep Learning'", 'Groundtruth Answer': "'Applications'", 'filename': 'hard-0037.txt'}
-{'LLM Answer': '"Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key \'ans\' and place your answer inside the dictionary, like this: {\'ans\': your_answer', 'Groundtruth Answer': "'Miscellaneous Aspects of Machine Learning'", 'filename': 'hard-0278.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0080.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0095.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0130.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0133.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0149.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0153.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0185.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0210.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0220.txt'}
-{'LLM Answer': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0244.txt'}
-{'LLM Answer': 'Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key ans and place your answer inside the dictionary, like this: {ans: your_answer', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0013.txt'}
-{'LLM Answer': 'Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key ans and place your answer inside the dictionary, like this: {ans: your_answer', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0073.txt'}
-{'LLM Answer': 'Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key ans and place your answer inside the dictionary, like this: {ans: your_answer', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0166.txt'}
+{'LLM Answer1': 'No', 'LLM Answer2': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0080.txt'}
+{'LLM Answer1': 'No', 'LLM Answer2': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0149.txt'}
+{'LLM Answer1': 'No', 'LLM Answer2': 'No', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0220.txt'}
+{'LLM Answer1': 'No', 'LLM Answer2': 'Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key ans and place your answer inside the dictionary, like this: {ans: your_answer', 'Groundtruth Answer': 'Yes', 'filename': 'hard-0166.txt'}

@@ -1,0 +1,90 @@
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.015899581589958158, 'filename': 'easy-0485.txt'}
+{'LLM Answer': 0.5, 'Groundtruth Answer': 0.03430962343096234, 'filename': 'easy-0472.txt'}
+{'LLM Answer': 0.0, 'Groundtruth Answer': 0.0502092050209205, 'filename': 'easy-0054.txt'}
+{'LLM Answer': 0.0, 'Groundtruth Answer': 0.0502092050209205, 'filename': 'easy-0507.txt'}
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.0502092050209205, 'filename': 'easy-0088.txt'}
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.05160390516039052, 'filename': 'easy-0512.txt'}
+{'LLM Answer': 0.499860529986053, 'Groundtruth Answer': 0.05160390516039052, 'filename': 'easy-0335.txt'}
+{'LLM Answer': 0.5, 'Groundtruth Answer': 0.07670850767085077, 'filename': 'easy-0020.txt'}
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.07894002789400278, 'filename': 'easy-0281.txt'}
+{'LLM Answer': 0.25, 'Groundtruth Answer': 0.100697350069735, 'filename': 'easy-0157.txt'}
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.100697350069735, 'filename': 'easy-0150.txt'}
+{'LLM Answer': 0.5, 'Groundtruth Answer': 0.100697350069735, 'filename': 'easy-0368.txt'}
+{'LLM Answer': 0.0, 'Groundtruth Answer': 0.1087866108786611, 'filename': 'easy-0131.txt'}
+{'LLM Answer': 0.6666666666666666, 'Groundtruth Answer': 0.1087866108786611, 'filename': 'easy-0442.txt'}
+{'LLM Answer': 0.2, 'Groundtruth Answer': 0.1199442119944212, 'filename': 'easy-0235.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.1199442119944212, 'filename': 'easy-0288.txt'}
+{'LLM Answer': 0.5, 'Groundtruth Answer': 0.12831241283124128, 'filename': 'easy-0071.txt'}
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.16262203626220362, 'filename': 'easy-0396.txt'}
+{'LLM Answer': 0.0, 'Groundtruth Answer': 0.21311018131101814, 'filename': 'easy-0425.txt'}
+{'LLM Answer': 0.5, 'Groundtruth Answer': 0.21311018131101814, 'filename': 'easy-0001.txt'}
+{'LLM Answer': 0.5, 'Groundtruth Answer': 0.21311018131101814, 'filename': 'easy-0259.txt'}
+{'LLM Answer': 0.0, 'Groundtruth Answer': 0.29707112970711297, 'filename': 'easy-0243.txt'}
+{'LLM Answer': 0.0, 'Groundtruth Answer': 0.29707112970711297, 'filename': 'easy-0286.txt'}
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.29707112970711297, 'filename': 'easy-0298.txt'}
+{'LLM Answer': 0.6666666666666666, 'Groundtruth Answer': 0.29707112970711297, 'filename': 'easy-0221.txt'}
+{'LLM Answer': 0.6666666666666666, 'Groundtruth Answer': 0.29707112970711297, 'filename': 'easy-0434.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.29707112970711297, 'filename': 'easy-0513.txt'}
+{'LLM Answer': 0.5, 'Groundtruth Answer': 0.32719665271966525, 'filename': 'easy-0303.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.32719665271966525, 'filename': 'easy-0393.txt'}
+{'LLM Answer': 0.6666666666666666, 'Groundtruth Answer': 0.4898186889818689, 'filename': 'easy-0307.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.4898186889818689, 'filename': 'easy-0215.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.4898186889818689, 'filename': 'easy-0264.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.4898186889818689, 'filename': 'easy-0325.txt'}
+{'LLM Answer': 0.0, 'Groundtruth Answer': 0.5101813110181311, 'filename': 'easy-0117.txt'}
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.5101813110181311, 'filename': 'easy-0304.txt'}
+{'LLM Answer': 0.0, 'Groundtruth Answer': 0.6728033472803348, 'filename': 'easy-0095.txt'}
+{'LLM Answer': 0.3333333333333333, 'Groundtruth Answer': 0.6728033472803348, 'filename': 'easy-0391.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.702928870292887, 'filename': 'easy-0190.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.702928870292887, 'filename': 'easy-0216.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.7927475592747559, 'filename': 'easy-0075.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.8716875871687587, 'filename': 'easy-0016.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.8716875871687587, 'filename': 'easy-0069.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.8716875871687587, 'filename': 'easy-0506.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.891213389121339, 'filename': 'easy-0397.txt'}
+{'LLM Answer': 0.6666666666666666, 'Groundtruth Answer': 0.9232914923291492, 'filename': 'easy-0162.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9232914923291492, 'filename': 'easy-0067.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9232914923291492, 'filename': 'easy-0244.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9232914923291492, 'filename': 'easy-0275.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9232914923291492, 'filename': 'easy-0495.txt'}
+{'LLM Answer': 0.6666666666666666, 'Groundtruth Answer': 0.9497907949790795, 'filename': 'easy-0104.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9497907949790795, 'filename': 'easy-0268.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9497907949790795, 'filename': 'easy-0272.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9497907949790795, 'filename': 'easy-0352.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9497907949790795, 'filename': 'easy-0449.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9497907949790795, 'filename': 'easy-0525.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9656903765690377, 'filename': 'easy-0126.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9919107391910739, 'filename': 'easy-0245.txt'}
+{'LLM Answer': 1.0, 'Groundtruth Answer': 0.9919107391910739, 'filename': 'easy-0424.txt'}
+{'LLM Answer': ['Martin Gonzalez', 'Nelson Fernandez Pinto'], 'Groundtruth Answer': ['Bernhard Schölkopf', 'Bo Li'], 'filename': 'easy-0327.txt'}
+{'LLM Answer': ['Martin Gonzalez', 'Nelson Fernandez Pinto'], 'Groundtruth Answer': ['Bernhard Schölkopf', 'Mihaela van der Schaar'], 'filename': 'easy-0036.txt'}
+{'LLM Answer': ['Martin Gonzalez', 'Nelson Fernandez Pinto'], 'Groundtruth Answer': ['Bo Li', 'Ludwig Schmidt'], 'filename': 'easy-0521.txt'}
+{'LLM Answer': ['B21'], 'Groundtruth Answer': ['G06', 'H04'], 'filename': 'easy-0550.txt'}
+{'LLM Answer': ['B65'], 'Groundtruth Answer': ['G06', 'H04'], 'filename': 'easy-0125.txt'}
+{'LLM Answer': ['A63'], 'Groundtruth Answer': ['H01', 'G01', 'H04'], 'filename': 'easy-0582.txt'}
+{'LLM Answer': ['A61', 'B23'], 'Groundtruth Answer': ['H04', 'A61', 'G06'], 'filename': 'easy-0169.txt'}
+{'LLM Answer': ['A22', 'B03'], 'Groundtruth Answer': ['H04', 'G06'], 'filename': 'easy-0255.txt'}
+{'LLM Answer': [], 'Groundtruth Answer': ['Karthik Valmeekam', 'Sarath Sreedharan', 'Subbarao Kambhampati', 'Yuan Cao', 'Lintang Sutawika'], 'filename': 'easy-0192.txt'}
+{'LLM Answer': ['Karthik Valmeekam', 'Zeynep Akata', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'Groundtruth Answer': ['Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'filename': 'easy-0056.txt'}
+{'LLM Answer': ['Karthik Valmeekam', 'Zeynep Akata', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'Groundtruth Answer': ['Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'filename': 'easy-0163.txt'}
+{'LLM Answer': ['Karthik Valmeekam', 'Zeynep Akata', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'Groundtruth Answer': ['Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'filename': 'easy-0414.txt'}
+{'LLM Answer': ['Karthik Valmeekam', 'Zeynep Akata', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'Groundtruth Answer': ['Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'filename': 'easy-0571.txt'}
+{'LLM Answer': ['Karthik Valmeekam', 'Zeynep Akata', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'Groundtruth Answer': ['Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'filename': 'easy-0578.txt'}
+{'LLM Answer': ['Martin Gonzalez', 'Nelson Fernandez Pinto', 'Thuy Tran'], 'Groundtruth Answer': ['Ludwig Schmidt', 'Bo Li', 'Bo Han'], 'filename': 'easy-0367.txt'}
+{'LLM Answer': ['Sarath Sreedharan', 'Subbarao Kambhampati', 'Karthik Valmeekam', 'Zeynep Akata'], 'Groundtruth Answer': ['Sarath Sreedharan', 'William Yang Wang', 'Karthik Valmeekam', 'Subbarao Kambhampati'], 'filename': 'easy-0406.txt'}
+{'LLM Answer': ['Sarath Sreedharan', 'Subbarao Kambhampati', 'Karthik Valmeekam', 'Zeynep Akata'], 'Groundtruth Answer': ['Sarath Sreedharan', 'William Yang Wang', 'Karthik Valmeekam', 'Subbarao Kambhampati'], 'filename': 'easy-0408.txt'}
+{'LLM Answer': ['Sarath Sreedharan', 'Subbarao Kambhampati', 'Karthik Valmeekam', 'Zeynep Akata'], 'Groundtruth Answer': ['Sarath Sreedharan', 'William Yang Wang', 'Karthik Valmeekam', 'Subbarao Kambhampati'], 'filename': 'easy-0564.txt'}
+{'LLM Answer': ['Sarath Sreedharan', 'Subbarao Kambhampati', 'Karthik Valmeekam', 'Zeynep Akata'], 'Groundtruth Answer': ['Sarath Sreedharan', 'William Yang Wang', 'Karthik Valmeekam', 'Subbarao Kambhampati'], 'filename': 'easy-0588.txt'}
+{'LLM Answer': ['Sarath Sreedharan', 'Subbarao Kambhampati', 'Karthik Valmeekam', 'Zeynep Akata'], 'Groundtruth Answer': ['Sarath Sreedharan', 'William Yang Wang', 'Karthik Valmeekam', 'Subbarao Kambhampati'], 'filename': 'easy-0591.txt'}
+{'LLM Answer': ['Zeynep Akata', 'William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan'], 'Groundtruth Answer': ['Subbarao Kambhampati', 'Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan'], 'filename': 'easy-0536.txt'}
+{'LLM Answer': ['Zeynep Akata', 'William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan'], 'Groundtruth Answer': ['Subbarao Kambhampati', 'Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan'], 'filename': 'easy-0541.txt'}
+{'LLM Answer': ['Zeynep Akata', 'William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan'], 'Groundtruth Answer': ['Subbarao Kambhampati', 'Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan'], 'filename': 'easy-0547.txt'}
+{'LLM Answer': ['Zeynep Akata', 'William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan'], 'Groundtruth Answer': ['Subbarao Kambhampati', 'Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan'], 'filename': 'easy-0580.txt'}
+{'LLM Answer': ['Zeynep Akata', 'William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan'], 'Groundtruth Answer': ['Subbarao Kambhampati', 'Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan'], 'filename': 'easy-0585.txt'}
+{'LLM Answer': [], 'Groundtruth Answer': ['Subbarao Kambhampati', 'Karthik Valmeekam', 'William Yang Wang', 'Sarath Sreedharan'], 'filename': 'easy-0544.txt'}
+{'LLM Answer': ['William Yang Wang', 'Zeynep Akata', 'Subbarao Kambhampati', 'Sarath Sreedharan'], 'Groundtruth Answer': ['Subbarao Kambhampati', 'William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan'], 'filename': 'easy-0120.txt'}
+{'LLM Answer': ['William Yang Wang', 'Zeynep Akata', 'Subbarao Kambhampati', 'Sarath Sreedharan'], 'Groundtruth Answer': ['Subbarao Kambhampati', 'William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan'], 'filename': 'easy-0471.txt'}
+{'LLM Answer': ['William Yang Wang', 'Zeynep Akata', 'Subbarao Kambhampati', 'Sarath Sreedharan'], 'Groundtruth Answer': ['Subbarao Kambhampati', 'William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan'], 'filename': 'easy-0532.txt'}
+{'LLM Answer': ['Zeynep Akata', 'Subbarao Kambhampati', 'William Yang Wang', 'Karthik Valmeekam'], 'Groundtruth Answer': ['William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'filename': 'easy-0318.txt'}
+{'LLM Answer': ['Zeynep Akata', 'Subbarao Kambhampati', 'William Yang Wang', 'Karthik Valmeekam'], 'Groundtruth Answer': ['William Yang Wang', 'Karthik Valmeekam', 'Sarath Sreedharan', 'Subbarao Kambhampati'], 'filename': 'easy-0586.txt'}
+{'LLM Answer': [], 'Groundtruth Answer': ['Yuan Cao', 'Karthik Valmeekam', 'Sarath Sreedharan', 'Subbarao Kambhampati', 'Lintang Sutawika'], 'filename': 'easy-0229.txt'}
