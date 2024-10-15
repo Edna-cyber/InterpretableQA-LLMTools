@@ -23,8 +23,8 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     results_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/results'
-    json_dir = os.path.join(results_dir, 'current') #results_dir
-    output_image_dir = os.path.join(results_dir, 'images') #'images' #new_images
+    json_dir = results_dir #os.path.join(results_dir, 'current')
+    output_image_dir = os.path.join(results_dir, 'new_images') #'images' #new_images
     
     with open(os.path.join(json_dir, f"{args.policy_engine}-{args.hardness}-{args.prompt1}-{args.formula}-test.json"), 'r') as f:
         data1 = json.load(f)
@@ -83,12 +83,12 @@ if __name__ == "__main__":
     ax.set_ylabel('Cost')
     # ax.set_title(f'{args.prompt1} prompt: Comparison of costs for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
     # ax.set_title(f'Different interpretability prompt: Comparison of costs for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
-    ax.set_title(f'Different LLMs: Comparison of costs for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
+    ax.set_title(f'{args.prompt1} Different LLMs: Comparison of costs for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
     ax.set_xticks(x)
     ax.set_xticklabels(categories)
     ax.legend()
 
-    output_image_path = os.path.join(output_image_dir, f'Different_LLMs_Comparison_of_costs_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
+    output_image_path = os.path.join(output_image_dir, f'{args.prompt1}_Different_LLMs_Comparison_of_costs_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
     # output_image_path = os.path.join(output_image_dir, f'Different_interpretability_prompt_Comparison_of_costs_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
     # output_image_path = os.path.join(output_image_dir, f'{args.prompt1}_prompt_Comparison_of_costs_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
     plt.savefig(output_image_path)
@@ -103,14 +103,14 @@ if __name__ == "__main__":
     ax.set_ylabel('Performance')
     # ax.set_title(f'{args.prompt1} prompt: Comparison of performance for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
     # ax.set_title(f'Different interpretability prompt: Comparison of performance for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
-    ax.set_title(f'Different LLMs: Comparison of performance for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
+    ax.set_title(f'{args.prompt1} Different LLMs: Comparison of performance for {args.hardness} questions \n with {args.policy_engine} {args.formula}', fontsize=8)
     ax.set_xticks(x)
     ax.set_xticklabels(categories)
     ax.legend()
 
     # output_image_path = os.path.join(output_image_dir, f'{args.prompt1}_prompt_Comparison_of_performance_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
     # output_image_path = os.path.join(output_image_dir, f'Different_interpretability_prompt_Comparison_of_performance_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
-    output_image_path = os.path.join(output_image_dir, f'Different_LLMs_Comparison_of_performance_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
+    output_image_path = os.path.join(output_image_dir, f'{args.prompt1}_Different_LLMs_Comparison_of_performance_for_{args.hardness}_questions_with_{args.policy_engine}_{args.formula}.png')
     plt.savefig(output_image_path)
         
 

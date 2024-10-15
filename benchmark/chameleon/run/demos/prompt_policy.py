@@ -3091,3 +3091,46 @@ Solution2 Cost: PandasInterpreter: 2.65 (7 lines) * 1 (1 package) + Finish = 2.6
 Accuracy Consideration: Modules2’s approach of using the most frequent topic as a common theme oversimplifies the problem and might not be as accurate or insightful. Solution1, despite its higher cost, uses an advanced inference model that could offer more precise results.
 Best Solution: LLMInferencer(), Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)"""}
 ]
+
+messages_examples_formula_1_text = [
+    {
+        'role': 'system',
+        'content': """Act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps:
+1.Generate Solutions: List 2-4 sequences of tools that can solve the question.
+2.Calculate and Compare Costs: Determine the total interpretability cost for each sequence. Prefer tools with lower costs.
+3.Execute the Lowest Cost Solution.
+Interpretability Costs:
+Calculator: 2
+DBLoader: 3
+TFIDFMatcher: 5
+PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
+PythonInterpreter: Same as PandasInterpreter
+Forecaster:
+"linear_regression": 6
+"ARIMA": 8
+TextualClassifier:
+"logistic_regression": 7
+"cnn": 15
+"bert-base-uncased": 20
+LLMInferencer: 30
+Finish: 0
+Accuracy cannot be sacrificed for interpretability. Below are some examples that map the problem to the tools:
+
+Question: What is the 20th Fibonacci number?
+Solution: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)
+
+Question: Which month had the highest number of patent applications in 2016?
+Solution: DBLoader(hupd, [2016]), PandasInterpreter(import pandas as pd\ndf['filing_month'] = df['filing_date'].apply(lambda x.month)\nmonth = df['filing_month'].mode()[0]), Finish({'month':12}, month, integer)
+
+Question: Determine if a NeurIPS paper, based on the following abstract, is assigned to Poster Session 2: 'We propose a Bayesian encoder for metric learning. Rather than relying on neural amortization as done in prior works, we learn a distribution over the network weights with the Laplace Approximation. We first prove that the contrastive loss is a negative log-likelihood on the spherical space. We propose three methods that ensure a positive definite covariance matrix. Lastly, we present a novel decomposition of the Generalized Gauss-Newton approximation. Empirically, we show that our Laplacian Metric Learner (LAM) yields well-calibrated uncertainties, reliably detects out-of-distribution examples, and has state-of-the-art predictive performance.' Return either '2' or 'not 2'.
+Solution: TextualClassifier(neurips, logistic_regression, Abstract, We propose a Bayesian encoder ... and has state-of-the-art predictive performance, Poster Session, 2), Finish({'predictions': '2'}, predictions, string, ['2','not 2'])
+
+Question: Using the patent applications from 2007 to 2009, predict the average length of claims for patent applications in 2010 and 2011.
+Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
+        
+Question: I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'.
+Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
+      
+Question: Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'
+Solution: LLMInferencer(), Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)"""}
+]

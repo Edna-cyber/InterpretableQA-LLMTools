@@ -100,7 +100,7 @@ if __name__ == "__main__":
     elif args.split=="secondhalf":
         pids = pids[length//2:]
     
-    for pid in tqdm(pids[300:]): #####
+    for pid in tqdm(pids[:10]): #####
         time.sleep(1)
         # print("pid", pid)
         db.data = None # force reset
@@ -115,7 +115,7 @@ if __name__ == "__main__":
             user_prompt = "Now, write your response in the format of the text CONTENT of the examples provided (Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution): 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. Each solution must follow this structure as in the examples:   SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: " + example["question"]
         elif args.prompt=="noexample":
             user_prompt = "Now, you need to act as a policy model and determine the sequence of tools that can be executed sequentially to solve the question. The solution must end with the Finish tool. Do not respond with multi_tool_use.parallel JSON. Question: "+example["question"]
-        elif args.prompt=="interpnoexample":
+        elif args.prompt=="interpnoexample" or args.prompt=="interpexamples":
             user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps: 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. The solutions must end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: "+example["question"]
         question_type = int(example["question_type"])
         per_question_cost = 0
@@ -149,6 +149,9 @@ if __name__ == "__main__":
         elif args.prompt=="interponeexample":
             if args.formula=="formula1":
                 messages = prompt_policy.messages_formula_1_one_example_text.copy()
+        elif args.prompt=="interpexamples":
+            if args.formula=="formula1":
+                messages = prompt_policy.messages_examples_formula_1_text.copy()
         messages.append({"role": "user", "content": user_prompt})
         logs = [{"role": "user", "content": user_prompt}]
         function_type = None
@@ -183,7 +186,7 @@ if __name__ == "__main__":
                 logs.append(response_without_tools)
                 generation_iterations += 1
                 
-                if generation_iterations==4 or (args.prompt=="noexample" and generation_iterations==1) or (args.prompt=="interpnoexample" and generation_iterations==1):
+                if generation_iterations==4 or (args.prompt=="noexample" and generation_iterations==1) or (args.prompt=="interpnoexample" and generation_iterations==1) or (args.prompt=="interpexamples" and generation_iterations==1):
                     break
          
                 # Regeneration (logic according to text prompts)
@@ -233,7 +236,7 @@ if __name__ == "__main__":
             user_prompt = "Execute the tool calls in the given order of 'Solution'. The 'content' of your response MUST BE None, while the 'tool_calls' of your response MUST reflect each tool and its arguments from the 'Solution', one at a time! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
         elif args.prompt=="interp" or args.prompt=="interptext" or args.prompt=="interplimited" or args.prompt=="interponeexample":      
             user_prompt = "Execute the tool calls in the given order of Best Solution using the 'tool_calls' parameter. The 'content' of your response MUST BE None. Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message."
-        elif args.prompt=="noexample" or args.prompt=="interpnoexample":  
+        elif args.prompt=="noexample" or args.prompt=="interpnoexample" or args.prompt=="interpexamples":  
             user_prompt = "Execute the tool calls. The 'content' of your response MUST BE None, while the 'tool_calls' of your response MUST reflect your proposed solution, one tool call at a time! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
 
         execution_message = {
@@ -325,7 +328,7 @@ if __name__ == "__main__":
                             finish_thought = "USE 'tool_calls' IN YOUR RESPONSE FOR EXECUTION OF 'Solution'! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
                         elif args.prompt=="interp" or args.prompt=="interptext" or args.prompt=="interplimited" or args.prompt=="interponeexample":
                             finish_thought = "USE 'tool_calls' IN YOUR RESPONSE FOR EXECUTION OF 'Best Solution'! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message."
-                        elif args.prompt=="noexample" or args.prompt=="interpnoexample":
+                        elif args.prompt=="noexample" or args.prompt=="interpnoexample" or args.prompt=="interpexamples":
                             finish_thought = "USE 'tool_calls' IN YOUR RESPONSE FOR EXECUTION! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
 
                         finish_thought_message = {
