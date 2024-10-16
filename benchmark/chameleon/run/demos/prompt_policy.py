@@ -306,111 +306,6 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'user',
-        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'."
-    },
-    {
-        'role': 'assistant',
-        'content': """Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])""",
-        'tool_calls': [
-            {
-                'id': 'call_0',
-                'function': {
-                    'name': 'TFIDFMatcher',
-                    'arguments': json.dumps({
-                        "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence." 
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_0',
-        'role': 'tool',
-        'name': 'TFIDFMatcher',
-        'content': "{'match':1}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_1',
-                'function': {
-                    'name': 'TFIDFMatcher',
-                    'arguments': json.dumps({
-                        "query": "machine learning", "document": "Artificial intelligence is a broad field that encompasses various technologies." 
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_1',
-        'role': 'tool',
-        'name': 'TFIDFMatcher',
-        'content': "{'match':0}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_2',
-                'function': {
-                    'name': 'PythonInterpreter',
-                    'arguments': json.dumps({
-                        "python_code": """
-def get_most_relevant_document(match_doc1, match_doc2):
-    if match_doc1 > match_doc2:
-        return 'Document 1'
-    elif match_doc2 > match_doc1:
-        return 'Document 2'
-    else:
-        return 'Both documents are equally relevant'
-most_relevant = get_most_relevant_document(1, 0)
-"""
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_2',
-        'role': 'tool',
-        'name': 'PythonInterpreter',
-        'content': "{'most_relevant': 'Document 1'}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_3',
-                'function': {
-                    'name': 'Finish',
-                    'arguments': json.dumps({
-                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string", "choices": "['Document 1', 'Document 2']"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_3',
-        'role': 'tool',
-        'name': 'Finish',
-        'content': "Document 1"
-    },
-    {
-        'role': 'assistant',
-        'content': "Document 1 is more relevant to the search query 'machine learning'."
-    },
-    {
-        'role': 'user',
         'content': "Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'"
     },
     {
@@ -475,7 +370,6 @@ messages_formula_1 = [
 Interpretability Costs:
 Calculator: 2
 DBLoader: 3
-TFIDFMatcher: 5
 PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
 PythonInterpreter: Same as PandasInterpreter
 Forecaster:
@@ -861,130 +755,6 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'user',
-        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'."
-    },
-    {
-        'role': 'assistant',
-        'content': """Solution1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Solution2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Solution3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-
-Cost Analysis:
-Solution1 Cost:
-PythonInterpreter: 4.58 (21 lines) * 2 (2 packages) = 9.16
-Finish: 0
-Total: 9.16 + 0 = 9.16
-Solution2 Cost:
-TFIDFMatcher (2x): 5 + 5 + 0 = 10
-PythonInterpreter: 3 (9 lines) * 1 (0 package) = 3
-Finish: 0
-Total: 10 + 3 + 0 = 13
-Solution3 Cost:
-LLMInferencer: 30
-Finish: 0
-Total: 30 + 0 = 30
-
-Best Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])""",
-        'tool_calls': [
-            {
-                'id': 'call_0',
-                'function': {
-                    'name': 'TFIDFMatcher',
-                    'arguments': json.dumps({
-                        "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence." 
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_0',
-        'role': 'tool',
-        'name': 'TFIDFMatcher',
-        'content': "{'match':1}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_1',
-                'function': {
-                    'name': 'TFIDFMatcher',
-                    'arguments': json.dumps({
-                        "query": "machine learning", "document": "Artificial intelligence is a broad field that encompasses various technologies." 
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_1',
-        'role': 'tool',
-        'name': 'TFIDFMatcher',
-        'content': "{'match':0}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_2',
-                'function': {
-                    'name': 'PythonInterpreter',
-                    'arguments': json.dumps({
-                        "python_code": """
-def get_most_relevant_document(match_doc1, match_doc2):
-    if match_doc1 > match_doc2:
-        return 'Document 1'
-    elif match_doc2 > match_doc1:
-        return 'Document 2'
-    else:
-        return 'Both documents are equally relevant'
-most_relevant = get_most_relevant_document(1, 0)
-"""
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_2',
-        'role': 'tool',
-        'name': 'PythonInterpreter',
-        'content': "{'most_relevant': 'Document 1'}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_3',
-                'function': {
-                    'name': 'Finish',
-                    'arguments': json.dumps({
-                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string", "choices": "['Document 1', 'Document 2']"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_3',
-        'role': 'tool',
-        'name': 'Finish',
-        'content': "Document 1"
-    },
-    {
-        'role': 'assistant',
-        'content': "Document 1 is more relevant to the search query 'machine learning'."
-    },
-    {
-        'role': 'user',
         'content': "Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'"
     },
     {
@@ -1064,7 +834,6 @@ messages_formula_2 = [
 Interpretability Costs:
 Calculator: 48
 DBLoader: 47
-TFIDFMatcher: 45
 PandasInterpreter: 50-sqrt(Lines of Code) × max(Packages,1)
 PythonInterpreter: Same as PandasInterpreter
 Forecaster:
@@ -1453,76 +1222,6 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'user',
-        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'."
-    },
-    {
-        'role': 'assistant',
-        'content': """Solution1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Solution2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Solution3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-
-Cost Analysis:
-Solution1 Cost:
-PythonInterpreter: 50 - 4.58 (21 lines) * 2 (2 packages) = 40.84
-Finish: 0
-Total: 40.84 + 0 = 40.84
-Solution2 Cost:
-TFIDFMatcher (2x): 45 + 45 + 0 = 90
-PythonInterpreter: 50 - 3 (9 lines) * 1 (0 package) = 47
-Finish: 0
-Total: 90 + 47 + 0 = 137
-Solution3 Cost:
-LLMInferencer: 20
-Finish: 0
-Total: 20 + 0 = 20
-
-Best Solution: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])""",
-        'tool_calls': [
-            {
-                'id': 'call_0',
-                'function': {
-                    'name': 'LLMInferencer',
-                    'arguments': ""
-                },
-
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_0',
-        'role': 'tool',
-        'name': 'LLMInferencer',
-        'content': "Provide a direct answer to the question without using any extra tools. Format your response as a dictionary with the key 'ans' and place your answer inside the dictionary, like this: {'ans': your_answer}. Nest, call the Finish tool with this dictionary as variable_values." 
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_1',
-                'function': {
-                    'name': 'Finish',
-                    'arguments': json.dumps({
-                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string", "choices": "['Document 1', 'Document 2']"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_1',
-        'role': 'tool',
-        'name': 'Finish',
-        'content': "Document 1"
-    },
-    {
-        'role': 'assistant',
-        'content': "Document 1 is more relevant to the search query 'machine learning'."
-    },
-    {
-        'role': 'user',
         'content': "Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'"
     },
     {
@@ -1600,7 +1299,6 @@ messages_formula_3 = [
 Interpretability Costs:
 Calculator: 2
 DBLoader: 3
-TFIDFMatcher: 5
 PandasInterpreter: (Lines of Code) × (Packages)
 Lines of Code: <10 (4), 10-20 (10), 21-100 (15), >100 (20)
 Packages: <2 (1), 2-5 (1.5), >5 (2)
@@ -1986,130 +1684,6 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'user',
-        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'?"
-    },
-    {
-        'role': 'assistant',
-        'content': """Solution1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Solution2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Solution3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-
-Cost Analysis:
-Solution1 Cost:
-PythonInterpreter: 10 (lines) * 1.5 (packages) = 15
-Finish: 0
-Total: 15 + 0 = 15
-Solution2 Cost:
-TFIDFMatcher (2x): 5 + 5 = 10
-PythonInterpreter: 4 (lines) * 1 (packages) = 4
-Finish: 0
-Total: 10 + 4 = 14
-Solution3 Cost:
-LLMInferencer: 30
-Finish: 0
-Total: 30 + 0 = 30
-
-Best Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))""",
-        'tool_calls': [
-            {
-                'id': 'call_0',
-                'function': {
-                    'name': 'TFIDFMatcher',
-                    'arguments': json.dumps({
-                        "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence." 
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_0',
-        'role': 'tool',
-        'name': 'TFIDFMatcher',
-        'content': "{'match':1}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_1',
-                'function': {
-                    'name': 'TFIDFMatcher',
-                    'arguments': json.dumps({
-                        "query": "machine learning", "document": "Artificial intelligence is a broad field that encompasses various technologies." 
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_1',
-        'role': 'tool',
-        'name': 'TFIDFMatcher',
-        'content': "{'match':0}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_2',
-                'function': {
-                    'name': 'PythonInterpreter',
-                    'arguments': json.dumps({
-                        "python_code": """
-def get_most_relevant_document(match_doc1, match_doc2):
-    if match_doc1 > match_doc2:
-        return 'Document 1'
-    elif match_doc2 > match_doc1:
-        return 'Document 2'
-    else:
-        return 'Both documents are equally relevant'
-most_relevant = get_most_relevant_document(1, 0)
-"""
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_2',
-        'role': 'tool',
-        'name': 'PythonInterpreter',
-        'content': "{'most_relevant': 'Document 1'}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_3',
-                'function': {
-                    'name': 'Finish',
-                    'arguments': json.dumps({
-                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_3',
-        'role': 'tool',
-        'name': 'Finish',
-        'content': "Document 1"
-    },
-    {
-        'role': 'assistant',
-        'content': "Document 1 is more relevant to the search query 'machine learning'."
-    },
-    {
-        'role': 'user',
         'content': "Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'"
     },
     {
@@ -2189,7 +1763,6 @@ messages_formula_4 = [
 Interpretability Costs:
 Calculator: 48
 DBLoader: 47
-TFIDFMatcher: 45
 PandasInterpreter: 50 - (Lines of Code) × (Packages)
 Lines of Code: <10 (4), 10-20 (10), 21-100 (15), >100 (20)
 Packages: <2 (1), 2-5 (1.5), >5 (2)
@@ -2575,130 +2148,6 @@ average_claims_per_year = df.groupby('year')['len_claims'].mean()
     },
     {
         'role': 'user',
-        'content': "I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'?"
-    },
-    {
-        'role': 'assistant',
-        'content': """Solution1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Solution2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-Solution3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string)
-
-Cost Analysis:
-Solution1 Cost:
-PythonInterpreter: 50 - 10 (lines) * 1.5 (packages) = 35
-Finish: 0
-Total: 35 + 0 = 35
-Solution2 Cost:
-TFIDFMatcher (2x): 45 + 45 = 90
-PythonInterpreter: 50 - 4 (lines) * 1 (packages) = 46
-Finish: 0
-Total: 90 + 46 = 136
-Solution3 Cost:
-LLMInferencer: 20
-Finish: 0
-Total: 20 + 0 = 20
-
-Best Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0))""",
-        'tool_calls': [
-            {
-                'id': 'call_0',
-                'function': {
-                    'name': 'TFIDFMatcher',
-                    'arguments': json.dumps({
-                        "query": "machine learning", "document": "Machine learning is a specialized branch of artificial intelligence." 
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_0',
-        'role': 'tool',
-        'name': 'TFIDFMatcher',
-        'content': "{'match':1}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_1',
-                'function': {
-                    'name': 'TFIDFMatcher',
-                    'arguments': json.dumps({
-                        "query": "machine learning", "document": "Artificial intelligence is a broad field that encompasses various technologies." 
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_1',
-        'role': 'tool',
-        'name': 'TFIDFMatcher',
-        'content': "{'match':0}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_2',
-                'function': {
-                    'name': 'PythonInterpreter',
-                    'arguments': json.dumps({
-                        "python_code": """
-def get_most_relevant_document(match_doc1, match_doc2):
-    if match_doc1 > match_doc2:
-        return 'Document 1'
-    elif match_doc2 > match_doc1:
-        return 'Document 2'
-    else:
-        return 'Both documents are equally relevant'
-most_relevant = get_most_relevant_document(1, 0)
-"""
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_2',
-        'role': 'tool',
-        'name': 'PythonInterpreter',
-        'content': "{'most_relevant': 'Document 1'}"
-    },
-    {
-        'role': 'assistant',
-        'content': "",
-        'tool_calls': [
-            {
-                'id': 'call_3',
-                'function': {
-                    'name': 'Finish',
-                    'arguments': json.dumps({
-                        "variable_values": "{'most_relevant': 'Document 1'}", "answer_variable": "most_relevant", "answer_type": "string"
-                    })
-                },
-                'type': 'function'
-            }
-        ]
-    },
-    {
-        'tool_call_id': 'call_3',
-        'role': 'tool',
-        'name': 'Finish',
-        'content': "Document 1"
-    },
-    {
-        'role': 'assistant',
-        'content': "Document 1 is more relevant to the search query 'machine learning'."
-    },
-    {
-        'role': 'user',
         'content': "Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'"
     },
     {
@@ -2952,9 +2401,6 @@ Solution: TextualClassifier(neurips, logistic_regression, Abstract, We propose a
 
 Question: Using the patent applications from 2007 to 2009, predict the average length of claims for patent applications in 2010 and 2011.
 Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-        
-Question: I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'.
-Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
       
 Question: Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'
 Solution: LLMInferencer(), Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)"""}
@@ -2970,7 +2416,6 @@ messages_formula_1_no_example_text = [
 Interpretability Costs:
 Calculator: 2
 DBLoader: 3
-TFIDFMatcher: 5
 PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
 PythonInterpreter: Same as PandasInterpreter
 Forecaster:
@@ -2995,7 +2440,6 @@ messages_formula_1_one_example_text = [
 Interpretability Costs:
 Calculator: 2
 DBLoader: 3
-TFIDFMatcher: 5
 PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
 PythonInterpreter: Same as PandasInterpreter
 Forecaster:
@@ -3027,7 +2471,6 @@ messages_formula_1_text = [
 Interpretability Costs:
 Calculator: 2
 DBLoader: 3
-TFIDFMatcher: 5
 PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
 PythonInterpreter: Same as PandasInterpreter
 Forecaster:
@@ -3073,15 +2516,6 @@ Solution3: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pand
 Solution3 Cost: DBLoader: 3 + PandasInterpreter: 2.24 (6 lines) * 1 (1 package) + Forecaster (linear_regression): 6 + Finish = 11.24
 Accuracy Consideration: Solution1's approach assumes that the average length of claims remains constant from one year to the next, overlooking trends or changes over time. This static approach may result in less accurate predictions compared to methods that account for temporal variations.
 Best Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-        
-Question: I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'.
-Solution1: PythonInterpreter(from sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.metrics.pairwise import cosine_similarity\n\ndef get_most_relevant_document(query, doc1, doc2):\n vectorizer = TfidfVectorizer()\n tfidf_matrix = vectorizer.fit_transform([query, doc1, doc2])\n similarity_doc1 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]\n similarity_doc2 = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[2:3])[0][0]\n if similarity_doc1 > similarity_doc2:\n return 'Document 1'\n elif similarity_doc2 > similarity_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\n\nquery = 'machine learning'\ndoc1 = 'Machine learning is a specialized branch of artificial intelligence.'\ndoc2 = 'Artificial intelligence is a broad field that encompasses various technologies.'\n\nmost_relevant = get_most_relevant_document(query, doc1, doc2)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Solution1 Cost: PythonInterpreter: 4.58 (21 lines) * 2 (2 packages) + Finish = 9.16
-Solution2: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Solution2 Cost: TFIDFMatcher (2 * 5) +  PythonInterpreter: 3 (9 lines) * 1 (0 package) + Finish = 13
-Solution3: LLMInferencer(), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
-Solution3 Cost: LLMInferencer: 30 + Finish = 30
-Best Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
       
 Question: Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'
 Solution1: LLMInferencer(), Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)
@@ -3102,7 +2536,6 @@ messages_examples_formula_1_text = [
 Interpretability Costs:
 Calculator: 2
 DBLoader: 3
-TFIDFMatcher: 5
 PandasInterpreter: sqrt(Lines of Code) × max(Packages,1)
 PythonInterpreter: Same as PandasInterpreter
 Forecaster:
@@ -3127,9 +2560,6 @@ Solution: TextualClassifier(neurips, logistic_regression, Abstract, We propose a
 
 Question: Using the patent applications from 2007 to 2009, predict the average length of claims for patent applications in 2010 and 2011.
 Solution: DBLoader(hupd, list(range(2007,2010))), PandasInterpreter(import pandas as pd\ndf['year'] = df['filing_date'].dt.year\ndf['len_claims'] = df['claims'].apply(len)\naverage_claims_per_year = df.groupby('year')['len_claims'].mean())), Forecaster(linear_regression, previous_data, 2), Finish({'forecast_predictions': [6020.225608051151, 5998.883671776641]}, forecast_predictions, list)
-        
-Question: I have 2 documents. Document 1: 'Machine learning is a specialized branch of artificial intelligence.' Document 2: 'Artificial intelligence is a broad field that encompasses various technologies.' Which of these two is more relevant to the search query 'machine learning'? Return either 'Document 1' or 'Document 2'.
-Solution: TFIDFMatcher(machine learning, Machine learning is a specialized branch of artificial intelligence.), TFIDFMatcher(machine learning, Artificial intelligence is a broad field that encompasses various technologies.), PythonInterpreter(def get_most_relevant_document(match_doc1, match_doc2):\n if match_doc1 > match_doc2:\n return 'Document 1'\n elif match_doc2 > match_doc1:\n return 'Document 2'\n else:\n return 'Both documents are equally relevant'\nmost_relevant = get_most_relevant_document(1, 0)), Finish({'most_relevant': 'Document 1'}, most_relevant, string, ['Document 1', 'Document 2'])
       
 Question: Identify a common theme that links the NeurIPS papers titled '4D Panoptic Scene Graph Generation,' 'VoxDet: Voxel Learning for Novel Instance Detection,' and 'L2T-DLN: Learning to Teach with Dynamic Loss Network.'
 Solution: LLMInferencer(), Finish({'ans': 'Advanced Techniques for 3D Scene Understanding and Adaptive Learning Models'}, ans, string)"""}
