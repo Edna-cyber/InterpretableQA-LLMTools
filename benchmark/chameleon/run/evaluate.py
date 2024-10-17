@@ -50,13 +50,13 @@ if __name__ == "__main__":
 
     # Get the logs file
     logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH> ###
-    result_root = f"{args.output_root}" 
+    result_root = f"{args.output_root}/final" 
     wrong_clean, wrong_interp, wrong_both, more_cost = [], [], [], []
     if args.prompt2!="":
         logs_dir2 = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt2, args.formula) # <YOUR_OWN_PATH> ###
         wrong_interp_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-{args.prompt2}-wrong.txt"
-        wrong_both_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-bothwrong.txt"
-        more_cost_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-morecost.txt"
+        wrong_both_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-{args.prompt}-{args.prompt2}-bothwrong.txt"
+        more_cost_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-{args.prompt2}-v-{args.prompt}-morecost.txt"
     result_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-test.json" ###
     wrong_clean_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.formula}-{args.prompt}-wrong.txt"
     
@@ -88,21 +88,21 @@ if __name__ == "__main__":
             else:
                 avg_tool_cost[key] = int(question_tool_cost[key])
 
-        try:
-            llm_answer = float(llm_answer)
-        except:
-            pass
-        try:
-            gt_answer = float(gt_answer)
-        except:
-            pass
+        # try:
+        #     llm_answer = float(llm_answer)
+        # except:
+        #     pass
+        # try:
+        #     gt_answer = float(gt_answer)
+        # except:
+        #     pass
         
-        if "[" in llm_answer and "]" in llm_answer:
+        if isinstance(llm_answer, str) and "[" in llm_answer and "]" in llm_answer:
             try:
                 llm_answer = ast.literal_eval(llm_answer)
             except:
                 pass
-        if "[" in gt_answer and "]" in gt_answer:
+        if isinstance(gt_answer, str) and "[" in gt_answer and "]" in gt_answer:
             try:
                 gt_answer = ast.literal_eval(gt_answer)
             except:
@@ -118,14 +118,14 @@ if __name__ == "__main__":
             print("None filename", filename) ##
             errors[question_type] += 1
             cost_original[question_type]["invalid"].append(per_question_cost)
-        elif (isinstance(llm_answer, int) or isinstance(llm_answer, float)) and llm_answer==0:
-            print("0 value filename", filename) ##
-            errors[question_type] += 1
-            cost_original[question_type]["invalid"].append(per_question_cost)
-        elif isinstance(llm_answer, list) and llm_answer==[]:
-            print("empty list filename", filename) ##
-            errors[question_type] += 1
-            cost_original[question_type]["invalid"].append(per_question_cost)
+        # elif (isinstance(llm_answer, int) or isinstance(llm_answer, float)) and llm_answer==0:
+        #     print("0 value filename", filename) ##
+        #     errors[question_type] += 1
+        #     cost_original[question_type]["invalid"].append(per_question_cost)
+        # elif isinstance(llm_answer, list) and llm_answer==[]:
+        #     print("empty list filename", filename) ##
+        #     errors[question_type] += 1
+        #     cost_original[question_type]["invalid"].append(per_question_cost)
         elif isinstance(llm_answer, str) and "Error:" in llm_answer:
             print("Error: filename", filename) ##
             errors[question_type] += 1
@@ -234,9 +234,9 @@ if __name__ == "__main__":
     wrong_interp = sorted(wrong_interp, key=lambda x: json.dumps(x, sort_keys=True))
     wrong_both = sorted(wrong_both, key=lambda x: json.dumps(x, sort_keys=True))
             
-    with open(wrong_clean_file, 'w') as f:
-        for item in wrong_clean: 
-            f.write(f"{item}\n")
+    # with open(wrong_clean_file, 'w') as f:
+    #     for item in wrong_clean: 
+    #         f.write(f"{item}\n") ###
     if args.prompt2!="":
         with open(wrong_interp_file, 'w') as f:
             for item in wrong_interp: 

@@ -5,8 +5,6 @@ def calc_cost1(function_type, function_arguments):
         return 2
     if function_type=="DBLoader":
         return 3   
-    if function_type=="TFIDFMatcher":
-        return 5
     if function_type=="PandasInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
         num_lines = len(lines) 
@@ -49,8 +47,6 @@ def calc_cost2(function_type, function_arguments):
         return 48
     if function_type=="DBLoader":
         return 47
-    if function_type=="TFIDFMatcher":
-        return 45
     if function_type=="PandasInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
         num_lines = len(lines) 
@@ -93,8 +89,6 @@ def calc_cost3(function_type, function_arguments):
         return 2
     if function_type=="DBLoader":
         return 3   
-    if function_type=="TFIDFMatcher":
-        return 5
     if function_type=="PandasInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
         num_lines = len(lines)  
@@ -165,8 +159,6 @@ def calc_cost4(function_type, function_arguments):
         return 48
     if function_type=="DBLoader":
         return 47
-    if function_type=="TFIDFMatcher":
-        return 45
     if function_type=="PandasInterpreter":
         lines = function_arguments["pandas_code"].splitlines()
         num_lines = len(lines)  

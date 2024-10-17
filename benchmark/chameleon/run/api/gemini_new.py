@@ -1,8 +1,6 @@
 import os
-import google.generativeai as genai
 import vertexai
-import requests
-from ..tools.tools_set import tools_gemini
+from run.tools.tools_set import tools_gemini
 from vertexai.generative_models import (
     FunctionDeclaration,
     GenerationConfig,
@@ -64,7 +62,7 @@ def call_gemini_pro(model, messages, temperature, max_tokens, tool_choice):
         
     gemini_model = GenerativeModel(
     model,
-    generation_config=GenerationConfig(temperature=temperature, maxOutputTokens=max_tokens),
+    generation_config=GenerationConfig(temperature=temperature, max_output_tokens=max_tokens),
     tools=tools_gemini_converted,
     tool_config=tool_config
 )

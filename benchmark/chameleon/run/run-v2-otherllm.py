@@ -30,7 +30,7 @@ from tools.tabtools import table_toolkits, LogisticRegression, BasicCNNModel
 import datetime
 
 from api.gpt import call_gpt
-from api.gemini import call_gemini_pro
+# from benchmark.chameleon.run.api.gemini import call_gemini_pro
 from api.claude import call_claude3
 
 from tools.tools_set import tools_gpt, tools_gemini
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     elif args.split=="secondhalf":
         pids = pids[length//2:]
     
-    for pid in tqdm(pids[:10]): #####
+    for pid in tqdm(pids): 
         time.sleep(1)
         # print("pid", pid)
         db.data = None # force reset
@@ -231,6 +231,8 @@ if __name__ == "__main__":
                 print(f"An error occurred during solution generation: {e}")
                 logs.append(json.dumps(str(e)))
                 break
+            
+        messages = messages[1:] ###
         
         if args.prompt=="clean" or args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
             user_prompt = "Execute the tool calls in the given order of 'Solution'. The 'content' of your response MUST BE None, while the 'tool_calls' of your response MUST reflect each tool and its arguments from the 'Solution', one at a time! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 

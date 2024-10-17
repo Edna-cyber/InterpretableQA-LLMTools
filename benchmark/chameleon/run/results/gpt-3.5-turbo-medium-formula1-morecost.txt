@@ -1,9 +1,0 @@
-{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0397.txt'}
-{'Clean Cost1': {'DBLoader': 3}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 7}, 'Cost1': 3.0, 'Cost2': 7.0, 'filename': 'medium-0198.txt'}
-{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0041.txt'}
-{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 21}, 'Cost1': 7.0, 'Cost2': 21.0, 'filename': 'medium-0159.txt'}
-{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0126.txt'}
-{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 20}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 27}, 'Cost1': 20.0, 'Cost2': 27.0, 'filename': 'medium-0036.txt'}
-{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'TextualClassifier': 49}, 'Cost1': 7.0, 'Cost2': 49.0, 'filename': 'medium-0167.txt'}
-{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 20}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 27}, 'Cost1': 20.0, 'Cost2': 27.0, 'filename': 'medium-0285.txt'}
-{'Clean Cost1': {'Finish': 0, 'TextualClassifier': 7}, 'Clean Cost2': {'Finish': 0, 'TextualClassifier': 20}, 'Cost1': 7.0, 'Cost2': 20.0, 'filename': 'medium-0282.txt'}
