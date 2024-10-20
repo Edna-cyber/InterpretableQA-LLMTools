@@ -7,6 +7,7 @@ def execute(python_code):
     Executes the provided Python code.
     """    
     try: 
+        python_code = python_code.replace("\\n", "\n")
         exec(python_code, globals())
         variable_values = {}
         combined = globals() | locals()
@@ -24,7 +25,9 @@ def execute(python_code):
         return variable_values
     except Exception as e:
         if "'df'" in str(e):
-           return "Error: "+str(e)+"\nUse pandas_interpreter instead." 
+            return "Error: "+str(e)+"\nUse pandas_interpreter instead." 
+        elif "ast.BinOp" in str(e):
+            return "Error: "+str(e)+"\nEnsure any arithmetic operation is evaluated by a different tool before storing the result in 'variable_values'." 
         return "Error: "+str(e)
 
 if __name__ == "__main__":

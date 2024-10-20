@@ -69,7 +69,12 @@ def call_gemini_pro(model, messages, temperature, max_tokens, tool_choice):
     chat = gemini_model.start_chat(response_validation=False)
     response = chat.send_message(str(messages))
     content = response.candidates[0].content
-    print("content", content)
+    if content.parts is None or content.parts==[]:
+        response_continue_tools = {
+            "role": "user",
+            "parts": [{"text": "USE 'function_call' to call the next tool in the sequence."}]
+        }
+        return response_continue_tools, None
     response_without_tools = {
         "role": content.role,
         "parts": content.parts

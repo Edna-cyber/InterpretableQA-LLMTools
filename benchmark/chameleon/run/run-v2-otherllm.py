@@ -30,7 +30,7 @@ from tools.tabtools import table_toolkits, LogisticRegression, BasicCNNModel
 import datetime
 
 from api.gpt import call_gpt
-# from benchmark.chameleon.run.api.gemini import call_gemini_pro
+from api.gemini_new import call_gemini_pro
 from api.claude import call_claude3
 
 from tools.tools_set import tools_gpt, tools_gemini
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         execution_iterations = 0
         
         # solution generation
-        while generation_iterations<4:
+        while generation_iterations<1:
             if args.hardness!="easy":
                 db.prediction = True
             try:
@@ -185,54 +185,12 @@ if __name__ == "__main__":
                 messages.append(response_without_tools) 
                 logs.append(response_without_tools)
                 generation_iterations += 1
-                
-                if generation_iterations==4 or (args.prompt=="noexample" and generation_iterations==1) or (args.prompt=="interpnoexample" and generation_iterations==1) or (args.prompt=="interpexamples" and generation_iterations==1):
-                    break
-         
-                # Regeneration (logic according to text prompts)
-                if args.prompt=="clean" or args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
-                    if not content or "Solution:" not in content:
-                        write_solution_message = {
-                            "role": "user",
-                            "content": "Generate a solution that includes a sequence of consecutive tool calls to address the question. The solution must follow the structure as in the examples and end with the Finish tool."
-                        }
-                        messages.append(write_solution_message)
-                        logs.append(write_solution_message)
-                        continue
-                    else:
-                        break
-                if args.prompt=="interp" or args.prompt=="interptext" or args.prompt=="interplimited" or args.prompt=="interponeexample":
-                    if not content or "Solution2:" not in content or "Cost:" not in content or "Best Solution:" not in content:
-                        more_solutions_message = {
-                            "role": "user",
-                            "content": "Generate multiple solutions with varying total costs by using different tools or arguments, aiming to minimize the total cost. Include Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution. Optionally, include Solution3, Solution3 Cost, Solution4, Solution4 Cost, and Accuracy Consideration. The solutions must follow the structure as in the examples and end with the Finish tool."
-                        }
-                        messages.append(more_solutions_message)
-                        logs.append(more_solutions_message)
-                        continue
-                    best_solution_ind = content.find("Best Solution:")
-                    # print("content", content) 
-                    solutions = content[:best_solution_ind].split("Solution")
-                    cleaned_solutions = []
-                    for x in solutions:
-                        if x!="" and "Cost" not in x:
-                            clean_x = re.sub(r"^[^a-zA-Z]+", "", x).strip()
-                            cleaned_solutions.append(clean_x)
-                    if len(cleaned_solutions)>len(set(cleaned_solutions)):
-                        no_duplicate_message = {
-                            "role": "user",
-                            "content": "Generate multiple solutions with varying total costs by using different tools or arguments, aiming to minimize the total cost. Include Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution. Optionally, include Solution3, Solution3 Cost, Solution4, Solution4 Cost, and Accuracy Consideration. The solutions must follow the structure as in the examples and end with the Finish tool."
-                        }
-                        messages.append(no_duplicate_message)
-                        logs.append(no_duplicate_message)
-                        continue
-                    break
             except Exception as e:
                 print(f"An error occurred during solution generation: {e}")
                 logs.append(json.dumps(str(e)))
                 break
             
-        messages = messages[1:] ###
+        messages = messages[1:]
         
         if args.prompt=="clean" or args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
             user_prompt = "Execute the tool calls in the given order of 'Solution'. The 'content' of your response MUST BE None, while the 'tool_calls' of your response MUST reflect each tool and its arguments from the 'Solution', one at a time! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
@@ -304,7 +262,7 @@ if __name__ == "__main__":
                         tool_count[function_type] += 1
                         tool_cost[function_type] += function_cost
                         per_question_cost += function_cost
-                        # print("per_question_cost", per_question_cost) ###
+                        # print("per_question_cost", per_question_cost) 
                     
                     tool_call_response = {
                         "tool_call_id": tool_call.id,
@@ -367,8 +325,8 @@ if __name__ == "__main__":
         tool_cost = dict(sorted(tool_cost.items()))
         logs.append({"Tool Cost": tool_cost})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "Cost": per_question_cost, "Tool Count": tool_count, "Tool Cost": tool_cost, "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
-        logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH>
-        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)): # <YOUR_OWN_PATH>
+        logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH> 
+        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)): # <YOUR_OWN_PATH> 
             os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)) # <YOUR_OWN_PATH>
         with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
             for item in logs: 

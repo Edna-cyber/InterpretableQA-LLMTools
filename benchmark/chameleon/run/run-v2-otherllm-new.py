@@ -80,8 +80,13 @@ if __name__ == "__main__":
     # Get the result file
     result_root = f"{args.output_root}" 
     os.makedirs(result_root, exist_ok=True)
+    
+    logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH> 
+    if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)): # <YOUR_OWN_PATH>
+        os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)) # <YOUR_OWN_PATH>
     cache_file = f"{result_root}/{args.policy_engine}-{args.hardness}-{args.prompt}-{args.formula}-cache-{datetime_string}.jsonl"
     cache = []
+    
     if args.formula=="formula1":
         cost_function = calc_cost1
     elif args.formula=="formula2":
@@ -98,23 +103,27 @@ if __name__ == "__main__":
     elif args.split=="secondhalf":
         pids = pids[length//2:]
     
-    for pid in tqdm(pids[:5]): ### 
+    for pid in tqdm(pids): 
+        # with open(os.path.join(logs_dir, f"{pid}.txt"), 'r', encoding='utf-8', errors='ignore') as file:
+        #     content = file.read()
+        #     if "429" not in content: # request quota error
+        #         continue
         time.sleep(1)
         # print("pid", pid)
         db.data = None # force reset
         example = solver.examples[pid] # get one example 
         if args.prompt=="clean":
-            user_prompt = "Now, you need to act as a policy model and determine the sequence of tools that can be executed sequentially to solve the question. The solution must follow the structure as in the text CONTENT of the examples and end with the Finish tool. Respond using natural, conversational text. Do not respond with multi_tool_use.parallel JSON or technical formats. Question: "+example["question"]
+            user_prompt = "Now, you need to act as a policy model and determine the sequence of tools that can be executed sequentially to solve the question. The solution must follow the structure as in the text CONTENT of the examples and end with the Finish tool. You must use more than just the finish tool. Respond using natural, conversational text. Do not respond with multi_tool_use.parallel JSON or technical formats. Question: "+example["question"]
         elif args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
-            user_prompt = "Now write your response in the format of the text CONTENT of the examples provided (Solution). Do not respond with multi_tool_use.parallel JSON. The solution must follow this structure as in the examples:  SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. Question: "+example["question"] 
+            user_prompt = "Now write your response in the format of the text CONTENT of the examples provided (Solution). Do not respond with multi_tool_use.parallel JSON. The solution must follow this structure as in the examples:  SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. You must use more than just the finish tool. Question: "+example["question"] 
         elif args.prompt=="interp":
-            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps: 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. The solutions must follow the structure as in the text CONTENT of the examples and end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: "+example["question"]
+            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps: 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. The solutions must follow the structure as in the text CONTENT of the examples and end with the Finish tool. You must use more than just the finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: "+example["question"]
         elif args.prompt=="interptext" or args.prompt=="interplimited" or args.prompt=="interponeexample":
-            user_prompt = "Now, write your response in the format of the text CONTENT of the examples provided (Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution): 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. Each solution must follow this structure as in the examples:   SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: " + example["question"]
+            user_prompt = "Now, write your response in the format of the text CONTENT of the examples provided (Solution1, Solution1 Cost, Solution2, Solution2 Cost, and the Best Solution): 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. Each solution must follow this structure as in the examples:   SolutionX: Tool1(parameters), Tool2(parameters), Tool3(parameters) and it must end with the Finish tool. You must use more than just the finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: " + example["question"]
         elif args.prompt=="noexample":
-            user_prompt = "Now, you need to act as a policy model and determine the sequence of tools that can be executed sequentially to solve the question. The solution must end with the Finish tool. Respond using natural, conversational text. Do not respond with multi_tool_use.parallel JSON or technical formats. Question: "+example["question"]
+            user_prompt = "Now, you need to act as a policy model and determine the sequence of tools that can be executed sequentially to solve the question. The solution must end with the Finish tool. Respond using natural, conversational text. Do not respond with multi_tool_use.parallel JSON or technical formats. You must use more than just the finish tool. Question: "+example["question"]
         elif args.prompt=="interpnoexample" or args.prompt=="interpexamples":
-            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps: 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. The solutions must end with the Finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: "+example["question"]
+            user_prompt = "Now, you need to act as a policy model to find the lowest total interpretability cost for solving a question with a given set of tools. Follow these steps: 1. Generate multiple solutions with different total costs, aiming to minimize the total cost. The solutions must end with the Finish tool. You must use more than just the finish tool. Provide at least Solution1 and Solution2, and optionally Solution3 and Solution4. 2. Calculate the interpretability cost for each solution. Then, select the best solution that has the lowest total cost WITHOUT COMPROMISING ACCURACY OF ADDRESSING THE QUESTION. Question: "+example["question"]
         question_type = int(example["question_type"])
         per_question_cost = 0
         tool_count, tool_cost = defaultdict(int), defaultdict(int) 
@@ -185,7 +194,7 @@ if __name__ == "__main__":
                 logs.append(json.dumps(str(e)))
                 break
             
-        messages = messages[1:] ###
+        messages = messages[1:]
         
         if args.prompt=="clean" or args.prompt=="cleantext" or args.prompt=="cleanlimited" or args.prompt=="oneexample":
             user_prompt = "Execute the tool calls in the given order of 'Solution'. The 'content' of your response MUST BE None, while the 'tool_calls' of your response MUST reflect each tool and its arguments from the 'Solution', one at a time! Ensure that the execution concludes with the use of the Finish tool. If you encounter an error during execution, you can make slight adjustments to the tool's arguments according to the error message." 
@@ -206,7 +215,7 @@ if __name__ == "__main__":
         tool_choice="required"
         while execution_iterations<10:
             if args.policy_engine.startswith("gemini"):
-                time.sleep(1)
+                time.sleep(0.2) # 1
             if args.hardness!="easy":
                 db.prediction = True
             try:
@@ -223,11 +232,8 @@ if __name__ == "__main__":
          
                 if tool_call:
                     started_execution=True
-                    tool_choice = "auto"
-                    
-                    # print(response_with_tools) 
-                    messages.append(response_tools) 
-                    logs.append(response_tools)
+                    if args.policy_engine.startswith("gpt"):
+                        tool_choice = "auto"
                     
                     if args.policy_engine.startswith("gpt"):
                         function_type = tool_call.function.name
@@ -235,6 +241,26 @@ if __name__ == "__main__":
                     elif args.policy_engine.startswith("gemini"):
                         function_type = tool_call.name
                         function_arguments = tool_call.args
+                        
+                    if function_type=="LLMInferencer" and "LLMInferencer" in tool_count: # preventing calling LLMInferencer multiple times unnecessarily
+                        if args.policy_engine.startswith("gpt"):
+                            response_finish = {
+                                "role": "user",
+                                "content": "Now, call the 'finish' tool using the previous output."
+                            }
+                        elif args.policy_engine.startswith("gemini"):
+                            response_finish = {
+                                "role": "user",
+                                "parts": [{"text": "Now, call the 'finish' tool using the previous output."}]
+                            }
+                        messages.append(response_finish) 
+                        logs.append(response_finish)
+                        continue
+                    
+                    # print(response_with_tools) 
+                    messages.append(response_tools) 
+                    logs.append(response_tools)
+                    
                     function = ACTION_LIST[function_type]
                     function_response = function(**function_arguments)
                     function_cost = cost_function(function_type, function_arguments)
@@ -242,7 +268,7 @@ if __name__ == "__main__":
                         tool_count[function_type] += 1
                         tool_cost[function_type] += function_cost
                         per_question_cost += function_cost
-                        # print("per_question_cost", per_question_cost) ###
+                        # print("per_question_cost", per_question_cost)
                     
                     if args.policy_engine.startswith("gpt"):
                         tool_call_response = {
@@ -266,6 +292,8 @@ if __name__ == "__main__":
                     messages.append(tool_call_response)  
                     logs.append(tool_call_response)
                     execution_iterations += 1
+                    if function_type=="Finish":
+                        break
                 else:
                     messages.append(response_tools) 
                     logs.append(response_tools)
@@ -288,7 +316,7 @@ if __name__ == "__main__":
                         break
                     
             except Exception as e:
-                print(f"An error occurred during solution execution: {e}")
+                print(f"An error occurred during solution execution for {pid}: {e}")
                 logs.append(json.dumps(str(e)))
                 break
         
@@ -312,9 +340,7 @@ if __name__ == "__main__":
         tool_cost = dict(sorted(tool_cost.items()))
         logs.append({"Tool Cost": tool_cost})
         cache.append({"qid": pid, "question_type": example["question_type"], "question": example["question"], "Cost": per_question_cost, "Tool Count": tool_count, "Tool Cost": tool_cost, "LLM Answer": llm_answer, "Ground-Truth Answer": gt_answer})
-        logs_dir = '/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/test{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula) # <YOUR_OWN_PATH> ###remove test 
-        if not os.path.exists('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/test{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)): # <YOUR_OWN_PATH> ###remove test 
-            os.makedirs('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/test{}-{}-{}-{}'.format(args.policy_engine, args.hardness, args.prompt, args.formula)) # <YOUR_OWN_PATH> ###remove test 
+        
         with open(os.path.join(logs_dir, f"{pid}.txt"), 'w') as f:
             for item in logs: 
                 f.write(f"{item}\n")

@@ -10,10 +10,10 @@ client = anthropic.Anthropic(
 
 CLAUDE_CKPT = "claude-3-opus-20240229"
 
-def call_claude3(prompt, temperature, max_tokens, tools, tool_choice):
+def call_claude3(messages, temperature, max_tokens, tools, tool_choice):
     response = anthropic_client.completions.create(
         model=CLAUDE_CKPT, 
-        prompt=prompt,
+        prompt=messages,
         temperature=temperature,
         max_tokens=max_tokens,
         tools=tools,  
@@ -23,4 +23,4 @@ def call_claude3(prompt, temperature, max_tokens, tools, tool_choice):
     return choice
 
 if __name__ == '__main__':
-    call_claude3(model, prompt, temperature, max_tokens, tools, tool_choice)
+    call_claude3(model, messages, temperature, max_tokens, tools, tool_choice)

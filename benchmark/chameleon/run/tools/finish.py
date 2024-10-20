@@ -2,6 +2,8 @@ import ast
 
 def finish(variable_values, answer_variable, answer_type, choices="[]"):
     try:
+        variable_values = variable_values.replace('\\"', "'").replace("\\'", "'")
+        print("variable_values", variable_values)
         variable_values = ast.literal_eval(variable_values)
         choices = ast.literal_eval(choices)
         if not isinstance(variable_values, dict):
@@ -22,10 +24,10 @@ def finish(variable_values, answer_variable, answer_type, choices="[]"):
 
 if __name__ == "__main__":
     arguments = {
-    "variable_values": "{'approval_rates': 'cpc_category  decision\\n0          H01       0.0', 'top_categories': ['H01']}",
+    "variable_values": "{\"percentage_four_authors\": 764 / 3585}",
     "answer_variable": "top_categories",
     "answer_type": "list"
 }
+    # "{'approval_rates': 'cpc_category  decision\\n0          H01       0.0', 'top_categories': ['H01']}"
     print(finish(**arguments))
-    
     

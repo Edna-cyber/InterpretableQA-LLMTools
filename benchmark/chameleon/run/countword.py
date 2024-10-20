@@ -22,25 +22,28 @@ def count_word_in_files(directory, word, file_extension=None):
             try:
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
                     content = file.read()
-                      
-                    # Split the content into sentences
-                    sentences = sentence_endings.split(content)
                     
-                    # Check each sentence for the word and print if found
-                    for sentence in sentences:
-                        if word in sentence:
-                            files.append(filename)
-                            break
-                            word_count += sentence.count(word)
+                    if "429" in content:
+                        files.append(filename)
+                      
+                    # # Split the content into sentences
+                    # sentences = sentence_endings.split(content)
+                    
+                    # # Check each sentence for the word and print if found
+                    # for sentence in sentences:
+                    #     if word in sentence:
+                    #         files.append(filename)
+                    #         break
+                            # word_count += sentence.count(word)
                             # Store the filename and the sentence containing the word
-                            sentences_with_word.append((filename)) # , sentence 
+                            # sentences_with_word.append((filename)) # , sentence 
             except Exception as e:
                 print(f"Error reading {file_path}: {e}")
     
     return word_count, sentences_with_word, files
 
-directory = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/gpt-4-turbo-medium-noexample-formula1"  
-word = "Incorrect API key provided"
+directory = "/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/logs/gemini-1.5-pro-001-easy-interpexamples-formula1"  
+word = "404"
 file_extension = ".txt"  
 
 count, sentences, files = count_word_in_files(directory, word, file_extension)

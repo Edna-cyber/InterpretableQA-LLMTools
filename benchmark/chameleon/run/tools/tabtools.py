@@ -207,6 +207,7 @@ class table_toolkits():
         else:
             return "Error: Dataframe does not exist. Make sure the dataframe is loaded with LoadDB first."
         try: 
+            pandas_code = pandas_code.replace("\\n", "\n")
             exec(pandas_code, global_var)
             variable_values = {}
             excluded_types = (types.ModuleType, types.FunctionType, type, pd.DataFrame)
@@ -246,7 +247,7 @@ class table_toolkits():
             if "'pd'" in str(e):
                 return "Error: "+str(e)+"\nImport the pandas library using the pandas_interpreter."
             else:
-                return "Error: "+str(e)+"\nIf it's a package, import the package."
+                return "Error: "+str(e)+"\nIf it's a package, import the package. If it's a dataframe, the loaded data is stored in the variable 'df'."
         except Exception as e:
             return "Error: "+str(e)
             
@@ -347,9 +348,11 @@ class table_toolkits():
             def test(processed_text, model, criterion, device): 
                 try:
                     with open('/usr/project/xtmp/rz95/InterpretableQA-LLMTools/benchmark/chameleon/run/tools/temp/{}_{}_{}_{}_model.pkl'.format(database, model_name, section, target), 'rb') as file:
+                        print("here?")
+                        print(file) ###
                         model = pickle.load(file)
                 except:
-                    return "Error: please change the section or target, or try using other tools (Calculate, LoadDB, TFIDF, PandasInterpreter, PythonInterpreter, Forecaster, LLMInferencer) to solve the problem." ###
+                    return "Error: please change the section or target first, or try using other tools (Calculate, LoadDB, PandasInterpreter, PythonInterpreter, Forecaster, LLMInferencer) to solve the problem."
                 model.eval()
                 
                 inputs = processed_text['input_ids']
@@ -409,3 +412,4 @@ if __name__ == "__main__":
     # print(db.textual_classifier('neurips', 'logistic_regression', 'Abstract', abstract, 'Oral', 'oral'))
     # print(db.textual_classifier('neurips', 'cnn', 'Abstract', abstract, 'Oral', 'oral'))
     # print(db.textual_classifier('neurips', 'bert-base-uncased', 'Abstract', abstract, 'Oral', 'oral'))
+    

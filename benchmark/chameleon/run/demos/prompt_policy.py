@@ -2388,7 +2388,7 @@ Solution: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n ==
 messages_text = [
     {
         'role': 'system',
-        'content': """You need to act as a policy model, that given a question and a set of tools, determines the optimal sequence of tools that can be executed sequentially to answer the question as accurately as possible. Below are some examples that map the problem to the tools:
+        'content': """You need to act as a policy model that, given a question and a set of tools, determines the optimal sequence of tools that can be executed sequentially to answer the question as interpretably as possible. Accuracy cannot be sacrificed for interpretability. Below are some examples that map the problem to the tools:
 
 Question: What is the 20th Fibonacci number?
 Solution: PythonInterpreter(def solution(n):\n if n <= 0:\n return 0\n elif n == 1:\n return 1\n a, b = 0, 1\n for _ in range(2, n + 1):\n a, b = b, a + b\n return b\n\nans = solution(19)\n), Finish({'ans': 4181}, ans, integer)
